@@ -23,19 +23,18 @@ int inputLoop()
     size_t lineSize;
     char *line;
 
-    int readed;
+    size_t bytesRead;
     Env env = HOMEPAGE;
 
-    while ((readed = getline(&line, &lineSize, stdin)) != -1)
+    while ((bytesRead = getline(&line, &lineSize, stdin)) != -1)
     {
-        line[readed] = '\0';
+        line[bytesRead - 1] = '\0';
         switch (env)
         {
             case HOMEPAGE:
                 parseHome(line, &env);
                 break;
             case PROJECT:
-                break;
             case SETTINGS:
                 break;
         }
