@@ -23,9 +23,9 @@ int parseHelpH();
 int parseExitH(Env *env);
 
 //COMMANDS
-int newProject(char *name, bool ask);
-int openProject(char *name, Env *env);
-int delProject(char *name);
+int newP(char *name, bool ask, Env *env);
+int openP(char *name, Env *env);
+int delP(char *name);
 int view();
 int helpH();
 int exitH(Env *env);

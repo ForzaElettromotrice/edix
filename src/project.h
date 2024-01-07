@@ -26,5 +26,17 @@ int parseExitP(Env *env);
 
 
 //COMMANDS
+int ls(char *path);
+int tree(char *path);
+int cd(char *path);
+int loadI(char *path);
+int rm(char *name);
+int mkdir(char *name);
+int rmdir(char *name);
+int mv(char *fromPath, char *toPath);
+int sett(Env *env);
+int helpP();
+int exitP(Env *env);
+
 
 #endif //EDIX_PROJECT_CH

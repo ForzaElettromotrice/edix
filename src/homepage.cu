@@ -62,12 +62,14 @@ int parseHome(char *line, Env *env)
 
 int parseNew(Env *env)
 {
+
     char *token1 = strtok(nullptr, " ");
     char *token2 = strtok(nullptr, " ");
 
     char *err = strtok(nullptr, " ");
 
-    if (token2 != nullptr && err != nullptr)
+
+    if (token1 == nullptr || (token2 != nullptr && err != nullptr) )
     {
         printf(RED "usage:" RESET " new ProjectName [-m]\n");
         return 1;
@@ -91,15 +93,13 @@ int parseNew(Env *env)
 
 
         D_PRINT("Ok buon lavoro! ~et\n");
-        newProject(name, true);
-        *env = PROJECT;
+        newP(name, true, env);
         return 0;
 
     } else if (isValidName(token1))
     {
         D_PRINT("Ok buon lavoro! ~et");
-        newProject(token1, false);
-        *env = PROJECT;
+        newP(token1, false, env);
         return 0;
     }
 
@@ -109,26 +109,25 @@ int parseNew(Env *env)
 int parseOpen(Env *env)
 {
     char *name = strtok(nullptr, " ");
-    if (strtok(nullptr, " ") != nullptr)
+
+    if (name == nullptr || strtok(nullptr, " ") != nullptr)
     {
         printf(RED "Usage:" RESET " open ProjectName\n");
         return 1;
     }
-
-    openProject(name, env);
+    openP(name, env);
 
     return 0;
 }
 int parseDel()
 {
     char *name = strtok(nullptr, " ");
-    if (strtok(nullptr, " ") != nullptr)
+    if (name == nullptr || strtok(nullptr, " ") != nullptr)
     {
         printf(RED "Usage:" RESET " del ProjectName\n");
         return 1;
     }
-
-    delProject(name);
+    delP(name);
 
     return 0;
 }
@@ -167,22 +166,23 @@ int parseExitH(Env *env)
 }
 
 
-int newProject(char *name, bool ask)
+int newP(char *name, bool ask, Env *env)
 {
     //TODO: creare il progetto sul db
     //TODO: if ask, chiedi su stdin i settings
     //TODO: cambia working directory
+    //TODO: cambia l'env
     D_PRINT("MO SE CREA ER PROGETTO ~et");
     return 0;
 }
-int openProject(char *name, Env *env)
+int openP(char *name, Env *env)
 {
     //TODO: controllare se il progetto esiste nel db
     //TODO: in caso cambiare working directory e env
     D_PRINT("MO SE APRE IL PROGETTO ~et");
     return 0;
 }
-int delProject(char *name)
+int delP(char *name)
 {
     //TODO: controllare se esiste nel db
     //TODO: in caso cancellare ogni cosa
