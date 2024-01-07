@@ -2,7 +2,8 @@
 #define EDIX_MAIN_H
 
 #include <iostream>
-#include "homepage.cu"
+#include "homepage.h"
+#include "project.h"
 
 
 int inputLoop();

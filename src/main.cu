@@ -11,22 +11,24 @@ int main(int argc, char *argv[])
             inputLoop();
             break;
         default:
-            fprintf(stderr, "usage: ./edix\n");
+            fprintf(stderr, RED "usage:" RESET " ./edix\n");
             exit(EXIT_FAILURE);
     }
 
+    //TODO: fare tutte le cose da fare prima di chiudere
 
     return 0;
 }
 int inputLoop()
 {
-    size_t lineSize;
-    char *line;
+    size_t lineSize = 256;
+    char *line = (char *) malloc(256);
 
     size_t bytesRead;
     Env env = HOMEPAGE;
+    bool stop = false;
 
-    while ((bytesRead = getline(&line, &lineSize, stdin)) != -1)
+    while (!stop && ((int)(bytesRead = getline(&line, &lineSize, stdin))) != -1 )
     {
         line[bytesRead - 1] = '\0';
         switch (env)
@@ -35,10 +37,19 @@ int inputLoop()
                 parseHome(line, &env);
                 break;
             case PROJECT:
+                parseProj(line, &env);
+                break;
             case SETTINGS:
                 break;
+            case EXIT:
+                //Unreachable
+                break;
         }
+        if(env == EXIT)
+            stop = true;
     }
+
+    free(line);
 
     return 0;
 }

@@ -20,7 +20,8 @@ typedef enum
 {
     HOMEPAGE,
     PROJECT,
-    SETTINGS
+    SETTINGS,
+    EXIT
 } Env;
 
 #endif //EDIX_UTILS_H

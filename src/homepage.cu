@@ -27,11 +27,13 @@ bool isValidFlag(const char *flag)
 int parseHome(char *line, Env *env)
 {
     /**
-     *  4 comandi <p>
+     *  6 comandi <p>
      *  - new Name -m (crea il progetto) (-m sta per manuale) <p>
      *  - open Name (apre il progetto) <p>
      *  - del Name  (elimina il progetto) <p>
      *  - view      (visualizza tutti i progetti) <p>
+     *  - helpH      (lista dei comandi disponibili) <p>
+     *  - exitH      (esce da edix) <p>
      */
 
     char *copy = strdup(line);
@@ -46,8 +48,12 @@ int parseHome(char *line, Env *env)
         parseDel();
     else if (strcmp(token, "view") == 0)
         parseView();
+    else if (strcmp(token, "help") == 0)
+        parseHelpH();
+    else if (strcmp(token, "exit") == 0)
+        parseExitH(env);
     else
-        printf("Command not found\n");
+        printf(RED "Command not found\n" RESET);
 
 
     free(copy);
@@ -63,7 +69,7 @@ int parseNew(Env *env)
 
     if (token2 != nullptr && err != nullptr)
     {
-        printf("usage: new ProjectName [-m]\n");
+        printf(RED "usage:" RESET " new ProjectName [-m]\n");
         return 1;
     }
 
@@ -79,7 +85,7 @@ int parseNew(Env *env)
             name = token2;
         } else
         {
-            printf("usage: new ProjectName [-m]\n");
+            printf(RED "usage:" RESET " new ProjectName [-m]\n");
             return 1;
         }
 
@@ -97,7 +103,7 @@ int parseNew(Env *env)
         return 0;
     }
 
-    printf("usage: new ProjectName [-m]\n");
+    printf(RED "usage:" RESET " new ProjectName [-m]\n");
     return 1;
 }
 int parseOpen(Env *env)
@@ -105,7 +111,7 @@ int parseOpen(Env *env)
     char *name = strtok(nullptr, " ");
     if (strtok(nullptr, " ") != nullptr)
     {
-        printf("Usage: open ProjectName\n");
+        printf(RED "Usage:" RESET " open ProjectName\n");
         return 1;
     }
 
@@ -118,7 +124,7 @@ int parseDel()
     char *name = strtok(nullptr, " ");
     if (strtok(nullptr, " ") != nullptr)
     {
-        printf("Usage: del ProjectName\n");
+        printf(RED "Usage:" RESET " del ProjectName\n");
         return 1;
     }
 
@@ -130,11 +136,33 @@ int parseView()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        printf("Usage: view");
+        printf(RED "Usage:" RESET " view\n");
         return 1;
     }
 
     view();
+    return 0;
+}
+int parseHelpH()
+{
+    if (strtok(nullptr, " ") != nullptr)
+    {
+        printf(RED "Usage:" RESET " helpH\n");
+        return 1;
+    }
+
+    helpH();
+    return 0;
+}
+int parseExitH(Env *env)
+{
+    if (strtok(nullptr, " ") != nullptr)
+    {
+        printf(RED "Usage:" RESET " exitH\n");
+        return 1;
+    }
+
+    exitH(env);
     return 0;
 }
 
@@ -168,4 +196,17 @@ int view()
     //TODO: leggi dal db tutti i progetti e le varie info
 
     D_PRINT("ECCHETE LA VIEW ~et");
+    return 0;
+}
+int helpH()
+{
+    //TODO: scrivere la lista dei comandi
+    D_PRINT("Inserire qua la lista di comandi e cosa fanno");
+    return 0;
+}
+int exitH(Env *env)
+{
+    D_PRINT("Uscita in corso...");
+    *env = EXIT;
+    return 0;
 }
