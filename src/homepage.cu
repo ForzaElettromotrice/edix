@@ -200,10 +200,32 @@ int view()
 }
 int helpH()
 {
-    //TODO: scrivere la lista dei comandi
-    D_PRINT("Inserire qua la lista di comandi e cosa fanno");
+    D_PRINT("Ecco la lista dei comandi da poter eseguire qui sulla homepage:\n\n" 
+            "\tnewP\tCrea un nuovo progetto\n" 
+            "\topenP\tApri un progetto esistente\n" 
+            "\tdelP\tCancella un progetto esistente\n"
+            );
+
     return 0;
 }
+
+int banner() 
+{
+    D_PRINT(BOLD
+            "    _/_/_/_/        _/  _/  _/      _/\n"
+            "   _/          _/_/_/        _/  _/\n"
+            "  _/_/_/    _/    _/  _/      _/\n"
+            " _/        _/    _/  _/    _/  _/\n"
+            "_/_/_/_/    _/_/_/  _/  _/      _/\n\n"
+            RESET
+            "Benvenuto su EdiX :). Qui di seguito una lista dei comandi da utilizzare per iniziare a lavore:\n"
+            BOLD"  newP" RESET "\tCrea un nuovo progetto\n" 
+            BOLD"  openP" RESET "\tApri un progetto esistente\n" 
+            BOLD"  delP" RESET "\tCancella un progetto esistente\n");
+    
+    return 0;
+}
+
 int exitH(Env *env)
 {
     D_PRINT("Uscita in corso...");

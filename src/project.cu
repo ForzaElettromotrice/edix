@@ -278,8 +278,16 @@ int sett(Env *env)
 }
 int helpP()
 {
-    //TODO
-    D_PRINT("helpP");
+    D_PRINT("Ecco la lista dei comandi che puoi utilizzare all'interno del tuo progetto:\n"
+            BOLD "  ls" RESET "\tStampa il contenuto della directory\n"
+            BOLD "  tree" RESET "\tStampa il contenuto della directory in un formato ad albero\n"
+            BOLD "  cd" RESET "\tCambia directory\n"
+            BOLD "  loadI" RESET "\tCarica un'immagine\n"
+            BOLD "  rm" RESET "\tRimuovi un file\n"
+            BOLD "  mkdir" RESET "\tCrea una directory\n"
+            BOLD "  rmdir" RESET "\tRimuovi una directory\n"
+            BOLD "  mv" RESET "\tSposta un file o lo rinomina\n"
+            BOLD "  sett" RESET "\tAccedi ai setting\n");
     return 0;
 }
 int exitP(Env *env)
