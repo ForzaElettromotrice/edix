@@ -208,10 +208,15 @@ int parseSett(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
+<<<<<<< HEAD
         handle_error(RED "Usage:" RESET " sett\n");
+=======
+        printf(RED "Usage:" RESET " settings\n");
+        return 1;
+>>>>>>> 4cd0eade25eb2d34074807c924ebf1bfc06817d3
     }
 
-    sett(env);
+    settings(env);
 
     return 0;
 }
@@ -297,10 +302,10 @@ int mv(char *fromPath, char *toPath)
     D_PRINT("mv");
     return 0;
 }
-int sett(Env *env)
+int settings(Env *env)
 {
     //TODO
-    D_PRINT("sett");
+    D_PRINT("settings");
     return 0;
 }
 int helpP()

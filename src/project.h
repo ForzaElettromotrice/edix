@@ -34,7 +34,7 @@ int rm(char *name);
 int mkdir(char *name);
 int rmdir(char *name);
 int mv(char *fromPath, char *toPath);
-int sett(Env *env);
+int settings(Env *env);
 int helpP();
 int exitP(Env *env);
 

@@ -4,8 +4,10 @@
 #include <iostream>
 #include "homepage.h"
 #include "project.h"
+#include "temp.h"
 
 
 int inputLoop();
+int setup();
 
 #endif
