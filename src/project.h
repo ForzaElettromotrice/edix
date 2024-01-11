@@ -7,8 +7,10 @@
 
 #include <iostream>
 #include "utils.h"
+#include <stdlib.h>
 
 //UTILS
+int isPathIn(const char *, const char *);
 
 //PARSERS
 int parseProj(char *line, Env *env);

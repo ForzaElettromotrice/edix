@@ -3,7 +3,6 @@
 //
 
 #include "project.h"
-#include <stdlib.h>
 
 int parseProj(char *line, Env *env)
 {
@@ -208,12 +207,7 @@ int parseSett(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-<<<<<<< HEAD
-        handle_error(RED "Usage:" RESET " sett\n");
-=======
-        printf(RED "Usage:" RESET " settings\n");
-        return 1;
->>>>>>> 4cd0eade25eb2d34074807c924ebf1bfc06817d3
+        handle_error(RED "Usage:" RESET " settings\n");
     }
 
     settings(env);
