@@ -201,9 +201,9 @@ int view()
 int helpH()
 {
     D_PRINT("Ecco la lista dei comandi da poter eseguire qui sulla homepage:\n\n" 
-            "\tnewP\tCrea un nuovo progetto\n" 
-            "\topenP\tApri un progetto esistente\n" 
-            "\tdelP\tCancella un progetto esistente\n"
+            BOLD "  newP" RESET "\tCrea un nuovo progetto\n" 
+            BOLD "  openP" RESET "\tApri un progetto esistente\n" 
+            BOLD "  delP" RESET "\tCancella un progetto esistente\n"
             );
 
     return 0;
