@@ -188,11 +188,11 @@ int parseSett(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " sett\n");
+        printf(RED "Usage:" RESET " settings\n");
         return 1;
     }
 
-    sett(env);
+    settings(env);
 
     return 0;
 }
@@ -270,10 +270,10 @@ int mv(char *fromPath, char *toPath)
     D_PRINT("mv");
     return 0;
 }
-int sett(Env *env)
+int settings(Env *env)
 {
     //TODO
-    D_PRINT("sett");
+    D_PRINT("settings");
     return 0;
 }
 int helpP()

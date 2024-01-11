@@ -179,6 +179,7 @@ int openP(char *name, Env *env)
 {
     //TODO: controllare se il progetto esiste nel db
     //TODO: in caso cambiare working directory e env
+    //TODO: carica su redis tutto quanto (dix, settings, ??)
     D_PRINT("MO SE APRE IL PROGETTO ~et");
     return 0;
 }
