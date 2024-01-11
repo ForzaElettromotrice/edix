@@ -9,6 +9,9 @@
 #define D_PRINT(format, ...) \
         if(DEBUG)            \
             printf(YELLOW "DEBUG: " RESET format "\n", ##__VA_ARGS__)
+#define handle_error(msg) \
+    perror(msg);\
+    return(EXIT_FAILURE)
 
 #define RED     "\033[1;31m"
 #define GREEN   "\033[1;32m"

@@ -3,6 +3,7 @@
 //
 
 #include "project.h"
+#include <stdlib.h>
 
 int parseProj(char *line, Env *env)
 {
@@ -60,11 +61,14 @@ int parseLs(char *line)
 
     if (strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " ls [path]\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " ls [path]\n");
     }
 
-    //TODO: controlla se il path è dentro alla dir del progetto (per questioni di sicurezza)
+    //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
+    int res = isPathIn(path, nullptr);
+    if (res != 0) {
+        handle_error("Il path non si trova all'interno del progetto");
+    }
 
     ls(path);
 
@@ -76,11 +80,14 @@ int parseTree(char *line)
 
     if (strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " tree [path]\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " tree [path]\n");
     }
 
-    //TODO: controlla se il path è dentro alla dir del progetto (per questioni di sicurezza)
+    //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
+    int res = isPathIn(path, nullptr);
+    if (res != 0) {
+        handle_error("Il path non si trova all'interno del progetto");
+    }
 
     tree(path);
 
@@ -92,11 +99,14 @@ int parseCd(char *line)
 
     if (strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " cd nameDir\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " cd nameDir\n");
     }
 
-    //TODO: controlla se il path è dentro alla dir del progetto (per questioni di sicurezza)
+    //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
+    int res = isPathIn(path, nullptr);
+    if (res != 0) {
+        handle_error("Il path non si trova all'interno del progetto");
+    }
 
     cd(path);
 
@@ -108,8 +118,7 @@ int parseLoad(char *line)
 
     if ( path != nullptr || strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " load pathToFile\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " load pathToFile\n");
     }
 
     //TODO: controlla se il file è un png/jpeg/ppm
@@ -124,11 +133,14 @@ int parseRm(char *line)
 
     if ( path != nullptr || strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " rm filename\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " rm filename\n");
     }
 
-    //TODO: controlla se il path è dentro alla dir del progetto (per questioni di sicurezza)
+    //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
+    int res = isPathIn(path, nullptr);
+    if (res != 0) {
+        handle_error("Il path non si trova all'interno del progetto");
+    }
 
     rm(path);
 
@@ -140,11 +152,14 @@ int parseMkdir(char *line)
 
     if (name != nullptr || strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " mkdir dirname\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " mkdir dirname\n");
     }
 
-    //TODO: controlla se il name è dentro alla dir del progetto (per questioni di sicurezza)
+    //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
+    int res = isPathIn(name, nullptr);
+    if (res != 0) {
+        handle_error("Il path non si trova all'interno del progetto");
+    }
 
     mkdir(name);
 
@@ -156,11 +171,14 @@ int parseRmdir(char *line)
 
     if (name != nullptr || strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " rmdir dirname\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " rmdir dirname\n");
     }
 
-    //TODO: controlla se il path è dentro alla dir del progetto (per questioni di sicurezza)
+    //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
+    int res = isPathIn(name, nullptr);
+    if (res != 0) {
+        handle_error("Il path non si trova all'interno del progetto");
+    }
 
     rmdir(name);
 
@@ -168,19 +186,21 @@ int parseRmdir(char *line)
 }
 int parseMv(char *line)
 {
-    char *path1 = strtok(nullptr, " ");
-    char *path2 = strtok(nullptr, " ");
+    char *pathSrc = strtok(nullptr, " ");
+    char *pathDst = strtok(nullptr, " ");
 
 
-    if ((path1 != nullptr && path2 != nullptr) || strtok(nullptr, " ") != nullptr)
+    if ((pathSrc != nullptr && pathDst != nullptr) || strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " mv fromPath toPath\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " mv fromPath toPath\n");
     }
 
-    //TODO: controlla se il path di destinazione è dentro alla dir del progetto (per questioni di sicurezza)
-
-    mv(path1, path2);
+    //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
+    int res = isPathIn(pathDst, nullptr);
+    if (res != 0) {
+        handle_error("Il path non si trova all'interno del progetto");
+    }
+    mv(pathSrc, pathDst);
 
     return 0;
 }
@@ -188,8 +208,7 @@ int parseSett(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " sett\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " sett\n");
     }
 
     sett(env);
@@ -200,8 +219,7 @@ int parseHelpP()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " help\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " help\n");
     }
 
     helpP();
@@ -212,8 +230,7 @@ int parseExitP(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " exit\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " exit\n");
     }
 
     exitP(env);
@@ -224,8 +241,18 @@ int parseExitP(Env *env)
 
 int ls(char *path)
 {
-    //TODO
-    D_PRINT("ls");
+    // Il comando da eseguire
+    char comm[256];
+    // Controlla che path non sia nullptr
+    if (path == nullptr) { path = "."; }
+    // Salva il comando in comm
+    sprintf(comm, "ls %s", path);
+    // Esegui il comando
+    int status = system(comm);
+    // Controlla se ci sono errori
+    if (status == -1) {
+        handle_error("Errore nell'esecuzione del comando ls");
+    }
     return 0;
 }
 int tree(char *path)
@@ -295,4 +322,19 @@ int exitP(Env *env)
     //TODO
     D_PRINT("exitP");
     return 0;
+}
+
+// Controlla che path sia all'interno di pathProj
+int isPathIn(const char *path, const char *pathProj) {
+    // Prendi il percorso assoluto di path
+    char *absPath = realpath(path, nullptr);
+    // Controlla che ci siano errori
+    if (absPath == nullptr)
+    {
+        handle_error("Errore nella risoluzione del percorso");
+    }
+    // Confrontalo con il path del progetto
+    int res = strncmp(absPath, pathProj, strlen(pathProj));
+
+    return res;
 }

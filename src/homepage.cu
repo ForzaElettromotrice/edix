@@ -71,8 +71,7 @@ int parseNew(Env *env)
 
     if (token1 == nullptr || (token2 != nullptr && err != nullptr) )
     {
-        printf(RED "usage:" RESET " new ProjectName [-m]\n");
-        return 1;
+        handle_error(RED "usage:" RESET " new ProjectName [-m]\n");
     }
 
     if (token2 != nullptr)
@@ -87,8 +86,7 @@ int parseNew(Env *env)
             name = token2;
         } else
         {
-            printf(RED "usage:" RESET " new ProjectName [-m]\n");
-            return 1;
+            handle_error(RED "usage:" RESET " new ProjectName [-m]\n");
         }
 
 
@@ -103,8 +101,7 @@ int parseNew(Env *env)
         return 0;
     }
 
-    printf(RED "usage:" RESET " new ProjectName [-m]\n");
-    return 1;
+    handle_error(RED "usage:" RESET " new ProjectName [-m]\n");
 }
 int parseOpen(Env *env)
 {
@@ -112,8 +109,7 @@ int parseOpen(Env *env)
 
     if (name == nullptr || strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " open ProjectName\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " open ProjectName\n");
     }
     openP(name, env);
 
@@ -124,8 +120,7 @@ int parseDel()
     char *name = strtok(nullptr, " ");
     if (name == nullptr || strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " del ProjectName\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " del ProjectName\n");
     }
     delP(name);
 
@@ -135,8 +130,7 @@ int parseView()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " view\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " view\n");  
     }
 
     view();
@@ -146,8 +140,7 @@ int parseHelpH()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " helpH\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " helpH\n");
     }
 
     helpH();
@@ -157,8 +150,7 @@ int parseExitH(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        printf(RED "Usage:" RESET " exitH\n");
-        return 1;
+        handle_error(RED "Usage:" RESET " exitH\n");
     }
 
     exitH(env);
