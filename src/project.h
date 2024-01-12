@@ -6,8 +6,9 @@
 #define EDIX_PROJECT_CH
 
 #include <iostream>
+#include <cstring>
+#include <cstdlib>
 #include "utils.h"
-#include <stdlib.h>
 
 //UTILS
 int isPathIn(const char *, const char *);

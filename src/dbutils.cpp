@@ -27,7 +27,6 @@ bool checkDatabaseExists(PGconn *conn, const char *dbName) {
 
 int initDb()
 {
-
     D_PRINT("Creating database...");
     system("createdb edix -O edix > /dev/null");
 
@@ -65,6 +64,7 @@ int initDb()
     system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP PRIMARY KEY NOT NULL,Project INT NOT NULL,CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Id));\" > /dev/null");
     D_PRINT("Creating table Photo...");
     system("psql -d edix -U edix -c \"CREATE TABLE Photo (Id SERIAL PRIMARY KEY NOT NULL,Name VARCHAR(50) NOT NULL,Path VARCHAR(256) NOT NULL,Comp Compx NOT NULL,Project INT,Dix TIMESTAMP,CONSTRAINT V7 FOREIGN KEY (Project) REFERENCES Project(Id),CONSTRAINT V8 FOREIGN KEY (Dix) REFERENCES Dix(Instant),CONSTRAINT V9 CHECK ((Project IS NOT NULL AND Dix IS NULL) OR (Project IS NULL AND Dix IS NOT NULL)));\" > /dev/null");
+
 
     return 0;
 }

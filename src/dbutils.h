@@ -6,6 +6,8 @@
 #define EDIX_DBUTILS_H
 
 #include <libpq-fe.h>
+
+#include <cstdlib>
 #include "utils.h"
 
 

@@ -6,6 +6,7 @@
 #define EDIX_HOMEPAGE_H
 
 #include <iostream>
+#include <cstring>
 #include "utils.h"
 
 
@@ -31,4 +32,4 @@ int view();
 int helpH();
 int exitH(Env *env);
 
-#endif //PHOTOEDITOR_HOMEPAGE_H
+#endif //EDIX_HOMEPAGE_H

@@ -6,6 +6,7 @@
 #define EDIX_SETTINGS_H
 
 #include <iostream>
+#include <cstring>
 #include "utils.h"
 
 //PARSERS
