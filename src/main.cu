@@ -4,6 +4,7 @@
 int main(int argc, char *argv[])
 {
     checkDb();
+    banner();
     // TODO: magari puoi aprire direttamente un progetto passandolo come argomento
     switch (argc)
     {

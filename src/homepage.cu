@@ -23,6 +23,22 @@ bool isValidFlag(const char *flag)
 {
     return flag[0] == '-' && flag[1] == 'm';
 }
+int banner()
+{
+    D_PRINT(BOLD
+                    "    _/_/_/_/        _/  _/  _/      _/\n"
+                    "   _/          _/_/_/        _/  _/\n"
+                    "  _/_/_/    _/    _/  _/      _/\n"
+                    " _/        _/    _/  _/    _/  _/\n"
+                    "_/_/_/_/    _/_/_/  _/  _/      _/\n\n"
+                    RESET
+                    "Benvenuto su EdiX :). Qui di seguito una lista dei comandi da utilizzare per iniziare a lavore:\n"
+                    BOLD"  newP" RESET "\tCrea un nuovo progetto\n"
+                    BOLD"  openP" RESET "\tApri un progetto esistente\n"
+                    BOLD"  delP" RESET "\tCancella un progetto esistente\n");
+
+    return 0;
+}
 
 int parseHome(char *line, Env *env)
 {
@@ -202,22 +218,7 @@ int helpH()
     return 0;
 }
 
-int banner() 
-{
-    D_PRINT(BOLD
-            "    _/_/_/_/        _/  _/  _/      _/\n"
-            "   _/          _/_/_/        _/  _/\n"
-            "  _/_/_/    _/    _/  _/      _/\n"
-            " _/        _/    _/  _/    _/  _/\n"
-            "_/_/_/_/    _/_/_/  _/  _/      _/\n\n"
-            RESET
-            "Benvenuto su EdiX :). Qui di seguito una lista dei comandi da utilizzare per iniziare a lavore:\n"
-            BOLD"  newP" RESET "\tCrea un nuovo progetto\n" 
-            BOLD"  openP" RESET "\tApri un progetto esistente\n" 
-            BOLD"  delP" RESET "\tCancella un progetto esistente\n");
-    
-    return 0;
-}
+
 
 int exitH(Env *env)
 {
