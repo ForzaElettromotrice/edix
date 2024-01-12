@@ -4,7 +4,7 @@
 
 #include "settings.h"
 
-int parseProj(char *line, Env *env)
+int parseSettings(char *line, Env *env)
 {
     /**
      *  3 comandi                                   <p>

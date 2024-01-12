@@ -25,7 +25,7 @@ bool isValidFlag(const char *flag)
 }
 int banner()
 {
-    D_PRINT(BOLD
+    printf(BOLD
                     "    _/_/_/_/        _/  _/  _/      _/\n"
                     "   _/          _/_/_/        _/  _/\n"
                     "  _/_/_/    _/    _/  _/      _/\n"

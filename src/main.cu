@@ -32,6 +32,8 @@ int inputLoop()
 
     while (!stop && ((int)(bytesRead = getline(&line, &lineSize, stdin))) != -1 )
     {
+        if(bytesRead == 1) continue;
+
         line[bytesRead - 1] = '\0';
         switch (env)
         {
@@ -42,6 +44,7 @@ int inputLoop()
                 parseProj(line, &env);
                 break;
             case SETTINGS:
+                parseSettings(line, &env);
                 break;
             case EXIT:
                 //Unreachable
