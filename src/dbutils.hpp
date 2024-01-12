@@ -16,6 +16,7 @@ int initDb();
 int checkDb();
 int loadProjectOnRedis(char *projectName);
 int upload_to_redis(int id, char *tup, char *mod_ex, char *comp, unsigned int tts, char *tpp, bool vcs, int project);
+int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *modEx, uint TTS, bool VCS);
 
 
 //UTILS

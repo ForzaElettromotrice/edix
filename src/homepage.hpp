@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <cstring>
+#include "dbutils.hpp"
 #include "utils.hpp"
 
 
@@ -14,6 +15,7 @@
 bool isValidName(char *name);
 bool isValidFlag(const char *flag);
 int banner();
+int askParams(char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *vcs);
 
 //PARSERS
 int parseHome(char *line, Env *env);

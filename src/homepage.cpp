@@ -26,18 +26,23 @@ bool isValidFlag(const char *flag)
 int banner()
 {
     printf(BOLD
-                    "    _/_/_/_/        _/  _/  _/      _/\n"
-                    "   _/          _/_/_/        _/  _/\n"
-                    "  _/_/_/    _/    _/  _/      _/\n"
-                    " _/        _/    _/  _/    _/  _/\n"
-                    "_/_/_/_/    _/_/_/  _/  _/      _/\n\n"
-                    RESET
-                    "Benvenuto su EdiX :). Qui di seguito una lista dei comandi da utilizzare per iniziare a lavore:\n"
-                    BOLD"  newP" RESET "\tCrea un nuovo progetto\n"
-                    BOLD"  openP" RESET "\tApri un progetto esistente\n"
-                    BOLD"  delP" RESET "\tCancella un progetto esistente\n");
+           "    _/_/_/_/        _/  _/  _/      _/\n"
+           "   _/          _/_/_/        _/  _/\n"
+           "  _/_/_/    _/    _/  _/      _/\n"
+           " _/        _/    _/  _/    _/  _/\n"
+           "_/_/_/_/    _/_/_/  _/  _/      _/\n\n"
+           RESET
+           "Benvenuto su EdiX :). Qui di seguito una lista dei comandi da utilizzare per iniziare a lavore:\n"
+           BOLD"  newP" RESET "\tCrea un nuovo progetto\n"
+           BOLD"  openP" RESET "\tApri un progetto esistente\n"
+           BOLD"  delP" RESET "\tCancella un progetto esistente\n");
 
     return 0;
+}
+int askParams(char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *vcs)
+{
+    //TODO
+    return *vcs;
 }
 
 int parseHome(char *line, Env *env)
@@ -85,7 +90,7 @@ int parseNew(Env *env)
     char *err = strtok(nullptr, " ");
 
 
-    if (token1 == nullptr || (token2 != nullptr && err != nullptr) )
+    if (token1 == nullptr || (token2 != nullptr && err != nullptr))
     {
         handle_error(RED "usage:" RESET " new ProjectName [-m]\n");
     }
@@ -146,7 +151,7 @@ int parseView()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " view\n");  
+        handle_error(RED "Usage:" RESET " view\n");
     }
 
     view();
@@ -180,7 +185,27 @@ int newP(char *name, bool ask, Env *env)
     //TODO: if ask, chiedi su stdin i settings
     //TODO: cambia working directory
     //TODO: cambia l'env
-    D_PRINT("MO SE CREA ER PROGETTO ~et\n");
+
+    //TODO: fare i controlli
+    //TODO: creare cartella default dei progetti
+    char path[256];
+    char comp[5] = "PPM";
+    char tpp[16] = "Serial";
+    char tup[16] = "Bilinear";
+    char modEx[16] = "Immediate";
+    uint tts = 600;
+    bool vcs = false;
+    sprintf(path, "~/EdixProjects/%s", name);
+
+    if (ask)
+        if (!askParams(path, comp, tpp, tup, modEx, &tts, &vcs))
+        {
+            fprintf(stderr, "Errore inserimento parametri!\n");
+            return EXIT_FAILURE;
+        }
+
+    addProject(name, path, comp, tpp, tup, modEx, tts, vcs);
+
     return 0;
 }
 int openP(char *name, Env *env)
@@ -210,17 +235,14 @@ int view()
 int helpH()
 {
     //TODO AGGIUNGERE TUTTI I COMANDI CON LE CAZZO DI INFO
-    D_PRINT("Ecco la lista dei comandi da poter eseguire qui sulla homepage:\n\n" 
-            BOLD "  new" RESET "\tCrea un nuovo progetto\n"
-            BOLD "  open" RESET "\tApri un progetto esistente\n"
-            BOLD "  del" RESET "\tCancella un progetto esistente\n"
-            );
+    D_PRINT("Ecco la lista dei comandi da poter eseguire qui sulla homepage:\n\n"
+                    BOLD "  new" RESET "\tCrea un nuovo progetto\n"
+                    BOLD "  open" RESET "\tApri un progetto esistente\n"
+                    BOLD "  del" RESET "\tCancella un progetto esistente\n"
+    );
 
     return 0;
 }
-
-
-
 int exitH(Env *env)
 {
     D_PRINT("Uscita in corso...\n");

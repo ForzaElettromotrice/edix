@@ -115,6 +115,46 @@ int initDb()
 }
 
 
+int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *modEx, uint TTS, bool VCS)
+{
+    PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
+
+    // Verifica lo stato della connessione
+    if (PQstatus(conn) != CONNECTION_OK)
+    {
+        PQfinish(conn);
+        fprintf(stderr, "Errore di connessione: %s\n", PQerrorMessage(conn));
+        return 1;
+    }
+
+    char query[1024];
+    sprintf(query, "BEGIN;\n"
+                   "DO $$\n"
+                   "DECLARE\n"
+                   "projectId INT;\n"
+                   "settingsId INT;\n"
+                   "BEGIN\n"
+                   "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), %s, 1) RETURNING Id INTO projectId;\n"
+                   "INSERT INTO Settings_p (TUP, Mod_ex, Comp, TTS, TPP, VCS, Project) VALUES ('%s', '%s', '%s', %d, '%s', %s, projectId) RETURNING Id INTO settingsId;\n"
+                   "UPDATE Project SET Settings = settingsId WHERE Id = projectId;\n"
+                   "END $$;\n"
+                   "COMMIT;\n", name, path, TUP, modEx, comp, TTS, TPP, VCS ? "TRUE" : "FALSE");
+
+    PGresult *res = PQexec(conn, query);
+
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQerrorMessage(conn));
+        PQclear(res);
+        PQfinish(conn);
+        return 1;
+    }
+
+    PQclear(res);
+    PQfinish(conn);
+    return 0;
+}
+
 int get_check(char *name, redisReply *reply, redisContext *context)
 {
     if (reply == nullptr)
