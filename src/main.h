@@ -4,10 +4,16 @@
 #include <iostream>
 #include "homepage.h"
 #include "project.h"
-#include "temp.h"
+#include "settings.h"
+#include "dbutils.h"
 
 
+
+
+
+
+//MAIN
 int inputLoop();
-int setup();
+
 
 #endif

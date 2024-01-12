@@ -17,29 +17,29 @@ int parseProj(char *line, Env *env)
      *  - rmdir     (rimuove una cartella)          <p>
      *  - mv        (sposta un immagine o cartella) <p>
      *  - settings  (apre i settings)               <p>
-     *  - helpH     (lista dei comandi disponibili) <p>
-     *  - exitH     (esce dal progetto)             <p>
+     *  - help     (lista dei comandi disponibili) <p>
+     *  - exit     (esce dal progetto)             <p>
      */
     char *copy = strdup(line);
     char *token = strtok(copy, " ");
 
 
     if (strcmp(token, "ls") == 0)
-        parseLs(line);
+        parseLs();
     else if (strcmp(token, "tree") == 0)
-        parseTree(line);
+        parseTree();
     else if (strcmp(token, "cd") == 0)
-        parseCd(line);
+        parseCd();
     else if (strcmp(token, "load") == 0)
-        parseLoad(line);
+        parseLoad();
     else if (strcmp(token, "rm") == 0)
-        parseRm(line);
+        parseRm();
     else if (strcmp(token, "mkdir") == 0)
-        parseMkdir(line);
+        parseMkdir();
     else if (strcmp(token, "rmdir") == 0)
-        parseRmdir(line);
+        parseRmdir();
     else if (strcmp(token, "mv") == 0)
-        parseMv(line);
+        parseMv();
     else if (strcmp(token, "settings") == 0)
         parseSett(env);
     else if (strcmp(token, "help") == 0)
@@ -54,7 +54,7 @@ int parseProj(char *line, Env *env)
     return 0;
 }
 
-int parseLs(char *line)
+int parseLs()
 {
     char *path = strtok(nullptr, " ");
 
@@ -73,7 +73,7 @@ int parseLs(char *line)
 
     return 0;
 }
-int parseTree(char *line)
+int parseTree()
 {
     char *path = strtok(nullptr, " ");
 
@@ -92,7 +92,7 @@ int parseTree(char *line)
 
     return 0;
 }
-int parseCd(char *line)
+int parseCd()
 {
     char *path = strtok(nullptr, " ");
 
@@ -111,7 +111,7 @@ int parseCd(char *line)
 
     return 0;
 }
-int parseLoad(char *line)
+int parseLoad()
 {
     char *path = strtok(nullptr, " ");
 
@@ -126,7 +126,7 @@ int parseLoad(char *line)
 
     return 0;
 }
-int parseRm(char *line)
+int parseRm()
 {
     char *path = strtok(nullptr, " ");
 
@@ -145,7 +145,7 @@ int parseRm(char *line)
 
     return 0;
 }
-int parseMkdir(char *line)
+int parseMkdir()
 {
     char *name = strtok(nullptr, " ");
 
@@ -164,7 +164,7 @@ int parseMkdir(char *line)
 
     return 0;
 }
-int parseRmdir(char *line)
+int parseRmdir()
 {
     char *name = strtok(nullptr, " ");
 
@@ -183,7 +183,7 @@ int parseRmdir(char *line)
 
     return 0;
 }
-int parseMv(char *line)
+int parseMv()
 {
     char *pathSrc = strtok(nullptr, " ");
     char *pathDst = strtok(nullptr, " ");
@@ -238,11 +238,11 @@ int parseExitP(Env *env)
 }
 
 
-int ls(char *path)
+int ls(const char *path)
 {
     // Il comando da eseguire
     char comm[256];
-    // Salva il comando in comm e controlla che non sia nullptr
+    // Salva il comando in comm
     sprintf(comm, "ls %s", path == nullptr ? "." : path);
     // Esegui il comando
     int status = system(comm);

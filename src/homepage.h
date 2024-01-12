@@ -12,6 +12,7 @@
 //UTILS
 bool isValidName(char *name);
 bool isValidFlag(const char *flag);
+int banner();
 
 //PARSERS
 int parseHome(char *line, Env *env);

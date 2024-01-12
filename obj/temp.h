@@ -5,10 +5,10 @@
 #ifndef EDIX_TEMP_H
 #define EDIX_TEMP_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <libpq-fe.h>
-#include <hiredis/hiredis.h>
+#include "../../../../../usr/include/stdio.h"
+#include "../../../../../usr/lib/gcc/x86_64-pc-linux-gnu/12.3.0/include/c++/stdlib.h"
+#include "../../../../../usr/include/libpq-fe.h"
+#include "../../../../../usr/include/hiredis/hiredis.h"
 
 enum Modex_t{
     IMMEDIATE,

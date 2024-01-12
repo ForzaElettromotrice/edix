@@ -15,21 +15,21 @@ int isValidImage(char *path);
 
 //PARSERS
 int parseProj(char *line, Env *env);
-int parseLs(char *line);
-int parseTree(char *line);
-int parseCd(char *line);
-int parseLoad(char *line);
-int parseRm(char *line);
-int parseMkdir(char *line);
-int parseRmdir(char *line);
-int parseMv(char *line);
+int parseLs();
+int parseTree();
+int parseCd();
+int parseLoad();
+int parseRm();
+int parseMkdir();
+int parseRmdir();
+int parseMv();
 int parseSett(Env *env);
 int parseHelpP();
 int parseExitP(Env *env);
 
 
 //COMMANDS
-int ls(char *path);
+int ls(const char *path);
 int tree(char *path);
 int cd(char *path);
 int loadI(char *path);

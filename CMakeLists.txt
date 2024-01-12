@@ -7,4 +7,6 @@ add_executable(edix
         src/main.cu
         src/homepage.cu
         src/project.cu
-        src/temp.cu)
+        obj/temp.cu
+        src/dbutils.cu
+        src/settings.cu)
