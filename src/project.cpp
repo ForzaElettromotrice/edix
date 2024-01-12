@@ -179,7 +179,7 @@ int parseRmdir()
         handle_error("Il path non si trova all'interno del progetto");
     }
 
-    rmdir(name);
+    rm(name);
 
     return 0;
 }
