@@ -354,11 +354,12 @@ int mv(char *fromPath, char *toPath)
 int settings(Env *env)
 {
     //TODO
-    D_PRINT("settings");
+    D_PRINT("settings\n");
     return 0;
 }
 int helpP()
 {
+    //TODO METTERE TUTTI I COMANDI DETTAGLIATI PORCA MADONNA
     D_PRINT("Ecco la lista dei comandi che puoi utilizzare all'interno del tuo progetto:\n"
             BOLD "  ls" RESET "\tStampa il contenuto della directory\n"
             BOLD "  tree" RESET "\tStampa il contenuto della directory in un formato ad albero\n"
@@ -374,7 +375,7 @@ int helpP()
 int exitP(Env *env)
 {
     //TODO
-    D_PRINT("exitP");
+    D_PRINT("exitP\n");
     return 0;
 }
 

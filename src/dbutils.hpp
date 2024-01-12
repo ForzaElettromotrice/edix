@@ -6,17 +6,26 @@
 #define EDIX_DBUTILS_HPP
 
 #include <libpq-fe.h>
-
+#include <hiredis/hiredis.h>
 #include <cstdlib>
+#include <cstring>
 #include "utils.hpp"
-
-
-//UTILS
-bool checkRoleExists(PGconn *conn, const char *roleName);
-bool checkDatabaseExists(PGconn *conn, const char *dbName);
 
 
 int initDb();
 int checkDb();
+int loadProjectOnRedis(char *projectName);
+int upload_to_redis(int id, char *tup, char *mod_ex, char *comp, unsigned int tts, char *tpp, bool vcs, int project);
+
+
+//UTILS
+int get_project_id(char *projectName, char **ID);
+int get_check(char *name, redisReply *reply, redisContext *context);
+int set_check(char *name, redisReply *reply, redisContext *context);
+char **get_settings(PGconn *conn, char *projectId);
+
+bool checkRoleExists(PGconn *conn, const char *roleName);
+bool checkDatabaseExists(PGconn *conn, const char *dbName);
+
 
 #endif //EDIX_DBUTILS_HPP

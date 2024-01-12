@@ -29,9 +29,9 @@ int inputLoop()
     Env env = HOMEPAGE;
     bool stop = false;
 
-    while (!stop && ((int)(bytesRead = getline(&line, &lineSize, stdin))) != -1 )
+    while (!stop && ((int) (bytesRead = getline(&line, &lineSize, stdin))) != -1)
     {
-        if(bytesRead == 1) continue;
+        if (bytesRead == 1) continue;
 
         line[bytesRead - 1] = '\0';
         switch (env)
@@ -49,7 +49,7 @@ int inputLoop()
                 //Unreachable
                 break;
         }
-        if(env == EXIT)
+        if (env == EXIT)
             stop = true;
     }
 

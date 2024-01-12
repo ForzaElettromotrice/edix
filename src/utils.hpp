@@ -8,7 +8,7 @@
 #define DEBUG 1
 #define D_PRINT(format, ...) \
         if(DEBUG)            \
-            printf(YELLOW "DEBUG: " RESET format "\n", ##__VA_ARGS__)
+            printf(YELLOW "DEBUG: " RESET format, ##__VA_ARGS__)
 #define handle_error(msg) \
     perror(msg);\
     return(EXIT_FAILURE)

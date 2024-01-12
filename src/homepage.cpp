@@ -12,7 +12,7 @@ bool isValidName(char *word)
         if (!isalnum(word[i]) && word[i] != '_')
         {
             //TODO: fare i print carini
-            D_PRINT("Invalid character %c", word[i]);
+            D_PRINT("Invalid character %c\n", word[i]);
             return false;
         }
     }
@@ -112,7 +112,7 @@ int parseNew(Env *env)
 
     } else if (isValidName(token1))
     {
-        D_PRINT("Ok buon lavoro! ~et");
+        D_PRINT("Ok buon lavoro! ~et\n");
         newP(token1, false, env);
         return 0;
     }
@@ -180,7 +180,7 @@ int newP(char *name, bool ask, Env *env)
     //TODO: if ask, chiedi su stdin i settings
     //TODO: cambia working directory
     //TODO: cambia l'env
-    D_PRINT("MO SE CREA ER PROGETTO ~et");
+    D_PRINT("MO SE CREA ER PROGETTO ~et\n");
     return 0;
 }
 int openP(char *name, Env *env)
@@ -188,7 +188,7 @@ int openP(char *name, Env *env)
     //TODO: controllare se il progetto esiste nel db
     //TODO: in caso cambiare working directory e env
     //TODO: carica su redis tutto quanto (dix, settings, ??)
-    D_PRINT("MO SE APRE IL PROGETTO ~et");
+    D_PRINT("MO SE APRE IL PROGETTO ~et\n");
     return 0;
 }
 int delP(char *name)
@@ -196,7 +196,7 @@ int delP(char *name)
     //TODO: controllare se esiste nel db
     //TODO: in caso cancellare ogni cosa
 
-    D_PRINT("MO TE CANCELLO LA VITA ~et");
+    D_PRINT("MO TE CANCELLO LA VITA ~et\n");
 
     return 0;
 }
@@ -204,15 +204,16 @@ int view()
 {
     //TODO: leggi dal db tutti i progetti e le varie info
 
-    D_PRINT("ECCHETE LA VIEW ~et");
+    D_PRINT("ECCHETE LA VIEW ~et\n");
     return 0;
 }
 int helpH()
 {
+    //TODO AGGIUNGERE TUTTI I COMANDI CON LE CAZZO DI INFO
     D_PRINT("Ecco la lista dei comandi da poter eseguire qui sulla homepage:\n\n" 
-            BOLD "  newP" RESET "\tCrea un nuovo progetto\n" 
-            BOLD "  openP" RESET "\tApri un progetto esistente\n" 
-            BOLD "  delP" RESET "\tCancella un progetto esistente\n"
+            BOLD "  new" RESET "\tCrea un nuovo progetto\n"
+            BOLD "  open" RESET "\tApri un progetto esistente\n"
+            BOLD "  del" RESET "\tCancella un progetto esistente\n"
             );
 
     return 0;
@@ -222,7 +223,7 @@ int helpH()
 
 int exitH(Env *env)
 {
-    D_PRINT("Uscita in corso...");
+    D_PRINT("Uscita in corso...\n");
     *env = EXIT;
     return 0;
 }
