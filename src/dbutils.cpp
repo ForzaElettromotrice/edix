@@ -2,7 +2,7 @@
 // Created by f3m on 12/01/24.
 //
 
-#include "dbutils.h"
+#include "dbutils.hpp"
 
 bool checkRoleExists(PGconn *conn, const char *roleName) {
     char query[256];

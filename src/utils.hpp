@@ -2,8 +2,8 @@
 // Created by f3m on 30/12/23.
 //
 
-#ifndef EDIX_UTILS_H
-#define EDIX_UTILS_H
+#ifndef EDIX_UTILS_HPP
+#define EDIX_UTILS_HPP
 
 #define DEBUG 1
 #define D_PRINT(format, ...) \
@@ -28,4 +28,4 @@ typedef enum
     EXIT
 } Env;
 
-#endif //EDIX_UTILS_H
+#endif //EDIX_UTILS_HPP

@@ -6,15 +6,15 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(SOURCE_FILES
         src/dbutils.cpp
-        src/dbutils.h
+        src/dbutils.hpp
         src/homepage.cpp
-        src/homepage.h
+        src/homepage.hpp
         src/project.cpp
-        src/project.h
+        src/project.hpp
         src/settings.cpp
-        src/settings.h
+        src/settings.hpp
         src/main.cpp
-        src/main.h
+        src/main.hpp
 )
 
 # Aggiungi tutte le sorgenti del progetto

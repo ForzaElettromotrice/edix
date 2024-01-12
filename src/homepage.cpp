@@ -2,7 +2,7 @@
 // Created by f3m on 30/12/23.
 //
 
-#include "homepage.h"
+#include "homepage.hpp"
 
 
 bool isValidName(char *word)

@@ -8,7 +8,7 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
-#include "utils.h"
+#include "utils.hpp"
 
 //UTILS
 int isPathIn(const char *path, const char *pathProj);

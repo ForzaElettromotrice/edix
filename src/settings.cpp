@@ -2,7 +2,7 @@
 // Created by f3m on 12/01/24.
 //
 
-#include "settings.h"
+#include "settings.hpp"
 
 int parseSettings(char *line, Env *env)
 {

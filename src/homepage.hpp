@@ -2,12 +2,12 @@
 // Created by f3m on 30/12/23.
 //
 
-#ifndef EDIX_HOMEPAGE_H
-#define EDIX_HOMEPAGE_H
+#ifndef EDIX_HOMEPAGE_HPP
+#define EDIX_HOMEPAGE_HPP
 
 #include <iostream>
 #include <cstring>
-#include "utils.h"
+#include "utils.hpp"
 
 
 //UTILS
@@ -32,4 +32,4 @@ int view();
 int helpH();
 int exitH(Env *env);
 
-#endif //EDIX_HOMEPAGE_H
+#endif //EDIX_HOMEPAGE_HPP

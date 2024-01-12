@@ -2,7 +2,7 @@
 // Created by f3m on 07/01/24.
 //
 
-#include "project.h"
+#include "project.hpp"
 
 int parseProj(char *line, Env *env)
 {
