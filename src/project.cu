@@ -120,8 +120,8 @@ int parseLoad(char *line)
         handle_error(RED "Usage:" RESET " load pathToFile\n");
     }
 
-    //TODO: controlla se il file è un png/jpeg/ppm
-
+    // Controlla che l'immagine sia valida
+    if (isValidImage(line) == -1) { handle_error("I formati ammessi sono png/jpeg/ppm"); }
     loadI(path);
 
     return 0;
@@ -242,58 +242,113 @@ int ls(char *path)
 {
     // Il comando da eseguire
     char comm[256];
-    // Controlla che path non sia nullptr
-    if (path == nullptr) { path = "."; }
-    // Salva il comando in comm
-    sprintf(comm, "ls %s", path);
+    // Salva il comando in comm e controlla che non sia nullptr
+    sprintf(comm, "ls %s", path == nullptr ? "." : path);
     // Esegui il comando
     int status = system(comm);
     // Controlla se ci sono errori
-    if (status == -1) {
-        handle_error("Errore nell'esecuzione del comando ls");
-    }
+    if (status == -1) { handle_error("Errore nell'esecuzione del comando ls"); }
     return 0;
 }
 int tree(char *path)
 {
-    //TODO
-    D_PRINT("tree");
+    // Il comando da eseguire
+    char comm[256];
+    // Salva il comando in comm e controlla che non sia nullptr
+    sprintf(comm, "tree %s", path == nullptr ? "." : path);
+    // Esegui il comando
+    int status = system(comm);
+    // Controlla se ci sono errori
+    if (status == -1) { handle_error("Errore nell'esecuzione del comando tree"); }
     return 0;
 }
 int cd(char *path)
 {
-    //TODO
-    D_PRINT("cd");
+    // Il comando da eseguire
+    char comm[256];
+    // TODO: se non viene specificato il path, torni alla $HOME del progetto; va presa da redis
+    // Salva il comando in comm
+    sprintf(comm, "cd %s", path);
+    // Esegui il comando
+    int status = system(comm);
+    // Controlla se ci sono errori
+    if (status == -1) { handle_error("Errore nell'esecuzione del comando cd"); }
     return 0;
 }
 int loadI(char *path)
 {
-    //TODO
-    D_PRINT("loadI");
+    //TODO: utilizza mv e cp per caricare l'immagine nella cartella del progetto
+    // Il comando da eseguire 
+    char comm[256];
+    // Controlla che path non sia nullptr
+    if (path == nullptr) { handle_error("Il path non puo' essere null"); }
+    // TODO: Prendi da redis il percorso del progetto, sui cui si dovra' caricare l'immagine
+    // Salva il comando
+    sprintf(comm, "cp %s %s", path, nullptr);   // nullptr sara' il path del progetto, che verra' caricato da redis
+    // Copia l'immagine sul progetto
+    int status = system(comm);
+    // Controlla se ci sono errori
+    if (status == -1) { handle_error("Errore nell'esecuzione del comando load"); }
+
     return 0;
 }
 int rm(char *name)
 {
-    //TODO
-    D_PRINT("rm");
+    // Il comando da eseguire
+    char comm[256];
+    // Controlla che name non sia nullptr
+    if (name == nullptr) { handle_error("Il nome del file non puo' essere nullo"); }
+    // Salva il comando in comm
+    sprintf(comm, "rm %s", name);
+    // Esegui il comando
+    int status = system(comm);
+    // Controlla se ci sono errori
+    if (status == -1) { handle_error("Errore nell'esecuzione del comando rm"); }
     return 0;
 }
 int mkdir(char *name)
 {
-    //TODO
-    D_PRINT("mkdir");
+    // Il comando da eseguire
+    char comm[256];
+    // Controlla che name non sia nullptr
+    if (name == nullptr) { handle_error("Il nome della directory non puo' essere nullo"); }
+    // Salva il comando in comm
+    sprintf(comm, "mkdir %s", name);
+    // Esegui il comando
+    int status = system(comm);
+    // Controlla se ci sono errori
+    if (status == -1) { handle_error("Errore nell'esecuzione del comando mkdir"); }
     return 0;
 }
-int rmdir(char *name)
-{
-    //TODO
-    D_PRINT("rmdir");
-    return 0;
-}
+
+// TODO: valutare se implementare rmdir (rmdir cancella una directory solo se e' vuota)
+// int rmdir(char *name)
+// {
+//     // Il comando da eseguire
+//     char comm[256];
+//     // Controlla che name non sia nullptr
+//     if (name == nullptr) { handle_error("Il nome della directory non puo' essere nullo"); }
+//     // Salva il comando in comm
+//     sprintf(comm, "rmdir %s", name);
+//     // Esegui il comando
+//     int status = system(comm);
+//     // Controlla se ci sono errori
+//     if (status == -1) { handle_error("Errore nell'esecuzione del comando rmdir"); }
+//     return 0;
+// }
+
 int mv(char *fromPath, char *toPath)
 {
-    //TODO
-    D_PRINT("mv");
+    // Il comando da eseguire
+    char comm[256];
+    // Controlla che fromPath e toPath non siano nullptr
+    if (fromPath == nullptr || toPath == nullptr) { handle_error("Il nome del path non puo' essere nullo"); }
+    // Salva il comando in comm
+    sprintf(comm, "mv %s %s", fromPath, toPath);
+    // Esegui il comando
+    int status = system(comm);
+    // Controlla se ci sono errori
+    if (status == -1) { handle_error("Errore nell'esecuzione del comando mv"); }
     return 0;
 }
 int settings(Env *env)
@@ -328,12 +383,20 @@ int isPathIn(const char *path, const char *pathProj) {
     // Prendi il percorso assoluto di path
     char *absPath = realpath(path, nullptr);
     // Controlla che ci siano errori
-    if (absPath == nullptr)
-    {
-        handle_error("Errore nella risoluzione del percorso");
-    }
+    if (absPath == nullptr) { handle_error("Errore nella risoluzione del percorso"); }
     // Confrontalo con il path del progetto
     int res = strncmp(absPath, pathProj, strlen(pathProj));
 
     return res;
+}
+
+// Controlla che il file sia un'immagine (png, jpeg, ppm)
+int isValidImage(char *path) {
+    // Localizza l'ultima occorrenza del carattere '.'
+    char *ext = strrchr(path, '.');
+    // Controlla che ci siano errori
+    if (ext == nullptr) { handle_error("Errore nella risoluzione del percorso"); }
+    // Controlla che l'estensione sia valida
+    if (strcmp(ext, ".png") != 0 || strcmp(ext, ".jpeg") != 0 || strcmp(ext, ".ppm") != 0) { return -1; }
+    return 0;
 }
