@@ -11,7 +11,8 @@
 #include "utils.h"
 
 //UTILS
-int isPathIn(const char *, const char *);
+int isPathIn(const char *path, const char *pathProj);
+int isValidImage(char *path);
 
 //PARSERS
 int parseProj(char *line, Env *env);
