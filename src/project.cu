@@ -121,7 +121,7 @@ int parseLoad()
     }
 
     // Controlla che l'immagine sia valida
-    if (isValidImage(line) == -1) { handle_error("I formati ammessi sono png/jpeg/ppm"); }
+    if (isValidImage(path) == -1) { handle_error("I formati ammessi sono png/jpeg/ppm"); }
     loadI(path);
 
     return 0;
