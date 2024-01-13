@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <cstring>
+#include <dirent.h>
+#include <unistd.h>
 #include "dbutils.hpp"
 #include "utils.hpp"
 
@@ -16,6 +18,7 @@ bool isValidName(char *name);
 bool isValidFlag(const char *flag);
 int banner();
 int askParams(char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *vcs);
+int checkDefaultFolder();
 
 //PARSERS
 int parseHome(char *line, Env *env);

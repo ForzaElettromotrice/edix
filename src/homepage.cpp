@@ -25,23 +25,101 @@ bool isValidFlag(const char *flag)
 }
 int banner()
 {
-    printf( BOLD
-            "    _/_/_/_/        _/  _/  _/      _/\n"
-            "   _/          _/_/_/        _/  _/\n"
-            "  _/_/_/    _/    _/  _/      _/\n"
-            " _/        _/    _/  _/    _/  _/\n"
-            "_/_/_/_/    _/_/_/  _/  _/      _/\n\n"
-            RESET
-            "Benvenuto su EdiX :). Se e' la tua prima volta crea un progetto tramite il comando\n"
-            BOLD "\t\tnew" RESET " projectName\n" 
-            "Se hai bisogno di maggiori informazioni sui comandi, esegui" BOLD"  help\n" RESET
-            BOLD"  exit" RESET "\tEsci\n");
+    printf(BOLD
+           "    _/_/_/_/        _/  _/  _/      _/\n"
+           "   _/          _/_/_/        _/  _/\n"
+           "  _/_/_/    _/    _/  _/      _/\n"
+           " _/        _/    _/  _/    _/  _/\n"
+           "_/_/_/_/    _/_/_/  _/  _/      _/\n\n"
+           RESET
+           "Benvenuto su EdiX :). Se e' la tua prima volta crea un progetto tramite il comando\n"
+           BOLD "\t\tnew" RESET " projectName\n"
+           "Se hai bisogno di maggiori informazioni sui comandi, esegui" BOLD"  help\n" RESET
+           BOLD"  exit" RESET "\tEsci\n");
     return 0;
 }
 int askParams(char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *vcs)
 {
-    //TODO
-    return *vcs;
+    size_t aSize = 256;
+    char *answer = (char *) malloc(256 * sizeof(char));
+    size_t bRead;
+
+    printf("Dove vuoi salvare il progetto? (inserisci un path relativo o assoluto): ");
+    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+    {
+        fprintf(stderr, "Bad answer!\n");
+        return 1;
+    }
+    //TODO: controllare
+    sprintf(path, "%s", answer);
+
+    printf("Che estenzione vuoi abbiano le immagini che crei?\n\t- PPM\n\t- PNG\n\t- JPEG\n-> ");
+    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+    {
+        fprintf(stderr, "Bad answer!\n");
+        return 1;
+    }
+    //TODO: controllare
+    sprintf(comp, "%s", answer);
+
+    printf("Che tipo di parallelismo vuoi usare?\n\t- Serial\n\t- OMP\n\t- CUDA\n-> ");
+    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+    {
+        fprintf(stderr, "Bad answer!\n");
+        return 1;
+    }
+    //TODO: controllare
+    sprintf(tpp, "%s", answer);
+
+    printf("Che algoritmo di upscaling vuoi usare?\n\t- Biliner\n\t- Bicubic\n-> ");
+    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+    {
+        fprintf(stderr, "Bad answer!\n");
+        return 1;
+    }
+    //TODO: controllare
+    sprintf(tup, "%s", answer);
+
+    printf("Che modalità di esecuzione vuoi usare?\n\t- Immediate\n\t- Programmed\n-> ");
+    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+    {
+        fprintf(stderr, "Bad answer!\n");
+        return 1;
+    }
+    //TODO: controllare
+    sprintf(modEx, "%s", answer);
+
+    printf("Ogni quanto tempo vuoi salvare un backup del progetto? (secondi): ");
+    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+    {
+        fprintf(stderr, "Bad answer!\n");
+        return 1;
+    }
+    //TODO: controllare
+    *tts = strtoul(answer, nullptr, 10);
+
+    printf("Vuoi attivare il version control? [y,n]: ");
+    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+    {
+        fprintf(stderr, "Bad answer!\n");
+        return 1;
+    }
+    //TODO: controllare
+    *vcs = strcmp(answer, "y") == 0;
+
+    return 0;
+}
+int checkDefaultFolder()
+{
+    DIR *defaultDir = opendir("~/EdixProject");
+
+    if (!defaultDir)
+    {
+        D_PRINT("Creating default dir\n");
+        system("mkdir ~/EdixProject > /dev/null");
+    }
+    closedir(defaultDir);
+    return 0;
 }
 
 int parseHome(char *line, Env *env)
@@ -180,13 +258,10 @@ int parseExitH(Env *env)
 
 int newP(char *name, bool ask, Env *env)
 {
-    //TODO: creare il progetto sul db
-    //TODO: if ask, chiedi su stdin i settings
     //TODO: cambia working directory
-    //TODO: cambia l'env
 
-    //TODO: fare i controlli
-    //TODO: creare cartella default dei progetti
+    checkDefaultFolder();
+
     char path[256];
     char comp[5] = "PPM";
     char tpp[16] = "Serial";
@@ -194,17 +269,29 @@ int newP(char *name, bool ask, Env *env)
     char modEx[16] = "Immediate";
     uint tts = 600;
     bool vcs = false;
-    sprintf(path, "~/EdixProjects/%s", name);
 
     if (ask)
-        if (!askParams(path, comp, tpp, tup, modEx, &tts, &vcs))
+        if (askParams(path, comp, tpp, tup, modEx, &tts, &vcs))
         {
             fprintf(stderr, "Errore inserimento parametri!\n");
             return EXIT_FAILURE;
         }
 
-    addProject(name, path, comp, tpp, tup, modEx, tts, vcs);
+    if (addProject(name, path, comp, tpp, tup, modEx, tts, vcs))
+    {
+        fprintf(stderr, "Errore inserimento dati db\n");
+        return EXIT_FAILURE;
+    }
 
+
+    if (chdir(path) != 0)
+    {
+        perror("Errore durante il cambio della working directory");
+        printf(YELLOW "Progetto creato, usare open per tentare di aprirlo\n" RESET);
+        return 1;
+    }
+
+    *env = PROJECT;
     return 0;
 }
 int openP(char *name, Env *env)
@@ -233,13 +320,13 @@ int view()
 }
 int helpH()
 {
-    printf("Ecco la lista dei comandi da poter eseguire qui sulla homepage:\n\n" 
-            BOLD"  new" RESET " nameProject\tCrea un nuovo progetto nameProject\n"
-            BOLD"  open" RESET " nameProject\tApri il progetto nameProject\n"
-            BOLD"  del" RESET " nameProject\tCancella il progetto nameProject\n"
-            BOLD"  help" RESET "\tPer maggiori informazioni\n"
-            BOLD"  view" RESET "\tVisualizza tutti i progetti"
-            BOLD"  exit" RESET "\tEsci\n");
+    printf("Ecco la lista dei comandi da poter eseguire qui sulla homepage:\n\n"
+           BOLD"  new" RESET " nameProject\tCrea un nuovo progetto nameProject\n"
+           BOLD"  open" RESET " nameProject\tApri il progetto nameProject\n"
+           BOLD"  del" RESET " nameProject\tCancella il progetto nameProject\n"
+           BOLD"  help" RESET "\tPer maggiori informazioni\n"
+           BOLD"  view" RESET "\tVisualizza tutti i progetti"
+           BOLD"  exit" RESET "\tEsci\n");
     return 0;
 }
 int exitH(Env *env)
