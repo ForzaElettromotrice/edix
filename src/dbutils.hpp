@@ -16,15 +16,11 @@
 int initDb();
 int checkDb();
 int loadProjectOnRedis(char *projectName);
-//int upload_to_redis(int id, char *tup, char *mod_ex, char *comp, unsigned int tts, char *tpp, bool vcs, int project);
 int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *modEx, uint TTS, bool VCS);
 
 
 //UTILS
-int getProjectId(char *projectName, char **ID);
-//int get_check(char *name, redisReply *reply, redisContext *context);
-//int set_check(char *name, redisReply *reply, redisContext *context);
-char **getSettings(PGconn *conn, char *projectId);
+char **getSettings(PGconn *conn, char *projectName);
 
 bool checkRoleExists(PGconn *conn, const char *roleName);
 bool checkDatabaseExists(PGconn *conn, const char *dbName);

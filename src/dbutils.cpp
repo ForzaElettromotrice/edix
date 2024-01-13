@@ -32,21 +32,15 @@ int checkDb()
 int loadProjectOnRedis(char *projectName)
 {
 
-    // Crea una connessione al database
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
-
-    // Verifica lo stato della connessione
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
         handle_error("Errore di connessione: %s\n", PQerrorMessage(conn));
     }
 
-    char *projectId;
-    getProjectId(projectName, &projectId);
 
-
-    char **settings = getSettings(conn, projectId);
+    char **settings = getSettings(conn, projectName);
     if (settings == nullptr)
         return 1;
 
@@ -60,9 +54,9 @@ int loadProjectOnRedis(char *projectName)
                     strcmp("t", settings[6]) == 0,
                     (int) strtol(settings[7], nullptr, 10));
 
+
     for (int i = 0; settings[i] != nullptr; ++i)
         free(settings[i]);
-
     free(settings);
     PQfinish(conn);
 
@@ -95,19 +89,19 @@ int initDb()
     system("psql -d edix -U edix -c \"CREATE DOMAIN Uint AS integer CHECK(VALUE >= 0);\" > /dev/null");
 
     D_PRINT("Creating table Project...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Project (Id SERIAL PRIMARY KEY NOT NULL,Name VARCHAR(50) NOT NULL,CDate TIMESTAMP NOT NULL,MDate TIMESTAMP NOT NULL,Path VARCHAR(256) UNIQUE NOT NULL,Settings INT NOT NULL);\" > /dev/null");
+    system("psql -d edix -U edix -c \"CREATE TABLE Project (Name VARCHAR(50) PRIMARY KEY NOT NULL,CDate TIMESTAMP NOT NULL,MDate TIMESTAMP NOT NULL,Path VARCHAR(256) UNIQUE NOT NULL,Settings INT NOT NULL);\" > /dev/null");
     D_PRINT("Creating table Settings_p...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Mod_ex Modex NOT NULL,Comp Compx NOT NULL,TTS INT NOT NULL,TPP Tppx NOT NULL,VCS BOOLEAN NOT NULL,Project INT NOT NULL);\" > /dev/null");
+    system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Mod_ex Modex NOT NULL,Comp Compx NOT NULL,TTS INT NOT NULL,TPP Tppx NOT NULL,VCS BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
 
     D_PRINT("Altering table Project...\n");
     system("psql -d edix -U edix -c \"ALTER TABLE Project ADD CONSTRAINT V1 CHECK (CDate <= MDate),ADD CONSTRAINT V2 UNIQUE (Settings),ADD CONSTRAINT V3 FOREIGN KEY (Settings) REFERENCES Settings(Id) INITIALLY DEFERRED;\" > /dev/null");
     D_PRINT("Altering table Settings_p...\n");
-    system("psql -d edix -U edix -c \"ALTER TABLE Settings ADD CONSTRAINT V4 UNIQUE (Project),ADD CONSTRAINT V5 FOREIGN KEY (Project) REFERENCES Project(Id) INITIALLY DEFERRED;\" > /dev/null");
+    system("psql -d edix -U edix -c \"ALTER TABLE Settings ADD CONSTRAINT V4 UNIQUE (Project),ADD CONSTRAINT V5 FOREIGN KEY (Project) REFERENCES Project(Name) INITIALLY DEFERRED;\" > /dev/null");
 
     D_PRINT("Creating table Dix...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP PRIMARY KEY NOT NULL,Project INT NOT NULL,CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Id));\" > /dev/null");
+    system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP PRIMARY KEY NOT NULL,Project VARCHAR(50) NOT NULL,CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Name));\" > /dev/null");
     D_PRINT("Creating table Photo...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Photo (Id SERIAL PRIMARY KEY NOT NULL,Name VARCHAR(50) NOT NULL,Path VARCHAR(256) NOT NULL,Comp Compx NOT NULL,Project INT,Dix TIMESTAMP,CONSTRAINT V7 FOREIGN KEY (Project) REFERENCES Project(Id),CONSTRAINT V8 FOREIGN KEY (Dix) REFERENCES Dix(Instant),CONSTRAINT V9 CHECK ((Project IS NOT NULL AND Dix IS NULL) OR (Project IS NULL AND Dix IS NOT NULL)));\" > /dev/null");
+    system("psql -d edix -U edix -c \"CREATE TABLE Photo (Id SERIAL PRIMARY KEY NOT NULL,Name VARCHAR(50) NOT NULL,Path VARCHAR(256) NOT NULL,Comp Compx NOT NULL,Project VARCHAR(50),Dix TIMESTAMP,CONSTRAINT V7 FOREIGN KEY (Project) REFERENCES Project(Name),CONSTRAINT V8 FOREIGN KEY (Dix) REFERENCES Dix(Instant),CONSTRAINT V9 CHECK ((Project IS NOT NULL AND Dix IS NULL) OR (Project IS NULL AND Dix IS NOT NULL)));\" > /dev/null");
 
 
     return 0;
@@ -117,8 +111,6 @@ int initDb()
 int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *modEx, uint TTS, bool VCS)
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
-
-    // Verifica lo stato della connessione
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
@@ -130,15 +122,14 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
     sprintf(query, "BEGIN;\n"
                    "DO $$\n"
                    "DECLARE\n"
-                   "projectId INT;\n"
                    "settingsId INT;\n"
                    "BEGIN\n"
-                   "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), '%s', -1) RETURNING Id INTO projectId;\n"
-                   "INSERT INTO Settings (TUP, Mod_ex, Comp, TTS, TPP, VCS, Project) VALUES ('%s', '%s', '%s', %d, '%s', %s, projectId) RETURNING Id INTO settingsId;\n"
-                   "UPDATE Project SET Settings = settingsId WHERE Id = projectId;\n"
+                   "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), '%s', -1);\n"
+                   "INSERT INTO Settings (TUP, Mod_ex, Comp, TTS, TPP, VCS, Project) VALUES ('%s', '%s', '%s', %d, '%s', %s, '%s') RETURNING Id INTO settingsId;\n"
+                   "UPDATE Project SET Settings = settingsId WHERE Name = '%s';\n"
                    "END $$;\n"
-                   "COMMIT;\n", name, path, TUP, modEx, comp, TTS, TPP, VCS ? "TRUE" : "FALSE");
-
+                   "COMMIT;\n", name, path, TUP, modEx, comp, TTS, TPP, VCS ? "TRUE" : "FALSE", name, name);
+    
     PGresult *res = PQexec(conn, query);
 
     if (PQresultStatus(res) != PGRES_COMMAND_OK)
@@ -155,56 +146,10 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
 }
 
 
-int getProjectId(char *projectName, char **ID)
-{
-    PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
-
-    // Verifica lo stato della connessione
-    if (PQstatus(conn) != CONNECTION_OK)
-    {
-        fprintf(stderr, "Errore di connessione: %s\n", PQerrorMessage(conn));
-        PQfinish(conn);
-        return 1;
-    }
-
-    // Esegui una query SQL
-    char query[256];
-    sprintf(query, "SELECT ID FROM Project WHERE Name = '%s'", projectName);
-
-    PGresult *result = PQexec(conn, query);
-
-    // Verifica lo stato della query
-    if (PQresultStatus(result) != PGRES_TUPLES_OK)
-    {
-        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
-        PQclear(result);
-        PQfinish(conn);
-        return 1;
-    }
-
-    // Recupera e stampa i risultati
-    int numRows = PQntuples(result);
-    int numCols = PQnfields(result);
-
-    for (int i = 0; i < numRows; i++)
-    {
-        for (int j = 0; j < numCols; j++)
-        {
-            *ID = PQgetvalue(result, i, j);
-        }
-    }
-
-    //Libera la memoria delle risorse
-    PQclear(result);
-    PQfinish(conn);
-
-    return 0;
-}
-
-char **getSettings(PGconn *conn, char *projectId)
+char **getSettings(PGconn *conn, char *projectName)
 {
     char query[256];
-    sprintf(query, "SELECT * FROM Settings WHERE Project = %s", projectId);
+    sprintf(query, "SELECT * FROM Settings WHERE Project = '%s'", projectName);
 
     PGresult *result = PQexec(conn, query);
 
@@ -235,6 +180,42 @@ char **getSettings(PGconn *conn, char *projectId)
     return values;
 }
 
+int getProjects(char **names)
+{
+    PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
+
+
+    if (PQstatus(conn) != CONNECTION_OK)
+    {
+        PQfinish(conn);
+        handle_error("Errore di connessione: %s\n", PQerrorMessage(conn));
+    }
+
+
+    char query[256];
+    sprintf(query, "SELECT Name FROM Project");
+
+    PGresult *result = PQexec(conn, query);
+    if (PQresultStatus(result) != PGRES_TUPLES_OK)
+    {
+        PQclear(result);
+        PQfinish(conn);
+        handle_error("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+    }
+
+
+    int numRows = PQntuples(result);
+    int numCols = PQnfields(result);
+
+    for (int i = 0; i < numRows; i++)
+        for (int j = 0; j < numCols; j++)
+            sprintf(*names, "%s\n%s", *names, PQgetvalue(result, i, j));
+
+
+    PQclear(result);
+    PQfinish(conn);
+    return 0;
+}
 
 bool checkRoleExists(PGconn *conn, const char *roleName)
 {

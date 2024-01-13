@@ -120,7 +120,6 @@ int checkDefaultFolder()
 
     if (!defaultDir)
     {
-        perror("Test");
         D_PRINT("Creating default dir\n");
         system("mkdir ~/EdixProjects > /dev/null");
     }
