@@ -193,14 +193,11 @@ int parseNew(Env *env)
             handle_error(RED "usage:" RESET " new ProjectName [-m]\n");
         }
 
-
-        D_PRINT("Ok buon lavoro! ~et\n");
         newP(name, true, env);
         return 0;
 
     } else if (isValidName(token1))
     {
-        D_PRINT("Ok buon lavoro! ~et\n");
         newP(token1, false, env);
         return 0;
     }
@@ -264,8 +261,6 @@ int parseExitH(Env *env)
 
 int newP(char *name, bool ask, Env *env)
 {
-    //TODO: cambia working directory
-
     checkDefaultFolder();
 
     char path[256];
@@ -293,11 +288,18 @@ int newP(char *name, bool ask, Env *env)
     char command[256];
     sprintf(command, "mkdir %s > /dev/null", path);
     system(command);
+
     if (chdir(path) != 0)
     {
         perror("Errore durante il cambio della working directory");
-        printf(YELLOW "Progetto creato, usare open per tentare di aprirlo\n" RESET);
-        return 1;
+        handle_error(YELLOW "Progetto creato, usare open per tentare di aprirlo\n" RESET);
+    }
+
+    if (loadProjectOnRedis(name))
+    {
+
+        handle_error(
+                RED "Failed to load project on redis\n" RESET YELLOW "Progetto creato, usare open per tentare di aprirlo\n" RESET);
     }
 
     *env = PROJECT;
@@ -323,6 +325,7 @@ int delP(char *name)
 int view()
 {
     //TODO: leggi dal db tutti i progetti e le varie info
+
 
     D_PRINT("ECCHETE LA VIEW ~et\n");
     return 0;

@@ -1,5 +1,6 @@
 #include <hiredis/hiredis.h>
 #include <cstring>
+#include "utils.hpp"
 
 int initRedis(redisContext **context);
 int setChecking(char *name, redisReply *reply, redisContext *context);
