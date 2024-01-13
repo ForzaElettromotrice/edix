@@ -375,19 +375,19 @@ int settings(Env *env)
 }
 int helpP()
 {
-    printf("Ecco la lista dei comandi che puoi utilizzare all'interno del tuo progetto:\n"
-            BOLD "  ls"    RESET " [path ...]\tStampa il contenuto della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
-            BOLD "  tree"  RESET " [path ...]\tStampa il contenuto della directory in un formato ad albero della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
-            BOLD "  exec"  RESET " nameFroc\tEsegui la froceria nameFroc\n"
-            BOLD "  cd"    RESET " nameDir\tCambia la directory corrente a nameDir\n"
-            BOLD "  loadI" RESET " pathToFile\tCarica l'immagine pathToFile\n"
-            BOLD "  rm"    RESET " filename ...\tRimuovi file filename\n"
-            BOLD "  mkdir" RESET " nameDir ...\tCrea la directory nameDir\n"
-            BOLD "  rmdir" RESET " nameDir ...\tRimuovi la directory nameDir\n"
-            BOLD "  mv"    RESET " source target\tRinomina il file source in target \n"
-            BOLD "  mv"    RESET " source ... nameDir\tSposta il file source alla directory nameDir\n"
-            BOLD "  sett"  RESET "\tAccedi ai settings\n"
-            BOLD "  exit"  RESET "\tEsci dal progetto\n");
+    printf("Ecco la lista dei comandi che puoi utilizzare all'interno del tuo progetto:\n\n"
+            YELLOW BOLD "  ls"    RESET " [path ...]\t\t\tStampa il contenuto della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
+            YELLOW BOLD "  tree"  RESET " [path ...]\t\tStampa il contenuto della directory in un formato ad albero della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
+            YELLOW BOLD "  exec"  RESET " nameFroc\t\t\tEsegui la froceria nameFroc\n"
+            YELLOW BOLD "  cd"    RESET " nameDir\t\t\tCambia la directory corrente a nameDir\n"
+            YELLOW BOLD "  loadI" RESET " pathToFile\t\tCarica l'immagine pathToFile\n"
+            YELLOW BOLD "  rm"    RESET " filename ...\t\tRimuovi file filename\n"
+            YELLOW BOLD "  mkdir" RESET " nameDir ...\t\tCrea la directory nameDir\n"
+            YELLOW BOLD "  rmdir" RESET " nameDir ...\t\tRimuovi la directory nameDir\n"
+            YELLOW BOLD "  mv"    RESET " source target\t\tRinomina il file source in target \n"
+            YELLOW BOLD "  mv"    RESET " source ... nameDir\t\tSposta il file source alla directory nameDir\n"
+            YELLOW BOLD "  sett"  RESET "\t\t\t\tAccedi ai settings\n"
+            YELLOW BOLD "  exit"  RESET "\t\t\t\tEsci dal progetto\n");
     return 0;
 }
 int exitP(Env *env)
