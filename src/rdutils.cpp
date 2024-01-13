@@ -12,22 +12,23 @@
 
 */
 //initialize connection to redis
-int initRedis(redisContext *context){
-    redisContext *context = redisConnect("localhost", 6379);
+int initRedis(redisContext **context)
+{
+    *context = redisConnect("localhost", 6379);
 
-    if (context == nullptr || context->err)
+    if (*context == nullptr || (*context)->err)
     {
-        if (context)
+        if (*context)
         {
-            printf("Error while connecting to redis: %s\n", context->errstr);
-            redisFree(context);
-            return 1;
+            fprintf(stderr, "Error while connecting to redis: %s\n", (*context)->errstr);
+            redisFree(*context);
         } else
-        {
-            printf("Unable to initialize connection to redis\n");
-            return 1;
-        }
+            fprintf(stderr, "Unable to initialize connection to redis\n");
+
+
+        return 1;
     }
+    return 0;
 }
 //check if set redis command is valid
 int setChecking(char *name, redisReply *reply, redisContext *context)
@@ -57,13 +58,14 @@ int getChecking(char *name, redisReply *reply, redisContext *context)
 }
 
 //cache all settings of a project to redis
-int settingsToRedis (int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool vcs, int project){
+int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool vcs, int project)
+{
     //Init redis connection
     redisContext *context;
-    initRedis(context);
+    initRedis(&context);
 
     //send settings to redis
-    redisReply *reply = (redisReply *) redisCommand(context, "SET ID %d", id);
+    auto *reply = (redisReply *) redisCommand(context, "SET ID %d", id);
     setChecking((char *) "ID", reply, context);
 
 
@@ -89,7 +91,7 @@ int settingsToRedis (int id, char *tup, char *mod_ex, char *comp, u_int tts, cha
 
     reply = (redisReply *) redisCommand(context, "SET TUP %s", tup);
     setChecking((char *) "TUP", reply, context);
-    
+
 
 
     //End redis connection
@@ -100,44 +102,46 @@ int settingsToRedis (int id, char *tup, char *mod_ex, char *comp, u_int tts, cha
 }
 
 //retrieve all settings cached in redis
-int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tts, char **tpp, bool *vcs, int *project){
+int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tts, char **tpp, bool *vcs, int *project)
+{
     //init redis connection
     redisContext *context;
-    initRedis(context);
+    initRedis(&context);
 
     // Recupera i dati dalle chiavi
-    redisReply *reply = (redisReply *) redisCommand(context, "GET %s", "ID");
+    auto *reply = (redisReply *) redisCommand(context, "GET ID");
     getChecking((char *) "ID", reply, context);
-    *id = (int)reply->element;
+    *id = (int) reply->integer;
 
-    reply = (redisReply *) redisCommand(context, "GET %s", "Project");
+    reply = (redisReply *) redisCommand(context, "GET Project");
     getChecking((char *) "Project", reply, context);
-    *project = (int)reply->element;
+    *project = (int) reply->integer;
 
-    reply = (redisReply *) redisCommand(context, "GET %s", "Mod_ex");
+    reply = (redisReply *) redisCommand(context, "GET Mod_ex");
     getChecking((char *) "Mod_ex", reply, context);
     *mod_ex = reply->str;
 
-    reply = (redisReply *) redisCommand(context, "GET %s", "TTS");
+    reply = (redisReply *) redisCommand(context, "GET TTS");
     getChecking((char *) "TTS", reply, context);
-    *tts = strtoul(reply->str,nullptr,10);
+    *tts = reply->integer;
 
-    reply = (redisReply *) redisCommand(context, "GET %s", "VCS");
+    reply = (redisReply *) redisCommand(context, "GET VCS");
     getChecking((char *) "VCS", reply, context);
-    *vcs = strcmp(reply->str,"t") == 0;
+    *vcs = reply->integer == 1;
 
-    reply = (redisReply *) redisCommand(context, "GET %s", "COMP");
+    reply = (redisReply *) redisCommand(context, "GET COMP");
     getChecking((char *) "COMP", reply, context);
     *comp = reply->str;
 
-    reply = (redisReply *) redisCommand(context, "GET %s", "TPP");
+    reply = (redisReply *) redisCommand(context, "GET TPP");
     getChecking((char *) "TPP", reply, context);
     *tpp = reply->str;
 
-    reply = (redisReply *) redisCommand(context, "GET %s", "TUP");
+    reply = (redisReply *) redisCommand(context, "GET TUP");
     getChecking((char *) "TUP", reply, context);
     *tup = reply->str;
 
+    //TODO: printa tutti i valori e compara con i SET
     //End redis connection
     freeReplyObject(reply);
     redisFree(context);

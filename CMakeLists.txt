@@ -15,6 +15,8 @@ set(SOURCE_FILES
         src/settings.hpp
         src/main.cpp
         src/main.hpp
+        src/rdutils.cpp
+        src/rdutils.hpp
 )
 
 # Aggiungi tutte le sorgenti del progetto
