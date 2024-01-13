@@ -308,10 +308,16 @@ int newP(char *name, bool ask, Env *env)
 }
 int openP(char *name, Env *env)
 {
-    //TODO: controllare se il progetto esiste nel db
-    //TODO: in caso cambiare working directory e env
-    //TODO: carica su redis tutto quanto (dix, settings, ??)
-    D_PRINT("MO SE APRE IL PROGETTO ~et\n");
+    if (!existProject(name))
+    {
+        handle_error("Questo progetto non esiste!\n");
+    }
+
+    if (loadProjectOnRedis(name))
+        return EXIT_FAILURE;
+
+    D_PRINT("Entering %s...\n", name);
+    *env = PROJECT;
     return 0;
 }
 int delP(char *name)

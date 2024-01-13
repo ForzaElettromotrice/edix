@@ -22,6 +22,7 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
 //UTILS
 char **getSettings(PGconn *conn, char *projectName);
 char *getProjects();
+bool existProject(char *name);
 
 bool checkRoleExists(PGconn *conn, const char *roleName);
 bool checkDatabaseExists(PGconn *conn, const char *dbName);

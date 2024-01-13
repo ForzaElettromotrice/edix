@@ -84,7 +84,7 @@ int parseLs()
     int res = isPathIn(path, nullptr);
     if (res != 0)
     {
-        handle_error("Il path non si trova all'interno del progetto");
+        handle_error("Il path non si trova all'interno del progetto\n");
     }
 
     ls(path);
@@ -104,7 +104,7 @@ int parseTree()
     int res = isPathIn(path, nullptr);
     if (res != 0)
     {
-        handle_error("Il path non si trova all'interno del progetto");
+        handle_error("Il path non si trova all'interno del progetto\n");
     }
 
     tree(path);
@@ -124,7 +124,7 @@ int parseCd()
     int res = isPathIn(path, nullptr);
     if (res != 0)
     {
-        handle_error("Il path non si trova all'interno del progetto");
+        handle_error("Il path non si trova all'interno del progetto\n");
     }
 
     cd(path);
@@ -143,7 +143,7 @@ int parseLoad()
     // Controlla che l'immagine sia valida
     if (isValidImage(path) == -1)
     {
-        handle_error("I formati ammessi sono png/jpeg/ppm");
+        handle_error("I formati ammessi sono png/jpeg/ppm\n");
     }
     loadI(path);
 
@@ -162,7 +162,7 @@ int parseRm()
     int res = isPathIn(path, nullptr);
     if (res != 0)
     {
-        handle_error("Il path non si trova all'interno del progetto");
+        handle_error("Il path non si trova all'interno del progetto\n");
     }
 
     rm(path);
@@ -182,7 +182,7 @@ int parseMkdir()
     int res = isPathIn(name, nullptr);
     if (res != 0)
     {
-        handle_error("Il path non si trova all'interno del progetto");
+        handle_error("Il path non si trova all'interno del progetto\n");
     }
 
     mkdir(name);
@@ -202,7 +202,7 @@ int parseRmdir()
     int res = isPathIn(name, nullptr);
     if (res != 0)
     {
-        handle_error("Il path non si trova all'interno del progetto");
+        handle_error("Il path non si trova all'interno del progetto\n");
     }
 
     rmdir(name);
@@ -224,7 +224,7 @@ int parseMv()
     int res = isPathIn(pathDst, nullptr);
     if (res != 0)
     {
-        handle_error("Il path non si trova all'interno del progetto");
+        handle_error("Il path non si trova all'interno del progetto\n");
     }
     mv(pathSrc, pathDst);
 
@@ -279,7 +279,7 @@ int ls(const char *path)
     int status = system(comm);
     if (status == -1)
     {
-        handle_error("Errore nell'esecuzione del comando ls");
+        handle_error("Errore nell'esecuzione del comando ls\n");
     }
 
     return 0;
@@ -295,7 +295,7 @@ int tree(char *path)
     // Controlla se ci sono errori
     if (status == -1)
     {
-        handle_error("Errore nell'esecuzione del comando tree");
+        handle_error("Errore nell'esecuzione del comando tree\n");
     }
     return 0;
 }
@@ -311,7 +311,7 @@ int cd(char *path)
     // Controlla se ci sono errori
     if (status == -1)
     {
-        handle_error("Errore nell'esecuzione del comando cd");
+        handle_error("Errore nell'esecuzione del comando cd\n");
     }
     return 0;
 }
@@ -323,7 +323,7 @@ int loadI(char *path)
     // Controlla che path non sia nullptr
     if (path == nullptr)
     {
-        handle_error("Il path non puo' essere null");
+        handle_error("Il path non puo' essere null\n");
     }
     // TODO: Prendi da redis il percorso del progetto, sui cui si dovra' caricare l'immagine
     // Salva il comando
@@ -333,7 +333,7 @@ int loadI(char *path)
     // Controlla se ci sono errori
     if (status == -1)
     {
-        handle_error("Errore nell'esecuzione del comando load");
+        handle_error("Errore nell'esecuzione del comando load\n");
     }
 
     return 0;
@@ -345,7 +345,7 @@ int rm(char *name)
     // Controlla che name non sia nullptr
     if (name == nullptr)
     {
-        handle_error("Il nome del file non puo' essere nullo");
+        handle_error("Il nome del file non puo' essere nullo\n");
     }
     // Salva il comando in comm
     sprintf(comm, "rm %s", name);
@@ -354,7 +354,7 @@ int rm(char *name)
     // Controlla se ci sono errori
     if (status == -1)
     {
-        handle_error("Errore nell'esecuzione del comando rm");
+        handle_error("Errore nell'esecuzione del comando rm\n");
     }
     return 0;
 
@@ -367,7 +367,7 @@ int mkdir(char *name)
     // Controlla che name non sia nullptr
     if (name == nullptr)
     {
-        handle_error("Il nome della directory non puo' essere nullo");
+        handle_error("Il nome della directory non puo' essere nullo\n");
     }
     // Salva il comando in comm
     sprintf(comm, "mkdir %s", name);
@@ -376,7 +376,7 @@ int mkdir(char *name)
     // Controlla se ci sono errori
     if (status == -1)
     {
-        handle_error("Errore nell'esecuzione del comando mkdir");
+        handle_error("Errore nell'esecuzione del comando mkdir\n");
     }
     return 0;
 }
@@ -397,7 +397,7 @@ int mv(char *fromPath, char *toPath)
     // Controlla che fromPath e toPath non siano nullptr
     if (fromPath == nullptr || toPath == nullptr)
     {
-        handle_error("Il nome del path non puo' essere nullo");
+        handle_error("Il nome del path non puo' essere nullo\n");
     }
     // Salva il comando in comm
     sprintf(comm, "mv %s %s", fromPath, toPath);
@@ -406,7 +406,7 @@ int mv(char *fromPath, char *toPath)
     // Controlla se ci sono errori
     if (status == -1)
     {
-        handle_error("Errore nell'esecuzione del comando mv");
+        handle_error("Errore nell'esecuzione del comando mv\n");
     }
     return 0;
 }
@@ -447,7 +447,7 @@ int isPathIn(const char *path, const char *pathProj)
 
     char *absPath = realpath(path, nullptr);
     if (absPath == nullptr)
-    { handle_error("Errore nella risoluzione del percorso"); }
+    { handle_error("Errore nella risoluzione del percorso\n"); }
 
     int res = strncmp(absPath, pathProj, strlen(pathProj));
 
@@ -462,7 +462,7 @@ int isValidImage(char *path)
     // Controlla che ci siano errori
     if (ext == nullptr)
     {
-        handle_error("Errore nella risoluzione del percorso");
+        handle_error("Errore nella risoluzione del percorso\n");
     }
     // Controlla che l'estensione sia valida
     if (strcmp(ext, ".png") != 0 || strcmp(ext, ".jpeg") != 0 || strcmp(ext, ".ppm") != 0)

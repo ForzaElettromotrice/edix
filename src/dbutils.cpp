@@ -191,7 +191,6 @@ char **getSettings(PGconn *conn, char *projectName)
 
     return values;
 }
-
 char *getProjects()
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
@@ -235,6 +234,39 @@ char *getProjects()
     PQclear(result);
     PQfinish(conn);
     return names;
+}
+bool existProject(char *name)
+{
+    PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
+
+
+    if (PQstatus(conn) != CONNECTION_OK)
+    {
+        PQfinish(conn);
+        fprintf(stderr, "Errore di connessione: %s\n", PQerrorMessage(conn));
+        return false;
+    }
+
+
+    char query[256];
+    sprintf(query, "SELECT Name FROM Project p Where p.Name = '%s' ", name);
+
+    PGresult *result = PQexec(conn, query);
+    if (PQresultStatus(result) != PGRES_TUPLES_OK)
+    {
+        PQclear(result);
+        PQfinish(conn);
+        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        return false;
+    }
+
+
+    int numRows = PQntuples(result);
+
+
+    PQclear(result);
+    PQfinish(conn);
+    return numRows == 1;
 }
 
 bool checkRoleExists(PGconn *conn, const char *roleName)
