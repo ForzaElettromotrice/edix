@@ -11,6 +11,7 @@
 
 
 */
+//TODO TEST DELLE FUNCS
 //initialize connection to redis
 int initRedis(redisContext **context)
 {
@@ -150,5 +151,18 @@ int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tt
     redisFree(context);
 
     return 0;
+
+}
+
+//TODO GET FROM REDIS USING KEY
+redisReply* getFromKey(char *key){
+    //initialize connection
+    redisContext *context;
+    initRedis(&context);
+
+    //todo get from key
+
+    //end connection;
+    redisFree(context);
 
 }
