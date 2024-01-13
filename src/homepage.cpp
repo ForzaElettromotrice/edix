@@ -26,19 +26,19 @@ bool isValidFlag(const char *flag)
 int banner()
 {
     printf(BOLD GREEN
-    "    _/_/_/_/        _/  _/  _/      _/\n"
-    "   _/          _/_/_/        _/  _/\n"
-    "  _/_/_/    _/    _/  _/      _/\n"
-    " _/        _/    _/  _/    _/  _/\n"
-    "_/_/_/_/    _/_/_/  _/  _/      _/\n\n"
-    RESET
-    BLUE "Benvenuto su EdiX :).\n" RESET
-    BOLD YELLOW "new" RESET " projectName\t\t"
-    ITALIC "Se e' la tua prima volta crea un progetto tramite il comando\n" RESET
-    BOLD YELLOW "help\t\t\t" RESET
-    ITALIC "Se hai bisogno di maggiori informazioni sui comandi, esegui\n" RESET
-    BOLD YELLOW "exit" RESET " oppure" BOLD YELLOW " Ctrl + D\t" RESET
-    ITALIC "Per uscire\n" RESET);
+           "    _/_/_/_/        _/  _/  _/      _/\n"
+           "   _/          _/_/_/        _/  _/\n"
+           "  _/_/_/    _/    _/  _/      _/\n"
+           " _/        _/    _/  _/    _/  _/\n"
+           "_/_/_/_/    _/_/_/  _/  _/      _/\n\n"
+           RESET
+           BOLD BLUE "Benvenuto su EdiX :).\n" RESET
+           BOLD YELLOW "new" RESET " projectName\t\t"
+           ITALIC "Se e' la tua prima volta crea un progetto tramite il comando\n" RESET
+           BOLD YELLOW "help\t\t\t" RESET
+           ITALIC "Se hai bisogno di maggiori informazioni sui comandi, esegui\n" RESET
+           BOLD YELLOW "exit" RESET " /" BOLD YELLOW " Ctrl + D\t\t" RESET
+           ITALIC "Per uscire\n" RESET);
     return 0;
 }
 int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *vcs)
@@ -323,21 +323,22 @@ int delP(char *name)
 }
 int view()
 {
-    //TODO: leggi dal db tutti i progetti e le varie info
+
+    char *names = getProjects();
+    printf("%s\n", names);
 
 
-    D_PRINT("ECCHETE LA VIEW ~et\n");
     return 0;
 }
 int helpH()
 {
     printf("Ecco la lista dei comandi da poter eseguire qui sulla homepage:\n\n"
-        BOLD YELLOW "  new\t" RESET "nameProject\t\tCrea un nuovo progetto nameProject\n"
-        BOLD YELLOW "  open\t" RESET "nameProject\t\tApri il progetto nameProject\n"
-        BOLD YELLOW "  del\t" RESET "nameProject\t\tCancella il progetto nameProject\n"
-        BOLD YELLOW "  help" RESET "\t\t\t\tPer maggiori informazioni\n"
-        BOLD YELLOW "  view" RESET "\t\t\t\tVisualizza tutti i progetti\n"
-        BOLD YELLOW "  exit" RESET "\t\t\t\tEsci\n");
+           BOLD YELLOW "  new\t" RESET "nameProject\t\tCrea un nuovo progetto nameProject\n"
+           BOLD YELLOW "  open\t" RESET "nameProject\t\tApri il progetto nameProject\n"
+           BOLD YELLOW "  del\t" RESET "nameProject\t\tCancella il progetto nameProject\n"
+           BOLD YELLOW "  help" RESET "\t\t\t\tPer maggiori informazioni\n"
+           BOLD YELLOW "  view" RESET "\t\t\t\tVisualizza tutti i progetti\n"
+           BOLD YELLOW "  exit" RESET "\t\t\t\tEsci\n");
     return 0;
 }
 int exitH(Env *env)

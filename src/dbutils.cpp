@@ -85,24 +85,28 @@ int initDb()
     system("psql -d edix -U edix -c \"CREATE DOMAIN Compx AS Compx_t;\" > /dev/null");
     D_PRINT("Creating Tppx...\n");
     system("psql -d edix -U edix -c \"CREATE DOMAIN Tppx AS Tppx_t;\" > /dev/null");
-    D_PRINT("Creating Uint...\n");
-    system("psql -d edix -U edix -c \"CREATE DOMAIN Uint AS integer CHECK(VALUE >= 0);\" > /dev/null");
+    D_PRINT("Creating Uint5...\n");
+    system("psql -d edix -U edix -c \"CREATE DOMAIN Uint5 AS integer CHECK(VALUE >= 5);\" > /dev/null");
 
     D_PRINT("Creating table Project...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Project (Name VARCHAR(50) PRIMARY KEY NOT NULL,CDate TIMESTAMP NOT NULL,MDate TIMESTAMP NOT NULL,Path VARCHAR(256) UNIQUE NOT NULL,Settings INT NOT NULL);\" > /dev/null");
     D_PRINT("Creating table Settings_p...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Mod_ex Modex NOT NULL,Comp Compx NOT NULL,TTS INT NOT NULL,TPP Tppx NOT NULL,VCS BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
+    system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Mod_ex Modex NOT NULL,Comp Compx NOT NULL,TTS Uint5 NOT NULL,TPP Tppx NOT NULL,VCS BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
+    D_PRINT("Creating table Dix...\n");
+    system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP PRIMARY KEY NOT NULL,Project VARCHAR(50) NOT NULL,CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Name));\" > /dev/null");
+    D_PRINT("Creating table Photo...\n");
+    system("psql -d edix -U edix -c \"CREATE TABLE Photo (Id SERIAL PRIMARY KEY NOT NULL,Name VARCHAR(50) NOT NULL,Path VARCHAR(256) NOT NULL,Comp Compx NOT NULL,Project VARCHAR(50),Dix TIMESTAMP,CONSTRAINT V7 FOREIGN KEY (Project) REFERENCES Project(Name),CONSTRAINT V8 FOREIGN KEY (Dix) REFERENCES Dix(Instant),CONSTRAINT V9 CHECK ((Project IS NOT NULL AND Dix IS NULL) OR (Project IS NULL AND Dix IS NOT NULL)));\" > /dev/null");
 
     D_PRINT("Altering table Project...\n");
     system("psql -d edix -U edix -c \"ALTER TABLE Project ADD CONSTRAINT V1 CHECK (CDate <= MDate),ADD CONSTRAINT V2 UNIQUE (Settings),ADD CONSTRAINT V3 FOREIGN KEY (Settings) REFERENCES Settings(Id) INITIALLY DEFERRED;\" > /dev/null");
     D_PRINT("Altering table Settings_p...\n");
     system("psql -d edix -U edix -c \"ALTER TABLE Settings ADD CONSTRAINT V4 UNIQUE (Project),ADD CONSTRAINT V5 FOREIGN KEY (Project) REFERENCES Project(Name) INITIALLY DEFERRED;\" > /dev/null");
 
-    D_PRINT("Creating table Dix...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP PRIMARY KEY NOT NULL,Project VARCHAR(50) NOT NULL,CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Name));\" > /dev/null");
-    D_PRINT("Creating table Photo...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Photo (Id SERIAL PRIMARY KEY NOT NULL,Name VARCHAR(50) NOT NULL,Path VARCHAR(256) NOT NULL,Comp Compx NOT NULL,Project VARCHAR(50),Dix TIMESTAMP,CONSTRAINT V7 FOREIGN KEY (Project) REFERENCES Project(Name),CONSTRAINT V8 FOREIGN KEY (Dix) REFERENCES Dix(Instant),CONSTRAINT V9 CHECK ((Project IS NOT NULL AND Dix IS NULL) OR (Project IS NULL AND Dix IS NOT NULL)));\" > /dev/null");
+    D_PRINT("Creating function CheckTimeFunction...\n");
+    system(R"(psql -d edix -U edix -c "CREATE FUNCTION CheckTimeFunction() RETURNS TRIGGER AS \$\$ BEGIN IF NEW.Istant < (SELECT CDate FROM Project p WHERE p.name = NEW.Project) THEN RAISE EXCEPTION 'Cannot insert a dix with Instant < CDate'; END IF; RETURN NEW; END; \$\$ LANGUAGE plpgsql;" > /dev/null)");
 
+    D_PRINT("Creating trigger on Dix...\n");
+    system("psql -d edix -U edix -c \"CREATE TRIGGER CheckTime BEFORE INSERT ON Dix FOR EACH ROW EXECUTE FUNCTION CheckTimeFunction();\" > /dev/null");
 
     return 0;
 }
@@ -129,7 +133,7 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
                    "UPDATE Project SET Settings = settingsId WHERE Name = '%s';\n"
                    "END $$;\n"
                    "COMMIT;\n", name, path, TUP, modEx, comp, TTS, TPP, VCS ? "TRUE" : "FALSE", name, name);
-    
+
     PGresult *res = PQexec(conn, query);
 
     if (PQresultStatus(res) != PGRES_COMMAND_OK)
@@ -180,7 +184,7 @@ char **getSettings(PGconn *conn, char *projectName)
     return values;
 }
 
-int getProjects(char **names)
+char *getProjects()
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
 
@@ -188,7 +192,8 @@ int getProjects(char **names)
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        handle_error("Errore di connessione: %s\n", PQerrorMessage(conn));
+        fprintf(stderr, "Errore di connessione: %s\n", PQerrorMessage(conn));
+        return nullptr;
     }
 
 
@@ -200,21 +205,28 @@ int getProjects(char **names)
     {
         PQclear(result);
         PQfinish(conn);
-        handle_error("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        return nullptr;
     }
 
 
     int numRows = PQntuples(result);
     int numCols = PQnfields(result);
 
+    char *names = (char *) malloc(1024 * sizeof(char));
+    sprintf(names, BLUE BOLD "Progetti:\n" RESET);
+
     for (int i = 0; i < numRows; i++)
         for (int j = 0; j < numCols; j++)
-            sprintf(*names, "%s\n%s", *names, PQgetvalue(result, i, j));
-
+        {
+            strcat(names, YELLOW "- ");
+            strcat(names, PQgetvalue(result, i, j));
+            strcat(names, "\n" RESET);
+        }
 
     PQclear(result);
     PQfinish(conn);
-    return 0;
+    return names;
 }
 
 bool checkRoleExists(PGconn *conn, const char *roleName)
