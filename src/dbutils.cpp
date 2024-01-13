@@ -31,6 +31,7 @@ int checkDb()
 }
 int loadProjectOnRedis(char *projectName)
 {
+
     // Crea una connessione al database
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
 
@@ -38,8 +39,7 @@ int loadProjectOnRedis(char *projectName)
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        fprintf(stderr, "Errore di connessione: %s\n", PQerrorMessage(conn));
-        return 1;
+        handle_error("Errore di connessione: %s\n", PQerrorMessage(conn));
     }
 
     char *projectId;
@@ -60,9 +60,9 @@ int loadProjectOnRedis(char *projectName)
                     strcmp("t", settings[6]) == 0,
                     (int) strtol(settings[7], nullptr, 10));
 
-
     for (int i = 0; settings[i] != nullptr; ++i)
         free(settings[i]);
+
     free(settings);
     PQfinish(conn);
 
@@ -155,7 +155,6 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
 }
 
 
-
 int getProjectId(char *projectName, char **ID)
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
@@ -227,7 +226,7 @@ char **getSettings(PGconn *conn, char *projectId)
 
     for (int i = 0; i < numRows; i++)
         for (int j = 0; j < numCols; j++)
-            values[j] = PQgetvalue(result, i, j);
+            values[j] = strdup(PQgetvalue(result, i, j));
 
 
     values[numCols] = nullptr;
@@ -235,86 +234,7 @@ char **getSettings(PGconn *conn, char *projectId)
 
     return values;
 }
-/*
-int upload_to_redis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool vcs, int project)
-{
 
-
-    // Connetti a Redis
-    redisContext *context = redisConnect("localhost", 6379);
-
-    if (context == nullptr || context->err)
-    {
-        if (context)
-        {
-            printf("Errore di connessione a Redis: %s\n", context->errstr);
-            redisFree(context);
-            return 1;
-        } else
-        {
-            printf("Impossibile inizializzare la connessione a Redis\n");
-            return 1;
-        }
-    }
-
-    //Esegui i comandi per caricare le settings su redis
-    redisReply *reply = (redisReply *) redisCommand(context, "SET ID %d", id);
-    set_check((char *) "ID", reply, context);
-
-
-    reply = (redisReply *) redisCommand(context, "SET Project %d", project);
-    set_check((char *) "Project", reply, context);
-
-
-    reply = (redisReply *) redisCommand(context, "SET Mod_ex %s", mod_ex);
-    set_check((char *) "Mod_ex", reply, context);
-
-    reply = (redisReply *) redisCommand(context, "SET TTS %u", tts);
-    set_check((char *) "TTS", reply, context);
-
-    reply = (redisReply *) redisCommand(context, "SET VCS %d", vcs);
-    set_check((char *) "VCS", reply, context);
-
-
-    reply = (redisReply *) redisCommand(context, "SET COMP %s", comp);
-    set_check((char *) "COMP", reply, context);
-
-    reply = (redisReply *) redisCommand(context, "SET TPP %s", tpp);
-    set_check((char *) "TPP", reply, context);
-
-    reply = (redisReply *) redisCommand(context, "SET TUP %s", tup);
-    set_check((char *) "TUP", reply, context);
-
-
-    // Recupera i dati dalle chiavi
-    reply = (redisReply *) redisCommand(context, "GET %s", "ID");
-    get_check((char *) "ID", reply, context);
-
-    reply = (redisReply *) redisCommand(context, "GET %s", "Project");
-    get_check((char *) "Project", reply, context);
-
-    reply = (redisReply *) redisCommand(context, "GET %s", "Mod_ex");
-    get_check((char *) "Mod_ex", reply, context);
-
-    reply = (redisReply *) redisCommand(context, "GET %s", "TTS");
-    get_check((char *) "TTS", reply, context);
-
-    reply = (redisReply *) redisCommand(context, "GET %s", "VCS");
-    get_check((char *) "VCS", reply, context);
-
-    reply = (redisReply *) redisCommand(context, "GET %s", "COMP");
-    get_check((char *) "COMP", reply, context);
-
-    reply = (redisReply *) redisCommand(context, "GET %s", "TPP");
-    get_check((char *) "TPP", reply, context);
-
-    reply = (redisReply *) redisCommand(context, "GET %s", "TUP");
-    get_check((char *) "TUP", reply, context);
-
-    return 0;
-
-}
-*/
 
 bool checkRoleExists(PGconn *conn, const char *roleName)
 {

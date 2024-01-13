@@ -35,10 +35,9 @@ int setChecking(char *name, redisReply *reply, redisContext *context)
 {
     if (reply == nullptr)
     {
-        printf("Error while executing redis command SET %s\n", name);
         freeReplyObject(reply);
         redisFree(context);
-        return 1;
+        handle_error("Error while executing redis command SET %s\n", name);
     }
 
     return 0;
@@ -89,12 +88,13 @@ int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char
     reply = (redisReply *) redisCommand(context, "SET TPP %s", tpp);
     setChecking((char *) "TPP", reply, context);
 
+
     reply = (redisReply *) redisCommand(context, "SET TUP %s", tup);
     setChecking((char *) "TUP", reply, context);
 
 
-
     //End redis connection
+
     freeReplyObject(reply);
     redisFree(context);
 
@@ -107,6 +107,9 @@ int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tt
     //init redis connection
     redisContext *context;
     initRedis(&context);
+
+    //TODO: controllare i return di getChecking...
+    //TODO: poi sta funzione non me piace, ce deve esse un modo piu intelligente di farla
 
     // Recupera i dati dalle chiavi
     auto *reply = (redisReply *) redisCommand(context, "GET ID");

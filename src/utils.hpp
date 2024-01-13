@@ -5,12 +5,14 @@
 #ifndef EDIX_UTILS_HPP
 #define EDIX_UTILS_HPP
 
+#include <cstdlib>
+
 #define DEBUG 1
 #define D_PRINT(format, ...) \
         if(DEBUG)            \
             printf(YELLOW "DEBUG: " RESET format, ##__VA_ARGS__)
-#define handle_error(msg) \
-    fprintf(stderr, msg);\
+#define handle_error(msg, ...) \
+    fprintf(stderr, msg, ##__VA_ARGS__);\
     return(EXIT_FAILURE)
 
 #define RED     "\033[1;31m"
