@@ -54,6 +54,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         return 1;
     }
     //TODO: controllare
+    answer[bRead - 1] = '\0';
     sprintf(path, "%s/%s", answer, name);
 
     printf("Che estenzione vuoi abbiano le immagini che crei?\n\t- PPM\n\t- PNG\n\t- JPEG\n-> ");
@@ -63,6 +64,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         return 1;
     }
     //TODO: controllare
+    answer[bRead - 1] = '\0';
     sprintf(comp, "%s", answer);
 
     printf("Che tipo di parallelismo vuoi usare?\n\t- Serial\n\t- OMP\n\t- CUDA\n-> ");
@@ -72,6 +74,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         return 1;
     }
     //TODO: controllare
+    answer[bRead - 1] = '\0';
     sprintf(tpp, "%s", answer);
 
     printf("Che algoritmo di upscaling vuoi usare?\n\t- Bilinear\n\t- Bicubic\n-> ");
@@ -81,6 +84,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         return 1;
     }
     //TODO: controllare
+    answer[bRead - 1] = '\0';
     sprintf(tup, "%s", answer);
 
     printf("Che modalità di esecuzione vuoi usare?\n\t- Immediate\n\t- Programmed\n-> ");
@@ -90,6 +94,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         return 1;
     }
     //TODO: controllare
+    answer[bRead - 1] = '\0';
     sprintf(modEx, "%s", answer);
 
     printf("Ogni quanto tempo vuoi salvare un backup del progetto? (secondi): ");
@@ -99,6 +104,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         return 1;
     }
     //TODO: controllare
+    answer[bRead - 1] = '\0';
     *tts = strtoul(answer, nullptr, 10);
 
     printf("Vuoi attivare il version control? [y,n]: ");
@@ -108,6 +114,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         return 1;
     }
     //TODO: controllare
+    answer[bRead - 1] = '\0';
     *vcs = strcmp(answer, "y") == 0;
 
     return 0;
@@ -156,7 +163,7 @@ int parseHome(char *line, Env *env)
     else if (strcmp(token, "exit") == 0)
         parseExitH(env);
     else
-        printf(RED "Command not found\n" RESET);
+        fprintf(stderr, RED "Error: " RESET "Command not found\n");
 
 
     free(copy);
@@ -174,7 +181,7 @@ int parseNew(Env *env)
 
     if (token1 == nullptr || (token2 != nullptr && err != nullptr))
     {
-        handle_error(RED "usage:" RESET " new ProjectName [-m]\n");
+        handle_error("usage" BOLD ITALIC "new ProjectName [-m]\n" RESET);
     }
 
     if (token2 != nullptr)
@@ -189,7 +196,7 @@ int parseNew(Env *env)
             name = token2;
         } else
         {
-            handle_error(RED "usage:" RESET " new ProjectName [-m]\n");
+            handle_error("usage " BOLD ITALIC "new ProjectName [-m]\n" RESET);
         }
 
         newP(name, true, env);
@@ -201,7 +208,7 @@ int parseNew(Env *env)
         return 0;
     }
 
-    handle_error(RED "usage:" RESET " new ProjectName [-m]\n");
+    handle_error("usage " BOLD ITALIC "new ProjectName [-m]\n" RESET);
 }
 int parseOpen(Env *env)
 {
@@ -209,7 +216,7 @@ int parseOpen(Env *env)
 
     if (name == nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " open ProjectName\n");
+        handle_error("usage " BOLD ITALIC "open ProjectName\n" RESET);
     }
     openP(name, env);
 
@@ -220,7 +227,7 @@ int parseDel()
     char *name = strtok(nullptr, " ");
     if (name == nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " del ProjectName\n");
+        handle_error("usage" BOLD ITALIC " del ProjectName\n" RESET);
     }
     delP(name);
 
@@ -230,7 +237,7 @@ int parseView()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " view\n");
+        handle_error("usage" BOLD ITALIC " view\n" RESET);
     }
 
     view();
@@ -240,7 +247,7 @@ int parseHelpH()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " helpH\n");
+        handle_error("usage" BOLD ITALIC " helpH\n" RESET);
     }
 
     helpH();
@@ -250,7 +257,7 @@ int parseExitH(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " exitH\n");
+        handle_error("usage" BOLD ITALIC " exitH\n" RESET);
     }
 
     exitH(env);
@@ -271,18 +278,13 @@ int newP(char *name, bool ask, Env *env)
     bool vcs = false;
     sprintf(path, "%s/EdixProjects/%s", getenv("HOME"), name);
 
-    if (ask)
-        if (askParams(name, path, comp, tpp, tup, modEx, &tts, &vcs))
-        {
-            fprintf(stderr, "Errore inserimento parametri!\n");
-            return EXIT_FAILURE;
-        }
+    if (ask && askParams(name, path, comp, tpp, tup, modEx, &tts, &vcs))
+    {
+        handle_error("Errore inserimento parametri!\n");
+    }
 
     if (addProject(name, path, comp, tpp, tup, modEx, tts, vcs))
-    {
-        fprintf(stderr, "Errore inserimento dati db\n");
         return EXIT_FAILURE;
-    }
 
     char command[256];
     sprintf(command, "mkdir %s > /dev/null", path);
@@ -291,14 +293,14 @@ int newP(char *name, bool ask, Env *env)
     if (chdir(path) != 0)
     {
         perror("Errore durante il cambio della working directory");
-        handle_error(YELLOW "Progetto creato, usare open per tentare di aprirlo\n" RESET);
+        printf(YELLOW "Progetto creato, usare open per tentare di aprirlo\n" RESET);
+        return EXIT_FAILURE;
     }
 
     if (loadProjectOnRedis(name))
     {
-
         handle_error(
-                RED "Failed to load project on redis\n" RESET YELLOW "Progetto creato, usare open per tentare di aprirlo\n" RESET);
+                "Failed to load project on redis\n" YELLOW "Progetto creato, usare open per tentare di aprirlo\n" RESET);
     }
 
     *env = PROJECT;
@@ -323,10 +325,8 @@ int delP(char *name)
 }
 int view()
 {
-
     char *names = getProjects();
     printf("%s\n", names);
-
 
     return 0;
 }

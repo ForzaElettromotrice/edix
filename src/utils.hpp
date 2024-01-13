@@ -12,7 +12,7 @@
         if(DEBUG)            \
             printf(YELLOW "DEBUG: " RESET format, ##__VA_ARGS__)
 #define handle_error(msg, ...) \
-    fprintf(stderr, msg, ##__VA_ARGS__);\
+    fprintf(stderr, RED "Error: " RESET msg, ##__VA_ARGS__);\
     return(EXIT_FAILURE)
 
 #define RED     "\033[31m"

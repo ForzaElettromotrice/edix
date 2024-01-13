@@ -58,14 +58,14 @@ int parseProj(char *line, Env *env)
 }
 
 int parseExec()
-{   
+{
     char *path = strtok(nullptr, " ");
 
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " exec frocName\n");
-    } 
-    
+        handle_error("usage" BOLD ITALIC " exec frocName\n" RESET);
+    }
+
     exec(path);
 
     return 0;
@@ -77,7 +77,7 @@ int parseLs()
 
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " ls [path ...]\n");
+        handle_error("usage" BOLD ITALIC " ls [path ...]\n" RESET);
     }
 
     //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
@@ -97,7 +97,7 @@ int parseTree()
 
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " tree [path ...]\n");
+        handle_error("usage" BOLD ITALIC " tree [path ...]\n" RESET);
     }
 
     //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
@@ -117,7 +117,7 @@ int parseCd()
 
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " cd nameDir\n");
+        handle_error("usage" BOLD ITALIC " cd nameDir\n" RESET);
     }
 
     //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
@@ -137,7 +137,7 @@ int parseLoad()
 
     if (path != nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " load pathToFile\n");
+        handle_error("usage" BOLD ITALIC " load pathToFile\n" RESET);
     }
 
     // Controlla che l'immagine sia valida
@@ -155,7 +155,7 @@ int parseRm()
 
     if (path != nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " rm filename\n");
+        handle_error("usage" BOLD ITALIC " rm filename\n" RESET);
     }
 
     //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
@@ -175,7 +175,7 @@ int parseMkdir()
 
     if (name != nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " mkdir nameDir\n");
+        handle_error("usage:" BOLD ITALIC " mkdir nameDir\n" RESET);
     }
 
     //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
@@ -195,7 +195,7 @@ int parseRmdir()
 
     if (name != nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " rmdir nameDir\n");
+        handle_error("usage:" BOLD ITALIC " rmdir nameDir\n" RESET);
     }
 
     //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
@@ -217,7 +217,7 @@ int parseMv()
 
     if ((pathSrc != nullptr && pathDst != nullptr) || strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " mv fromPath toPath\n");
+        handle_error("usage" BOLD ITALIC " mv fromPath toPath\n" RESET);
     }
 
     //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
@@ -234,7 +234,7 @@ int parseSett(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " settings\n");
+        handle_error("usage:" BOLD ITALIC " settings\n" RESET);
     }
 
     settings(env);
@@ -245,7 +245,7 @@ int parseHelpP()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " help\n");
+        handle_error("usage:" BOLD ITALIC " help\n" RESET);
     }
 
     helpP();
@@ -256,7 +256,7 @@ int parseExitP(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " exit\n");
+        handle_error("usage" BOLD ITALIC " exit\n" RESET);
     }
 
     exitP(env);
@@ -419,18 +419,18 @@ int settings(Env *env)
 int helpP()
 {
     printf("Ecco la lista dei comandi che puoi utilizzare all'interno del tuo progetto:\n\n"
-            YELLOW BOLD "  ls"    RESET " [path ...]\t\t\tStampa il contenuto della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
-            YELLOW BOLD "  tree"  RESET " [path ...]\t\tStampa il contenuto della directory in un formato ad albero della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
-            YELLOW BOLD "  exec"  RESET " nameFroc\t\t\tEsegui la froceria nameFroc\n"
-            YELLOW BOLD "  cd"    RESET " nameDir\t\t\tCambia la directory corrente a nameDir\n"
-            YELLOW BOLD "  loadI" RESET " pathToFile\t\tCarica l'immagine pathToFile\n"
-            YELLOW BOLD "  rm"    RESET " filename ...\t\tRimuovi file filename\n"
-            YELLOW BOLD "  mkdir" RESET " nameDir ...\t\tCrea la directory nameDir\n"
-            YELLOW BOLD "  rmdir" RESET " nameDir ...\t\tRimuovi la directory nameDir\n"
-            YELLOW BOLD "  mv"    RESET " source target\t\tRinomina il file source in target \n"
-            YELLOW BOLD "  mv"    RESET " source ... nameDir\t\tSposta il file source alla directory nameDir\n"
-            YELLOW BOLD "  sett"  RESET "\t\t\t\tAccedi ai settings\n"
-            YELLOW BOLD "  exit"  RESET "\t\t\t\tEsci dal progetto\n");
+           YELLOW BOLD "  ls"    RESET " [path ...]\t\t\tStampa il contenuto della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
+           YELLOW BOLD "  tree"  RESET " [path ...]\t\tStampa il contenuto della directory in un formato ad albero della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
+           YELLOW BOLD "  exec"  RESET " nameFroc\t\t\tEsegui la froceria nameFroc\n"
+           YELLOW BOLD "  cd"    RESET " nameDir\t\t\tCambia la directory corrente a nameDir\n"
+           YELLOW BOLD "  loadI" RESET " pathToFile\t\tCarica l'immagine pathToFile\n"
+           YELLOW BOLD "  rm"    RESET " filename ...\t\tRimuovi file filename\n"
+           YELLOW BOLD "  mkdir" RESET " nameDir ...\t\tCrea la directory nameDir\n"
+           YELLOW BOLD "  rmdir" RESET " nameDir ...\t\tRimuovi la directory nameDir\n"
+           YELLOW BOLD "  mv"    RESET " source target\t\tRinomina il file source in target \n"
+           YELLOW BOLD "  mv"    RESET " source ... nameDir\t\tSposta il file source alla directory nameDir\n"
+           YELLOW BOLD "  sett"  RESET "\t\t\t\tAccedi ai settings\n"
+           YELLOW BOLD "  exit"  RESET "\t\t\t\tEsci dal progetto\n");
     return 0;
 }
 int exitP(Env *env)

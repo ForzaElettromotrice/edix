@@ -38,7 +38,7 @@ int parseSet()
 
     if ((name != nullptr && value != nullptr) || strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " mv fromPath toPath\n");
+        handle_error("usage" BOLD ITALIC " mv fromPath toPath\n" RESET);
     }
 
 
@@ -50,7 +50,7 @@ int parseHelpS()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " help\n");
+        handle_error("usage" BOLD ITALIC " help\n" RESET);
     }
 
     helpS();
@@ -61,7 +61,7 @@ int parseExitS(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " exit\n");
+        handle_error("usage" BOLD ITALIC " exit\n" RESET);
     }
 
     exitS(env);

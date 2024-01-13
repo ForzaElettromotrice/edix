@@ -36,7 +36,7 @@ int loadProjectOnRedis(char *projectName)
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        handle_error("Errore di connessione: %s\n", PQerrorMessage(conn));
+        handle_error("(Errore di connessione), %s\n", PQerrorMessage(conn));
     }
 
 
@@ -133,16 +133,24 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
                    "UPDATE Project SET Settings = settingsId WHERE Name = '%s';\n"
                    "END $$;\n"
                    "COMMIT;\n", name, path, TUP, modEx, comp, TTS, TPP, VCS ? "TRUE" : "FALSE", name, name);
-
+    D_PRINT("Adding project to Postgres...\n");
     PGresult *res = PQexec(conn, query);
 
     if (PQresultStatus(res) != PGRES_COMMAND_OK)
     {
-        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQerrorMessage(conn));
+        const char *sqlstate = PQresultErrorField(res, PG_DIAG_SQLSTATE);
+
+        if (strcmp(sqlstate, "23505") == 0)
+            fprintf(stderr, RED "Error:" RESET " Questo progetto già esiste!\n");
+        else
+            fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQerrorMessage(conn));
+
+
         PQclear(res);
         PQfinish(conn);
         return 1;
     }
+
 
     PQclear(res);
     PQfinish(conn);
