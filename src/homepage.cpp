@@ -25,18 +25,17 @@ bool isValidFlag(const char *flag)
 }
 int banner()
 {
-    printf(BOLD
-           "    _/_/_/_/        _/  _/  _/      _/\n"
-           "   _/          _/_/_/        _/  _/\n"
-           "  _/_/_/    _/    _/  _/      _/\n"
-           " _/        _/    _/  _/    _/  _/\n"
-           "_/_/_/_/    _/_/_/  _/  _/      _/\n\n"
-           RESET
-           "Benvenuto su EdiX :). Qui di seguito una lista dei comandi da utilizzare per iniziare a lavore:\n"
-           BOLD"  newP" RESET "\tCrea un nuovo progetto\n"
-           BOLD"  openP" RESET "\tApri un progetto esistente\n"
-           BOLD"  delP" RESET "\tCancella un progetto esistente\n");
-
+    printf( BOLD
+            "    _/_/_/_/        _/  _/  _/      _/\n"
+            "   _/          _/_/_/        _/  _/\n"
+            "  _/_/_/    _/    _/  _/      _/\n"
+            " _/        _/    _/  _/    _/  _/\n"
+            "_/_/_/_/    _/_/_/  _/  _/      _/\n\n"
+            RESET
+            "Benvenuto su EdiX :). Se e' la tua prima volta crea un progetto tramite il comando\n"
+            BOLD "\t\tnew" RESET " projectName\n" 
+            "Se hai bisogno di maggiori informazioni sui comandi, esegui" BOLD"  help\n" RESET
+            BOLD"  exit" RESET "\tEsci\n");
     return 0;
 }
 int askParams(char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *vcs)
@@ -234,13 +233,13 @@ int view()
 }
 int helpH()
 {
-    //TODO AGGIUNGERE TUTTI I COMANDI CON LE CAZZO DI INFO
-    D_PRINT("Ecco la lista dei comandi da poter eseguire qui sulla homepage:\n\n"
-                    BOLD "  new" RESET "\tCrea un nuovo progetto\n"
-                    BOLD "  open" RESET "\tApri un progetto esistente\n"
-                    BOLD "  del" RESET "\tCancella un progetto esistente\n"
-    );
-
+    printf("Ecco la lista dei comandi da poter eseguire qui sulla homepage:\n\n" 
+            BOLD"  new" RESET " nameProject\tCrea un nuovo progetto nameProject\n"
+            BOLD"  open" RESET " nameProject\tApri il progetto nameProject\n"
+            BOLD"  del" RESET " nameProject\tCancella il progetto nameProject\n"
+            BOLD"  help" RESET "\tPer maggiori informazioni\n"
+            BOLD"  view" RESET "\tVisualizza tutti i progetti"
+            BOLD"  exit" RESET "\tEsci\n");
     return 0;
 }
 int exitH(Env *env)

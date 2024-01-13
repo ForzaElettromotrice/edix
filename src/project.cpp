@@ -7,18 +7,19 @@
 int parseProj(char *line, Env *env)
 {
     /**
-     *  11 comandi                                  <p>
-     *  - ls        (lista dei file)                <p>
-     *  - tree      (albero del progetto)           <p>
-     *  - cd        (cambia ambiente di lavoro)     <p>
-     *  - load      (carica un immagine)            <p>
-     *  - rm        (rimuove un immagine)           <p>
-     *  - mkdir     (crea una cartella)             <p>
-     *  - rmdir     (rimuove una cartella)          <p>
-     *  - mv        (sposta un immagine o cartella) <p>
-     *  - settings  (apre i settings)               <p>
-     *  - help     (lista dei comandi disponibili) <p>
-     *  - exit     (esce dal progetto)             <p>
+     *  12 comandi                                      <p>
+     *  - exec        (Esegue frocerie)                 <p>
+     *  - ls        (lista dei file)                    <p>
+     *  - tree      (albero del progetto)               <p>
+     *  - cd        (cambia ambiente di lavoro)         <p>
+     *  - load      (carica un immagine)                <p>
+     *  - rm        (rimuove un immagine)               <p>
+     *  - mkdir     (crea una cartella)                 <p>
+     *  - rmdir     (rimuove una cartella)              <p>
+     *  - mv        (sposta un immagine o cartella)     <p>
+     *  - settings  (apre i settings)                   <p>
+     *  - help     (lista dei comandi disponibili)      <p>
+     *  - exit     (esce dal progetto)                  <p>
      */
     char *copy = strdup(line);
     char *token = strtok(copy, " ");
@@ -26,6 +27,8 @@ int parseProj(char *line, Env *env)
 
     if (strcmp(token, "ls") == 0)
         parseLs();
+    else if (strcmp(token, "exec") == 0)
+        parseExec();
     else if (strcmp(token, "tree") == 0)
         parseTree();
     else if (strcmp(token, "cd") == 0)
@@ -54,13 +57,27 @@ int parseProj(char *line, Env *env)
     return 0;
 }
 
+int parseExec()
+{   
+    char *path = strtok(nullptr, " ");
+
+    if (strtok(nullptr, " ") != nullptr)
+    {
+        handle_error(RED "Usage:" RESET " exec frocName\n");
+    } 
+    
+    exec(path);
+
+    return 0;
+}
+
 int parseLs()
 {
     char *path = strtok(nullptr, " ");
 
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " ls [path]\n");
+        handle_error(RED "Usage:" RESET " ls [path ...]\n");
     }
 
     //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
@@ -79,7 +96,7 @@ int parseTree()
 
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " tree [path]\n");
+        handle_error(RED "Usage:" RESET " tree [path ...]\n");
     }
 
     //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
@@ -151,7 +168,7 @@ int parseMkdir()
 
     if (name != nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " mkdir dirname\n");
+        handle_error(RED "Usage:" RESET " mkdir nameDir\n");
     }
 
     //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
@@ -170,7 +187,7 @@ int parseRmdir()
 
     if (name != nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error(RED "Usage:" RESET " rmdir dirname\n");
+        handle_error(RED "Usage:" RESET " rmdir nameDir\n");
     }
 
     //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
@@ -179,7 +196,7 @@ int parseRmdir()
         handle_error("Il path non si trova all'interno del progetto");
     }
 
-    rm(name);
+    rmdir(name);
 
     return 0;
 }
@@ -237,6 +254,10 @@ int parseExitP(Env *env)
     return 0;
 }
 
+int exec(char *path) {
+    // TODO:
+    return 0;
+}
 
 int ls(const char *path)
 {
@@ -305,7 +326,9 @@ int rm(char *name)
     // Controlla se ci sono errori
     if (status == -1) { handle_error("Errore nell'esecuzione del comando rm"); }
     return 0;
+
 }
+
 int mkdir(char *name)
 {
     // Il comando da eseguire
@@ -321,21 +344,14 @@ int mkdir(char *name)
     return 0;
 }
 
-// TODO: valutare se implementare rmdir (rmdir cancella una directory solo se e' vuota)
-// int rmdir(char *name)
-// {
-//     // Il comando da eseguire
-//     char comm[256];
-//     // Controlla che name non sia nullptr
-//     if (name == nullptr) { handle_error("Il nome della directory non puo' essere nullo"); }
-//     // Salva il comando in comm
-//     sprintf(comm, "rmdir %s", name);
-//     // Esegui il comando
-//     int status = system(comm);
-//     // Controlla se ci sono errori
-//     if (status == -1) { handle_error("Errore nell'esecuzione del comando rmdir"); }
-//     return 0;
-// }
+int rmdir(char *name) 
+{
+    // Aggiungi il parametro -r per cancellare ricorsivamente
+    sprintf(name, "-r %s", name);
+    // Chiama rm
+    rm(name);
+    return 0;
+}
 
 int mv(char *fromPath, char *toPath)
 {
@@ -359,23 +375,26 @@ int settings(Env *env)
 }
 int helpP()
 {
-    //TODO METTERE TUTTI I COMANDI DETTAGLIATI PORCA MADONNA
-    D_PRINT("Ecco la lista dei comandi che puoi utilizzare all'interno del tuo progetto:\n"
-            BOLD "  ls" RESET "\tStampa il contenuto della directory\n"
-            BOLD "  tree" RESET "\tStampa il contenuto della directory in un formato ad albero\n"
-            BOLD "  cd" RESET "\tCambia directory\n"
-            BOLD "  loadI" RESET "\tCarica un'immagine\n"
-            BOLD "  rm" RESET "\tRimuovi un file\n"
-            BOLD "  mkdir" RESET "\tCrea una directory\n"
-            BOLD "  rmdir" RESET "\tRimuovi una directory\n"
-            BOLD "  mv" RESET "\tSposta un file o lo rinomina\n"
-            BOLD "  sett" RESET "\tAccedi ai setting\n");
+    printf("Ecco la lista dei comandi che puoi utilizzare all'interno del tuo progetto:\n"
+            BOLD "  ls"    RESET " [path ...]\tStampa il contenuto della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
+            BOLD "  tree"  RESET " [path ...]\tStampa il contenuto della directory in un formato ad albero della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
+            BOLD "  exec"  RESET " nameFroc\tEsegui la froceria nameFroc\n"
+            BOLD "  cd"    RESET " nameDir\tCambia la directory corrente a nameDir\n"
+            BOLD "  loadI" RESET " pathToFile\tCarica l'immagine pathToFile\n"
+            BOLD "  rm"    RESET " filename ...\tRimuovi file filename\n"
+            BOLD "  mkdir" RESET " nameDir ...\tCrea la directory nameDir\n"
+            BOLD "  rmdir" RESET " nameDir ...\tRimuovi la directory nameDir\n"
+            BOLD "  mv"    RESET " source target\tRinomina il file source in target \n"
+            BOLD "  mv"    RESET " source ... nameDir\tSposta il file source alla directory nameDir\n"
+            BOLD "  sett"  RESET "\tAccedi ai settings\n"
+            BOLD "  exit"  RESET "\tEsci dal progetto\n");
     return 0;
 }
 int exitP(Env *env)
 {
-    //TODO
-    D_PRINT("exitP\n");
+    //TODO:
+    D_PRINT("Uscita dal progetto in corso...\n");
+    *env = HOMEPAGE;
     return 0;
 }
 
