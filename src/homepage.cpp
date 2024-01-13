@@ -25,20 +25,23 @@ bool isValidFlag(const char *flag)
 }
 int banner()
 {
-    printf(BOLD
+    printf(BOLD GREEN
            "    _/_/_/_/        _/  _/  _/      _/\n"
            "   _/          _/_/_/        _/  _/\n"
            "  _/_/_/    _/    _/  _/      _/\n"
            " _/        _/    _/  _/    _/  _/\n"
            "_/_/_/_/    _/_/_/  _/  _/      _/\n\n"
            RESET
-           "Benvenuto su EdiX :). Se e' la tua prima volta crea un progetto tramite il comando\n"
-           BOLD "\t\tnew" RESET " projectName\n"
-           "Se hai bisogno di maggiori informazioni sui comandi, esegui" BOLD"  help\n" RESET
-           BOLD"  exit" RESET "\tEsci\n");
+           BLUE "Benvenuto su EdiX :).\n" RESET
+           BOLD YELLOW "new" RESET " projectName\t\t\t"
+           ITALIC "Se e' la tua prima volta crea un progetto tramite il comando\n" RESET
+           BOLD YELLOW "help\t\t\t\t\t" RESET
+           ITALIC "Se hai bisogno di maggiori informazioni sui comandi, esegui\n" RESET
+           BOLD YELLOW "exit" RESET " oppure" BOLD YELLOW " Ctrl + D\t" RESET
+           ITALIC "Per uscire\n" RESET);
     return 0;
 }
-int askParams(char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *vcs)
+int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *vcs)
 {
     size_t aSize = 256;
     char *answer = (char *) malloc(256 * sizeof(char));
@@ -51,7 +54,7 @@ int askParams(char *path, char *comp, char *tpp, char *tup, char *modEx, uint *t
         return 1;
     }
     //TODO: controllare
-    sprintf(path, "%s", answer);
+    sprintf(path, "%s/%s", answer, name);
 
     printf("Che estenzione vuoi abbiano le immagini che crei?\n\t- PPM\n\t- PNG\n\t- JPEG\n-> ");
     if ((bRead = getline(&answer, &aSize, stdin)) == -1)
@@ -71,7 +74,7 @@ int askParams(char *path, char *comp, char *tpp, char *tup, char *modEx, uint *t
     //TODO: controllare
     sprintf(tpp, "%s", answer);
 
-    printf("Che algoritmo di upscaling vuoi usare?\n\t- Biliner\n\t- Bicubic\n-> ");
+    printf("Che algoritmo di upscaling vuoi usare?\n\t- Bilinear\n\t- Bicubic\n-> ");
     if ((bRead = getline(&answer, &aSize, stdin)) == -1)
     {
         fprintf(stderr, "Bad answer!\n");
@@ -111,12 +114,15 @@ int askParams(char *path, char *comp, char *tpp, char *tup, char *modEx, uint *t
 }
 int checkDefaultFolder()
 {
-    DIR *defaultDir = opendir("~/EdixProject");
+    char path[256];
+    sprintf(path, "%s/EdixProjects", getenv("HOME"));
+    DIR *defaultDir = opendir(path);
 
     if (!defaultDir)
     {
+        perror("Test");
         D_PRINT("Creating default dir\n");
-        system("mkdir ~/EdixProject > /dev/null");
+        system("mkdir ~/EdixProjects > /dev/null");
     }
     closedir(defaultDir);
     return 0;
@@ -269,9 +275,10 @@ int newP(char *name, bool ask, Env *env)
     char modEx[16] = "Immediate";
     uint tts = 600;
     bool vcs = false;
+    sprintf(path, "%s/EdixProjects/%s", getenv("HOME"), name);
 
     if (ask)
-        if (askParams(path, comp, tpp, tup, modEx, &tts, &vcs))
+        if (askParams(name, path, comp, tpp, tup, modEx, &tts, &vcs))
         {
             fprintf(stderr, "Errore inserimento parametri!\n");
             return EXIT_FAILURE;
@@ -283,7 +290,9 @@ int newP(char *name, bool ask, Env *env)
         return EXIT_FAILURE;
     }
 
-
+    char command[256];
+    sprintf(command, "mkdir %s > /dev/null", path);
+    system(command);
     if (chdir(path) != 0)
     {
         perror("Errore durante il cambio della working directory");
@@ -321,12 +330,12 @@ int view()
 int helpH()
 {
     printf("Ecco la lista dei comandi da poter eseguire qui sulla homepage:\n\n"
-           BOLD"  new" RESET " nameProject\tCrea un nuovo progetto nameProject\n"
-           BOLD"  open" RESET " nameProject\tApri il progetto nameProject\n"
-           BOLD"  del" RESET " nameProject\tCancella il progetto nameProject\n"
-           BOLD"  help" RESET "\tPer maggiori informazioni\n"
-           BOLD"  view" RESET "\tVisualizza tutti i progetti"
-           BOLD"  exit" RESET "\tEsci\n");
+           BOLD YELLOW "  new\t" RESET "nameProject\t\tCrea un nuovo progetto nameProject\n"
+           BOLD YELLOW "  open\t" RESET "nameProject\t\tApri il progetto nameProject\n"
+           BOLD YELLOW "  del\t" RESET "nameProject\t\tCancella il progetto nameProject\n"
+           BOLD YELLOW "  help" RESET "\t\t\t\t\tPer maggiori informazioni\n"
+           BOLD YELLOW "  view" RESET "\t\t\t\t\tVisualizza tutti i progetti\n"
+           BOLD YELLOW "  exit" RESET "\t\t\t\t\tEsci\n");
     return 0;
 }
 int exitH(Env *env)

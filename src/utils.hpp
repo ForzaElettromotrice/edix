@@ -10,7 +10,7 @@
         if(DEBUG)            \
             printf(YELLOW "DEBUG: " RESET format, ##__VA_ARGS__)
 #define handle_error(msg) \
-    perror(msg);\
+    fprintf(stderr, msg);\
     return(EXIT_FAILURE)
 
 #define RED     "\033[1;31m"
@@ -18,6 +18,7 @@
 #define YELLOW  "\033[1;33m"
 #define BLUE    "\033[1;34m"
 #define BOLD    "\033[1m"
+#define ITALIC "\033[3m"
 #define RESET   "\033[0m"
 
 typedef enum

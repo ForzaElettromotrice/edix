@@ -134,8 +134,8 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
                    "projectId INT;\n"
                    "settingsId INT;\n"
                    "BEGIN\n"
-                   "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), %s, 1) RETURNING Id INTO projectId;\n"
-                   "INSERT INTO Settings_p (TUP, Mod_ex, Comp, TTS, TPP, VCS, Project) VALUES ('%s', '%s', '%s', %d, '%s', %s, projectId) RETURNING Id INTO settingsId;\n"
+                   "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), '%s', -1) RETURNING Id INTO projectId;\n"
+                   "INSERT INTO Settings (TUP, Mod_ex, Comp, TTS, TPP, VCS, Project) VALUES ('%s', '%s', '%s', %d, '%s', %s, projectId) RETURNING Id INTO settingsId;\n"
                    "UPDATE Project SET Settings = settingsId WHERE Id = projectId;\n"
                    "END $$;\n"
                    "COMMIT;\n", name, path, TUP, modEx, comp, TTS, TPP, VCS ? "TRUE" : "FALSE");
