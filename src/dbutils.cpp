@@ -1,7 +1,6 @@
 //
 // Created by f3m on 12/01/24.
 //
-
 #include "dbutils.hpp"
 
 
@@ -44,15 +43,15 @@ int loadProjectOnRedis(char *projectName)
     }
 
     char *projectId;
-    get_project_id(projectName, &projectId);
+    getProjectId(projectName, &projectId);
 
 
-    char **settings = get_settings(conn, projectId);
+    char **settings = getSettings(conn, projectId);
     if (settings == nullptr)
         return 1;
 
 
-    upload_to_redis((int) strtol(settings[0], nullptr, 10),
+    settingsToRedis((int) strtol(settings[0], nullptr, 10),
                     settings[1],
                     settings[2],
                     settings[3],
@@ -155,39 +154,9 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
     return 0;
 }
 
-int get_check(char *name, redisReply *reply, redisContext *context)
-{
-    if (reply == nullptr)
-    {
-        printf("Errore nell'esecuzione del comando GET %s\n", name);
-        freeReplyObject(reply);
-        redisFree(context);
-        return 1;
-    }
 
-    // Visualizza i dati recuperati
-    printf("Dati recuperati: %s\n", reply->str);
 
-    freeReplyObject(reply);
-    // ????
-    redisFree(context);
-    return 0;
-}
-int set_check(char *name, redisReply *reply, redisContext *context)
-{
-    if (reply == nullptr)
-    {
-        printf("Errore nell'esecuzione del comando SET %s\n", name);
-        freeReplyObject(reply);
-        redisFree(context);
-        return 1;
-    }
-
-    freeReplyObject(reply);
-    return 0;
-}
-
-int get_project_id(char *projectName, char **ID)
+int getProjectId(char *projectName, char **ID)
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
 
@@ -232,7 +201,8 @@ int get_project_id(char *projectName, char **ID)
 
     return 0;
 }
-char **get_settings(PGconn *conn, char *projectId)
+
+char **getSettings(PGconn *conn, char *projectId)
 {
     char query[256];
     sprintf(query, "SELECT * FROM Settings WHERE Project = %s", projectId);
@@ -265,6 +235,7 @@ char **get_settings(PGconn *conn, char *projectId)
 
     return values;
 }
+/*
 int upload_to_redis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool vcs, int project)
 {
 
@@ -287,7 +258,7 @@ int upload_to_redis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char
     }
 
     //Esegui i comandi per caricare le settings su redis
-    auto *reply = (redisReply *) redisCommand(context, "SET ID %d", id);
+    redisReply *reply = (redisReply *) redisCommand(context, "SET ID %d", id);
     set_check((char *) "ID", reply, context);
 
 
@@ -343,7 +314,7 @@ int upload_to_redis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char
     return 0;
 
 }
-
+*/
 
 bool checkRoleExists(PGconn *conn, const char *roleName)
 {
