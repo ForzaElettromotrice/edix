@@ -31,7 +31,7 @@ int initRedis(redisContext **context)
     }
     return 0;
 }
-//check if set redis command is valid
+
 int setChecking(char *name, redisReply *reply, redisContext *context)
 {
     if (reply == nullptr)
@@ -44,15 +44,14 @@ int setChecking(char *name, redisReply *reply, redisContext *context)
     return 0;
 }
 
-//check if get redis command is valid
+
 int getChecking(char *name, redisReply *reply, redisContext *context)
 {
     if (reply == nullptr)
     {
-        printf("Errore nell'esecuzione del comando GET %s\n", name);
         freeReplyObject(reply);
         redisFree(context);
-        return 1;
+        handle_error("Errore nell'esecuzione del comando GET %s\n", name);
     }
     return 0;
 }
@@ -155,7 +154,8 @@ int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tt
 }
 
 //TODO GET FROM REDIS USING KEY
-redisReply* getFromKey(char *key){
+redisReply *getFromKey(char *key)
+{
     //initialize connection
     redisContext *context;
     initRedis(&context);
@@ -164,5 +164,5 @@ redisReply* getFromKey(char *key){
 
     //end connection;
     redisFree(context);
-
+    return nullptr;
 }

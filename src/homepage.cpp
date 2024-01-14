@@ -322,10 +322,15 @@ int openP(char *name, Env *env)
 }
 int delP(char *name)
 {
-    //TODO: controllare se esiste nel db
-    //TODO: in caso cancellare ogni cosa
 
-    D_PRINT("MO TE CANCELLO LA VITA ~et\n");
+    if (!existProject(name))
+    {
+        handle_error("Questo progetto non esiste!\n");
+    }
+
+    if (delProject(name))
+        return 1;
+
 
     return 0;
 }

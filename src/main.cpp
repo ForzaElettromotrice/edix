@@ -2,6 +2,7 @@
 
 int main(int argc, char *argv[])
 {
+    //TODO: controllare se redis e postgres sono online
     checkDb();
     banner();
     // TODO: magari puoi aprire direttamente un progetto passandolo come argomento
