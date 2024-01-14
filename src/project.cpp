@@ -465,14 +465,25 @@ int exitP(Env *env)
 int dixList()
 {
     //TODO: gettare da redis il nome del progetto
-    char *dixs = getDixs("Federico");
+    char *dixs = getDixs((char *) "Federico");
     printf("%s\n", dixs);
+
+    free(dixs);
     return 0;
 }
 int dixCommit(char *name)
 {
     //TODO
-    //TODO chiedere se si vuole inserire un commento
+    char *comment = askComment();
+    if (comment == nullptr)
+        return 1;
+
+
+    D_PRINT("Saving on Postgres...\n");
+    addDix((char *) "Federico", name, comment);
+
+
+    free(comment);
     return 0;
 }
 int dixReload(char *name)
@@ -505,4 +516,49 @@ int isValidImage(char *path)
     if (strcmp(ext, ".png") != 0 || strcmp(ext, ".jpeg") != 0 || strcmp(ext, ".ppm") != 0)
         return -1;
     return 0;
+}
+char *askComment()
+{
+
+    size_t aSize = 500;
+    char *line = (char *) malloc(256 * sizeof(char));
+
+    printf(BOLD "Vuoi inserire un commento? [y/N] -> " RESET);
+    uint bRead = getline(&line, &aSize, stdin);
+    if (bRead == -1)
+    {
+        fprintf(stderr, RED "\nError: " RESET "Errore inserimento dati\n");
+        return nullptr;
+    } else if (bRead == 1 || strcmp(line, "n\n") == 0 || strcmp(line, "N\n") == 0)
+    {
+        sprintf(line, "");
+        return line;
+    }
+
+    char *comment = (char *) malloc(500 * sizeof(char));
+    bool stop = false;
+    sprintf(comment, "");
+
+    printf(BOLD ITALIC "Scrivi il tuo commento (Max 500 caratteri). Per uscire 2 volte invio o Ctrl-D\n" RESET);
+    while (((bRead = getline(&line, &aSize, stdin)) != -1 && strlen(comment) <= 500))
+    {
+        if (bRead == 1)
+        {
+            if (stop)
+            {
+                comment[strlen(comment) - 1] = '\0';
+                break;
+            } else
+                stop = true;
+        } else
+            stop = false;
+
+        strcat(comment, line);
+    }
+    comment[499] = '\0';
+
+    D_PRINT("Il commento risultante finale è : \n\"\n%s\"\n", comment);
+
+    return comment;
+
 }

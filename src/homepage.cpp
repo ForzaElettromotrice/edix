@@ -339,6 +339,7 @@ int view()
     char *names = getProjects();
     printf("%s\n", names);
 
+    free(names);
     return 0;
 }
 int helpH()
