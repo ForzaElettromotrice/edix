@@ -20,7 +20,7 @@ int checkDb()
     if (!checkRoleExists(conn, roleNameToCheck))
     {
         D_PRINT("Creating user edix...\n");
-        system("createuser edix -d > /dev/null");
+        system("psql -d postgres -U postgres -c \"SELECT pg_catalog.set_config('search_path', '', false); CREATE ROLE edix NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS;\" > /dev/null");
     }
 
     if (!checkDatabaseExists(conn, dbNameToCheck))
@@ -32,7 +32,7 @@ int checkDb()
 int initDb()
 {
     D_PRINT("Creating database...\n");
-    system("createdb edix -O edix > /dev/null");
+    system("psql -d postgres -U edix -c \"CREATE DATABASE edix;\" > /dev/null");
 
     D_PRINT("Creating Tupx_t...\n");
     system("psql -d edix -U edix -c \"CREATE TYPE Tupx_t AS ENUM ('Bilinear', 'Bicubic');\" > /dev/null");
@@ -165,6 +165,11 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
     PQfinish(conn);
     return 0;
 }
+int addDix(char *projectName, char *name, char *comment)
+{
+    return 0;
+}
+
 int delProject(char *name)
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");

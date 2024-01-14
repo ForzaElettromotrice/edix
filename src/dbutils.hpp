@@ -19,6 +19,7 @@ int checkPostgresService();
 
 int loadProjectOnRedis(char *projectName);
 int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *modEx, uint TTS, bool VCS);
+int addDix(char *projectName, char *name, char *comment);
 int delProject(char *name);
 
 //UTILS
