@@ -14,6 +14,7 @@
 //UTILS
 int isPathIn(const char *path, const char *pathProj);
 int isValidImage(char *path);
+char *askComment();
 
 //PARSERS
 int parseProj(char *line, Env *env);

@@ -69,7 +69,7 @@ int initDb()
     system("psql -d edix -U edix -c \"ALTER TABLE Settings ADD CONSTRAINT V4 UNIQUE (Project),ADD CONSTRAINT V5 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE INITIALLY DEFERRED;\" > /dev/null");
 
     D_PRINT("Creating function CheckTimeFunction...\n");
-    system(R"(psql -d edix -U edix -c "CREATE FUNCTION CheckTimeFunction() RETURNS TRIGGER AS \$\$ BEGIN IF NEW.Istant < (SELECT CDate FROM Project p WHERE p.name = NEW.Project) THEN RAISE EXCEPTION 'Cannot insert a dix with Instant < CDate'; END IF; RETURN NEW; END; \$\$ LANGUAGE plpgsql;" > /dev/null)");
+    system(R"(psql -d edix -U edix -c "CREATE FUNCTION CheckTimeFunction() RETURNS TRIGGER AS \$\$ BEGIN IF NEW.Instant < (SELECT CDate FROM Project p WHERE p.name = NEW.Project) THEN RAISE EXCEPTION 'Cannot insert a dix with Instant < CDate'; END IF; RETURN NEW; END; \$\$ LANGUAGE plpgsql;" > /dev/null)");
 
     D_PRINT("Creating trigger on Dix...\n");
     system("psql -d edix -U edix -c \"CREATE TRIGGER CheckTime BEFORE INSERT ON Dix FOR EACH ROW EXECUTE FUNCTION CheckTimeFunction();\" > /dev/null");
@@ -167,6 +167,38 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
 }
 int addDix(char *projectName, char *name, char *comment)
 {
+    PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
+    if (PQstatus(conn) != CONNECTION_OK)
+    {
+        PQfinish(conn);
+        handle_error("Errore di connessione %s\n", PQerrorMessage(conn));
+    }
+
+    char query[1024];
+    sprintf(query, "INSERT INTO Dix (Instant, Name, Comment, Project) VALUES (NOW(), '%s', '%s', '%s');\n", name,
+            comment, projectName);
+
+    D_PRINT("Adding project to Postgres...\n");
+    PGresult *res = PQexec(conn, query);
+
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+        const char *sqlstate = PQresultErrorField(res, PG_DIAG_SQLSTATE);
+
+        if (strcmp(sqlstate, "23505") == 0)
+            fprintf(stderr, RED "Error:" RESET " Questo dix già esiste!\n");
+        else
+            fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQerrorMessage(conn));
+
+
+        PQclear(res);
+        PQfinish(conn);
+        return 1;
+    }
+
+
+    PQclear(res);
+    PQfinish(conn);
     return 0;
 }
 
@@ -298,6 +330,7 @@ char *getDixs(char *projectName)
         for (int j = 0; j < numCols; j++)
         {
             strcat(names, PQgetvalue(result, i, j));
+            strcat(names, "\t");
         }
         strcat(names, "\n" RESET);
     }
