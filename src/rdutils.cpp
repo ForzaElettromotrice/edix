@@ -1,4 +1,3 @@
-
 #include "rdutils.hpp"
 /*
     Operation IDs delle frocerie:
@@ -79,7 +78,7 @@ int getChecking(char *name, redisReply *reply, redisContext *context)
 }
 
 //cache all settings of a project to redis
-int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool vcs, int project)
+int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool vcs, char  *project)
 {
     //Init redis connection
     redisContext *context;
@@ -124,7 +123,7 @@ int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char
 }
 
 //retrieve all settings cached in redis
-int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tts, char **tpp, bool *vcs, int *project)
+int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tts, char **tpp, bool *vcs, char **project)
 {
     //init redis connection
     redisContext *context;
@@ -140,7 +139,7 @@ int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tt
 
     reply = (redisReply *) redisCommand(context, "GET Project");
     getChecking((char *) "Project", reply, context);
-    *project = (int) reply->integer;
+    *project = reply->str;
 
     reply = (redisReply *) redisCommand(context, "GET Mod_ex");
     getChecking((char *) "Mod_ex", reply, context);

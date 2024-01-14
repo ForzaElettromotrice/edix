@@ -465,7 +465,7 @@ int exitP(Env *env)
 int dixList()
 {
     //TODO: gettare da redis il nome del progetto
-    char *dixs = getDixs((char *) "Federico");
+    char *dixs = getDixs(getStrFromKey("Project"););
     //TODO: i commenti devono essere printati bene, devono avere delle intentazioni
     printf("%s\n", dixs);
 
@@ -480,8 +480,8 @@ int dixCommit(char *name)
 
 
     D_PRINT("Saving on Postgres...\n");
-    addDix((char *) "Federico", name, comment);
-
+    addDix(getStrFromKey("Project"), name, comment);
+    
 
     free(comment);
     return 0;
