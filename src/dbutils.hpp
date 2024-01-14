@@ -15,7 +15,7 @@
 
 int initDb();
 int checkDb();
-
+int checkPostgresService();
 
 int loadProjectOnRedis(char *projectName);
 int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *modEx, uint TTS, bool VCS);

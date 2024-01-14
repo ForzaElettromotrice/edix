@@ -7,19 +7,22 @@
 int parseProj(char *line, Env *env)
 {
     /**
-     *  12 comandi                                      <p>
-     *  - exec        (Esegue frocerie)                 <p>
-     *  - ls        (lista dei file)                    <p>
-     *  - tree      (albero del progetto)               <p>
-     *  - cd        (cambia ambiente di lavoro)         <p>
-     *  - load      (carica un immagine)                <p>
-     *  - rm        (rimuove un immagine)               <p>
-     *  - mkdir     (crea una cartella)                 <p>
-     *  - rmdir     (rimuove una cartella)              <p>
-     *  - mv        (sposta un immagine o cartella)     <p>
-     *  - settings  (apre i settings)                   <p>
-     *  - help     (lista dei comandi disponibili)      <p>
-     *  - exit     (esce dal progetto)                  <p>
+     *  15 comandi                                          <p>
+     *  - exec          (Esegue frocerie)                   <p>
+     *  - ls            (lista dei file)                    <p>
+     *  - tree          (albero del progetto)               <p>
+     *  - cd            (cambia ambiente di lavoro)         <p>
+     *  - load          (carica un immagine)                <p>
+     *  - rm            (rimuove un immagine)               <p>
+     *  - mkdir         (crea una cartella)                 <p>
+     *  - rmdir         (rimuove una cartella)              <p>
+     *  - mv            (sposta un immagine o cartella)     <p>
+     *  - settings      (apre i settings)                   <p>
+     *  - dix commit    (esegue il commit del dix)          <p>
+     *  - dix reload    (ricarica un dix passato)           <p>
+     *  - dix list      (elenca tutti i dix disponibili)    <p>
+     *  - help          (lista dei comandi disponibili)     <p>
+     *  - exit          (esce dal progetto)                 <p>
      */
     char *copy = strdup(line);
     char *token = strtok(copy, " ");
@@ -49,6 +52,8 @@ int parseProj(char *line, Env *env)
         parseHelpP();
     else if (strcmp(token, "exit") == 0)
         parseExitP(env);
+    else if (strcmp(token, "dix") == 0)
+        parseDix();
     else
         printf(RED "Command not found\n" RESET);
 
@@ -70,7 +75,6 @@ int parseExec()
 
     return 0;
 }
-
 int parseLs()
 {
     char *path = strtok(nullptr, " ");
@@ -263,13 +267,36 @@ int parseExitP(Env *env)
 
     return 0;
 }
+int parseDix()
+{
+    char *op = strtok(nullptr, " ");
+    char *name = strtok(nullptr, " ");
+
+    if (op == nullptr || strtok(nullptr, " ") != nullptr)
+    {
+        handle_error("usage" BOLD " dix operation [name]\n" RESET);
+    }
+
+    if (strcmp(op, "list") == 0 && name == nullptr)
+        dixList();
+    else if (strcmp(op, "commit") == 0 && name != nullptr)
+        dixCommit(name);
+    else if (strcmp(op, "reload") == 0 && name != nullptr)
+        dixReload(name);
+    else
+    {
+        handle_error("usage" BOLD " dix operation [name]\n" RESET);
+    }
+
+    return 0;
+}
+
 
 int exec(char *path)
 {
     // TODO:
     return 0;
 }
-
 int ls(const char *path)
 {
 
@@ -289,11 +316,11 @@ int ls(const char *path)
 int tree(char *path)
 {
     char comm[256];
-    
+
     sprintf(comm, "tree %s", path == nullptr ? "." : path);
-    
+
     int status = system(comm);
-    
+
     if (status == -1)
     {
         handle_error("Errore nell'esecuzione del comando tree\n");
@@ -302,14 +329,14 @@ int tree(char *path)
 }
 int cd(char *path)
 {
-    
+
     char comm[256];
 
     // TODO: se non viene specificato il path, torni alla $HOME del progetto; va presa da redis
     sprintf(comm, "cd %s", path);
-    
+
     int status = system(comm);
-    
+
     if (status == -1)
     {
         handle_error("Errore nell'esecuzione del comando cd\n");
@@ -320,16 +347,16 @@ int cd(char *path)
 int loadI(char *path)
 {
     char comm[256];
-    
+
     if (path == nullptr)
     {
         handle_error("Il path non puo' essere null\n");
     }
     // TODO: Prendi da redis il percorso del progetto, sui cui si dovra' caricare l'immagine
-    sprintf(comm, "cp %s %s", path, nullptr);   
-    
+    sprintf(comm, "cp %s %s", path, nullptr);
+
     int status = system(comm);
-    
+
     if (status == -1)
     {
         handle_error("Errore nell'esecuzione del comando load\n");
@@ -340,16 +367,16 @@ int loadI(char *path)
 int rm(char *name)
 {
     char comm[256];
-    
+
     if (name == nullptr)
     {
         handle_error("Il nome del file non puo' essere nullo\n");
     }
-    
+
     sprintf(comm, "rm %s", name);
-    
+
     int status = system(comm);
-    
+
     if (status == -1)
     {
         handle_error("Errore nell'esecuzione del comando rm\n");
@@ -357,50 +384,47 @@ int rm(char *name)
     return 0;
 
 }
-
 int mkdir(char *name)
 {
-    
+
     char comm[256];
- 
+
     if (name == nullptr)
     {
         handle_error("Il nome della directory non puo' essere nullo\n");
     }
-    
+
     sprintf(comm, "mkdir %s", name);
-    
+
     int status = system(comm);
-    
+
     if (status == -1)
     {
         handle_error("Errore nell'esecuzione del comando mkdir\n");
     }
     return 0;
 }
-
 int rmdir(char *name)
 {
     sprintf(name, "-r %s", name);
-    
+
     rm(name);
 
     return 0;
 }
-
 int mv(char *fromPath, char *toPath)
 {
     char comm[256];
-   
+
     if (fromPath == nullptr || toPath == nullptr)
     {
         handle_error("Il nome del path non puo' essere nullo\n");
     }
-   
+
     sprintf(comm, "mv %s %s", fromPath, toPath);
-    
+
     int status = system(comm);
-    
+
     if (status == -1)
     {
         handle_error("Errore nell'esecuzione del comando mv\n");
@@ -433,9 +457,24 @@ int helpP()
 }
 int exitP(Env *env)
 {
-    //TODO:
+    //TODO: rimuovere tutta la roba da redis
     D_PRINT("Uscita dal progetto in corso...\n");
     *env = HOMEPAGE;
+    return 0;
+}
+int dixList()
+{
+    //TODO
+    return 0;
+}
+int dixCommit(char *name)
+{
+    //TODO
+    return 0;
+}
+int dixReload(char *name)
+{
+    //TODO
     return 0;
 }
 
@@ -451,17 +490,15 @@ int isPathIn(const char *path, const char *pathProj)
 
     return res;
 }
-
-
 int isValidImage(char *path)
 {
     char *ext = strrchr(path, '.');
-  
+
     if (ext == nullptr)
     {
         handle_error("Errore nella risoluzione del percorso\n");
     }
-  
+
     if (strcmp(ext, ".png") != 0 || strcmp(ext, ".jpeg") != 0 || strcmp(ext, ".ppm") != 0)
         return -1;
     return 0;

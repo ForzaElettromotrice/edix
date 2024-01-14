@@ -56,16 +56,16 @@ int initDb()
 
     D_PRINT("Creating table Project...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Project (Name VARCHAR(50) PRIMARY KEY NOT NULL,CDate TIMESTAMP NOT NULL,MDate TIMESTAMP NOT NULL,Path VARCHAR(256) UNIQUE NOT NULL,Settings INT NOT NULL);\" > /dev/null");
-    D_PRINT("Creating table Settings_p...\n");
+    D_PRINT("Creating table Settings...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Mod_ex Modex NOT NULL,Comp Compx NOT NULL,TTS Uint5 NOT NULL,TPP Tppx NOT NULL,VCS BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
     D_PRINT("Creating table Dix...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP PRIMARY KEY NOT NULL,Project VARCHAR(50) NOT NULL,CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE);\" > /dev/null");
+    system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP NOT NULL,Project VARCHAR(50) NOT NULL, Name VARCHAR(50),UNIQUE (Project, Name),CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE);\" > /dev/null");
     D_PRINT("Creating table Photo...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Photo (Id SERIAL PRIMARY KEY NOT NULL,Name VARCHAR(50) NOT NULL,Path VARCHAR(256) NOT NULL,Comp Compx NOT NULL,Project VARCHAR(50),Dix TIMESTAMP,CONSTRAINT V7 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE,CONSTRAINT V8 FOREIGN KEY (Dix) REFERENCES Dix(Instant) ON DELETE CASCADE,CONSTRAINT V9 CHECK ((Project IS NOT NULL AND Dix IS NULL) OR (Project IS NULL AND Dix IS NOT NULL)));\" > /dev/null");
 
     D_PRINT("Altering table Project...\n");
     system("psql -d edix -U edix -c \"ALTER TABLE Project ADD CONSTRAINT V1 CHECK (CDate <= MDate),ADD CONSTRAINT V2 UNIQUE (Settings),ADD CONSTRAINT V3 FOREIGN KEY (Settings) REFERENCES Settings(Id) ON DELETE CASCADE INITIALLY DEFERRED;\" > /dev/null");
-    D_PRINT("Altering table Settings_p...\n");
+    D_PRINT("Altering table Settings...\n");
     system("psql -d edix -U edix -c \"ALTER TABLE Settings ADD CONSTRAINT V4 UNIQUE (Project),ADD CONSTRAINT V5 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE INITIALLY DEFERRED;\" > /dev/null");
 
     D_PRINT("Creating function CheckTimeFunction...\n");
@@ -76,7 +76,18 @@ int initDb()
 
     return 0;
 }
+int checkPostgresService()
+{
+    PGconn *conn = PQconnectdb("dbname=postgres user=postgres password=");
 
+    if (PQstatus(conn) != CONNECTION_OK)
+    {
+        PQfinish(conn);
+        handle_error("Postgres is not running\n");
+    }
+
+    return 0;
+}
 
 int loadProjectOnRedis(char *projectName)
 {

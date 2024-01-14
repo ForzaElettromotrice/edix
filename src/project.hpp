@@ -28,6 +28,7 @@ int parseMv();
 int parseSett(Env *env);
 int parseHelpP();
 int parseExitP(Env *env);
+int parseDix();
 
 
 //COMMANDS
@@ -43,6 +44,9 @@ int mv(char *fromPath, char *toPath);
 int settings(Env *env);
 int helpP();
 int exitP(Env *env);
+int dixCommit(char *name);
+int dixList();
+int dixReload(char *name);
 
 
 #endif //EDIX_PROJECT_CH
