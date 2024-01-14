@@ -21,10 +21,10 @@ int loadProjectOnRedis(char *projectName);
 int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *modEx, uint TTS, bool VCS);
 int delProject(char *name);
 
-
 //UTILS
-char **getSettings(PGconn *conn, char *projectName);
 char *getProjects();
+char *getDixs(char *projectName);
+char **getSettings(PGconn *conn, char *projectName);
 char *getPath(PGconn *conn, char *name);
 bool existProject(char *name);
 

@@ -59,7 +59,7 @@ int initDb()
     D_PRINT("Creating table Settings...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Mod_ex Modex NOT NULL,Comp Compx NOT NULL,TTS Uint5 NOT NULL,TPP Tppx NOT NULL,VCS BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
     D_PRINT("Creating table Dix...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP NOT NULL,Project VARCHAR(50) NOT NULL, Name VARCHAR(50),UNIQUE (Project, Name),CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE);\" > /dev/null");
+    system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP PRIMARY KEY NOT NULL,Project VARCHAR(50) NOT NULL, Name VARCHAR(50) NOT NULL, Comment VARCHAR(1024),UNIQUE (Project, Name),CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE);\" > /dev/null");
     D_PRINT("Creating table Photo...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Photo (Id SERIAL PRIMARY KEY NOT NULL,Name VARCHAR(50) NOT NULL,Path VARCHAR(256) NOT NULL,Comp Compx NOT NULL,Project VARCHAR(50),Dix TIMESTAMP,CONSTRAINT V7 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE,CONSTRAINT V8 FOREIGN KEY (Dix) REFERENCES Dix(Instant) ON DELETE CASCADE,CONSTRAINT V9 CHECK ((Project IS NOT NULL AND Dix IS NULL) OR (Project IS NULL AND Dix IS NOT NULL)));\" > /dev/null");
 
@@ -211,39 +211,6 @@ int delProject(char *name)
 }
 
 
-char **getSettings(PGconn *conn, char *projectName)
-{
-    char query[256];
-    sprintf(query, "SELECT * FROM Settings WHERE Project = '%s'", projectName);
-
-    PGresult *result = PQexec(conn, query);
-
-
-    if (PQresultStatus(result) != PGRES_TUPLES_OK)
-    {
-        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
-        PQclear(result);
-        PQfinish(conn);
-        return nullptr;
-    }
-
-
-    int numRows = PQntuples(result);
-    int numCols = PQnfields(result);
-
-
-    char **values = (char **) malloc((numCols + 1) * sizeof(char *));
-
-    for (int i = 0; i < numRows; i++)
-        for (int j = 0; j < numCols; j++)
-            values[j] = strdup(PQgetvalue(result, i, j));
-
-
-    values[numCols] = nullptr;
-    PQclear(result);
-
-    return values;
-}
 char *getProjects()
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
@@ -287,6 +254,85 @@ char *getProjects()
     PQclear(result);
     PQfinish(conn);
     return names;
+}
+char *getDixs(char *projectName)
+{
+    PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
+
+
+    if (PQstatus(conn) != CONNECTION_OK)
+    {
+        PQfinish(conn);
+        fprintf(stderr, "Errore di connessione: %s\n", PQerrorMessage(conn));
+        return nullptr;
+    }
+
+
+    char query[256];
+    sprintf(query, "SELECT Name, Instant, Comment FROM Dix d WHERE d.Project = '%s' ORDER BY Instant", projectName);
+
+    PGresult *result = PQexec(conn, query);
+    if (PQresultStatus(result) != PGRES_TUPLES_OK)
+    {
+        PQclear(result);
+        PQfinish(conn);
+        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        return nullptr;
+    }
+
+
+    int numRows = PQntuples(result);
+    int numCols = PQnfields(result);
+
+    char *names = (char *) malloc(1024 * sizeof(char));
+    sprintf(names, BLUE BOLD "Dix su %s:\n" RESET, projectName);
+
+    for (int i = 0; i < numRows; i++)
+    {
+        strcat(names, YELLOW "- ");
+        for (int j = 0; j < numCols; j++)
+        {
+            strcat(names, PQgetvalue(result, i, j));
+        }
+        strcat(names, "\n" RESET);
+    }
+
+    PQclear(result);
+    PQfinish(conn);
+    return names;
+}
+char **getSettings(PGconn *conn, char *projectName)
+{
+    char query[256];
+    sprintf(query, "SELECT * FROM Settings WHERE Project = '%s'", projectName);
+
+    PGresult *result = PQexec(conn, query);
+
+
+    if (PQresultStatus(result) != PGRES_TUPLES_OK)
+    {
+        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        PQclear(result);
+        PQfinish(conn);
+        return nullptr;
+    }
+
+
+    int numRows = PQntuples(result);
+    int numCols = PQnfields(result);
+
+
+    char **values = (char **) malloc((numCols + 1) * sizeof(char *));
+
+    for (int i = 0; i < numRows; i++)
+        for (int j = 0; j < numCols; j++)
+            values[j] = strdup(PQgetvalue(result, i, j));
+
+
+    values[numCols] = nullptr;
+    PQclear(result);
+
+    return values;
 }
 char *getPath(PGconn *conn, char *name)
 {

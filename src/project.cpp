@@ -464,12 +464,15 @@ int exitP(Env *env)
 }
 int dixList()
 {
-    //TODO
+    //TODO: gettare da redis il nome del progetto
+    char *dixs = getDixs("Federico");
+    printf("%s\n", dixs);
     return 0;
 }
 int dixCommit(char *name)
 {
     //TODO
+    //TODO chiedere se si vuole inserire un commento
     return 0;
 }
 int dixReload(char *name)
