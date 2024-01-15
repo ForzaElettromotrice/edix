@@ -18,8 +18,9 @@ int checkDb();
 int checkPostgresService();
 
 int loadProjectOnRedis(char *projectName);
+int loadDix(char *name, char *projectName);
 int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *modEx, uint TTS, bool VCS);
-int addDix(char *projectName, char *name, char *comment);
+int addDix(char *projectName, char *dixName, char *comment, char **images, char **paths);
 int delProject(char *name);
 
 //UTILS
@@ -27,10 +28,11 @@ char *getProjects();
 char *getDixs(char *projectName);
 char **getSettings(PGconn *conn, char *projectName);
 char *getPath(PGconn *conn, char *name);
+unsigned char *getImageData(char *path, size_t *dim);
 bool existProject(char *name);
 
 bool checkRoleExists(PGconn *conn, const char *roleName);
 bool checkDatabaseExists(PGconn *conn, const char *dbName);
-
+void changeFormat(char **comment);
 
 #endif //EDIX_DBUTILS_HPP

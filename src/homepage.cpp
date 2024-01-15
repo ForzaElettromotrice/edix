@@ -304,10 +304,12 @@ int newP(char *name, bool ask, Env *env)
     }
 
     *env = PROJECT;
+    //TODO: startare il time di TTS in base ai settings
     return 0;
 }
 int openP(char *name, Env *env)
 {
+    //TODO: startare il timer di TTS in base ai settings
     if (!existProject(name))
     {
         handle_error("Questo progetto non esiste!\n");
@@ -345,9 +347,9 @@ int view()
 int helpH()
 {
     printf("Ecco la lista dei comandi da poter eseguire qui sulla homepage:\n\n"
-           BOLD YELLOW "  new\t" RESET "nameProject\t\tCrea un nuovo progetto nameProject\n"
-           BOLD YELLOW "  open\t" RESET "nameProject\t\tApri il progetto nameProject\n"
-           BOLD YELLOW "  del\t" RESET "nameProject\t\tCancella il progetto nameProject\n"
+           BOLD YELLOW "  new\t" RESET "projectName\t\tCrea un nuovo progetto projectName\n"
+           BOLD YELLOW "  open\t" RESET "projectName\t\tApri il progetto projectName\n"
+           BOLD YELLOW "  del\t" RESET "projectName\t\tCancella il progetto projectName\n"
            BOLD YELLOW "  help" RESET "\t\t\t\tPer maggiori informazioni\n"
            BOLD YELLOW "  view" RESET "\t\t\t\tVisualizza tutti i progetti\n"
            BOLD YELLOW "  exit" RESET "\t\t\t\tEsci\n");

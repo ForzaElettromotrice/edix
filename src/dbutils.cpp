@@ -60,8 +60,8 @@ int initDb()
     system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Mod_ex Modex NOT NULL,Comp Compx NOT NULL,TTS Uint5 NOT NULL,TPP Tppx NOT NULL,VCS BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
     D_PRINT("Creating table Dix...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP PRIMARY KEY NOT NULL,Project VARCHAR(50) NOT NULL, Name VARCHAR(50) NOT NULL, Comment VARCHAR(1024),UNIQUE (Project, Name),CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE);\" > /dev/null");
-    D_PRINT("Creating table Photo...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Photo (Id SERIAL PRIMARY KEY NOT NULL,Name VARCHAR(50) NOT NULL,Path VARCHAR(256) NOT NULL,Comp Compx NOT NULL,Project VARCHAR(50),Dix TIMESTAMP,CONSTRAINT V7 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE,CONSTRAINT V8 FOREIGN KEY (Dix) REFERENCES Dix(Instant) ON DELETE CASCADE,CONSTRAINT V9 CHECK ((Project IS NOT NULL AND Dix IS NULL) OR (Project IS NULL AND Dix IS NOT NULL)));\" > /dev/null");
+    D_PRINT("Creating table Image...\n");
+    system("psql -d edix -U edix -c \"CREATE TABLE Image (Id SERIAL PRIMARY KEY NOT NULL,Name VARCHAR(50) NOT NULL,Data Bytea NOT NULL,Comp Compx NOT NULL,Dix TIMESTAMP NOT NULL,Path VARCHAR(256) NOT NULL,CONSTRAINT V8 FOREIGN KEY (Dix) REFERENCES Dix(Instant) ON DELETE CASCADE);\" > /dev/null");
 
     D_PRINT("Altering table Project...\n");
     system("psql -d edix -U edix -c \"ALTER TABLE Project ADD CONSTRAINT V1 CHECK (CDate <= MDate),ADD CONSTRAINT V2 UNIQUE (Settings),ADD CONSTRAINT V3 FOREIGN KEY (Settings) REFERENCES Settings(Id) ON DELETE CASCADE INITIALLY DEFERRED;\" > /dev/null");
@@ -122,6 +122,23 @@ int loadProjectOnRedis(char *projectName)
 
     return 0;
 }
+int loadDix(char *name, char *projectName)
+{
+    PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
+    if (PQstatus(conn) != CONNECTION_OK)
+    {
+        PQfinish(conn);
+        handle_error("(Errore di connessione), %s\n", PQerrorMessage(conn));
+    }
+
+
+    //TODO: prendere tutte le informazioni associate
+
+
+    PQfinish(conn);
+
+    return 0;
+}
 int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *modEx, uint TTS, bool VCS)
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
@@ -165,7 +182,7 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
     PQfinish(conn);
     return 0;
 }
-int addDix(char *projectName, char *name, char *comment)
+int addDix(char *projectName, char *dixName, char *comment, char **images, char **paths)
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
     if (PQstatus(conn) != CONNECTION_OK)
@@ -174,11 +191,77 @@ int addDix(char *projectName, char *name, char *comment)
         handle_error("Errore di connessione %s\n", PQerrorMessage(conn));
     }
 
-    char query[1024];
-    sprintf(query, "INSERT INTO Dix (Instant, Name, Comment, Project) VALUES (NOW(), '%s', '%s', '%s');\n", name,
+    char *pPath = getStrFromKey((char *) "pPath");
+
+
+    size_t qSize = 1024;
+    char *query = (char *) malloc(1024 * sizeof(char *));
+    sprintf(query, "BEGIN;\nINSERT INTO Dix (Instant, Name, Comment, Project) VALUES (NOW(), '%s', '%s', '%s');\n",
+            dixName,
             comment, projectName);
 
-    D_PRINT("Adding project to Postgres...\n");
+
+    for (int i = 0; paths[i] != nullptr; ++i)
+    {
+        size_t iSize;
+        char truePath[256];
+        sprintf(truePath, "%s/.dix/%s/%s", pPath, dixName, images[i]);
+
+        unsigned char *imageData = getImageData(truePath, &iSize);
+        if (imageData == nullptr)
+        {
+            PQfinish(conn);
+            continue;
+        }
+
+        char *line = (char *) malloc((iSize * 2 + 256) * sizeof(char));
+        sprintf(line, "INSERT INTO Image (Name, Comp, Dix, Path, Data) VALUES ('%s', '%s', NOW(), '%s', E'\\\\x",
+                images[i], "PNG", paths[i]);
+
+
+        for (int j = 0; j < iSize; j++)
+            sprintf(line + strlen(line), "%02x", imageData[j]);
+
+
+        strcat(line, "');");
+
+
+        qSize += iSize * 2 + 256;
+        char *tmp = (char *) realloc(query, qSize * sizeof(char));
+        if (tmp == nullptr)
+        {
+            PQfinish(conn);
+            free(imageData);
+            free(query);
+            free(line);
+            free(pPath);
+            handle_error("Error while reallocating!\n");
+        }
+        query = tmp;
+
+        strcat(query, line);
+
+        free(imageData);
+        free(line);
+    }
+
+    free(pPath);
+
+    qSize += 256;
+    char *tmp = (char *) realloc(query, qSize * sizeof(char));
+    if (!tmp)
+    {
+        free(query);
+        PQfinish(conn);
+        handle_error("Error while reallocating!\n");
+    }
+    query = tmp;
+
+    strcat(query, "COMMIT;");
+
+    D_PRINT("%s\n", query);
+
+    D_PRINT("Adding dix to project %s...\n", projectName);
     PGresult *res = PQexec(conn, query);
 
     if (PQresultStatus(res) != PGRES_COMMAND_OK)
@@ -190,17 +273,19 @@ int addDix(char *projectName, char *name, char *comment)
         else
             fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQerrorMessage(conn));
 
-
+        free(query);
         PQclear(res);
         PQfinish(conn);
         return 1;
     }
 
 
+    free(query);
     PQclear(res);
     PQfinish(conn);
     return 0;
 }
+
 
 int delProject(char *name)
 {
@@ -321,6 +406,8 @@ char *getDixs(char *projectName)
     int numRows = PQntuples(result);
     int numCols = PQnfields(result);
 
+    //TODO: formattare per bene la stringa finale
+
     char *names = (char *) malloc(1024 * sizeof(char));
     sprintf(names, BLUE BOLD "Dix su %s:\n" RESET, projectName);
 
@@ -329,7 +416,10 @@ char *getDixs(char *projectName)
         strcat(names, YELLOW "- ");
         for (int j = 0; j < numCols; j++)
         {
-            strcat(names, PQgetvalue(result, i, j));
+            char *line = PQgetvalue(result, i, j);
+            if (j == numCols - 1)
+                changeFormat(&line);
+            strcat(names, line);
             strcat(names, "\t");
         }
         strcat(names, "\n" RESET);
@@ -392,6 +482,35 @@ char *getPath(PGconn *conn, char *name)
     PQclear(result);
     return path;
 }
+unsigned char *getImageData(char *path, size_t *dim)
+{
+    D_PRINT("%s\n", path);
+    FILE *file = fopen(path, "rb");
+    if (!file)
+    {
+        perror("daje");
+        fprintf(stderr, RED "Error: " RESET "Errore nell'apertura del file\n");
+        return nullptr;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    rewind(file);
+
+    auto *bytea_data = (unsigned char *) malloc(file_size * sizeof(unsigned char));
+
+    if (bytea_data == nullptr)
+    {
+        fclose(file);
+        fprintf(stderr, RED "Error:" RESET "Errore nell'allocazione di memoria\n");
+        return nullptr;
+    }
+
+    fread(bytea_data, 1, file_size, file);
+    fclose(file);
+    *dim = file_size;
+    return bytea_data;
+}
 bool existProject(char *name)
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
@@ -448,4 +567,21 @@ bool checkDatabaseExists(PGconn *conn, const char *dbName)
     PQclear(res);
 
     return out;
+}
+void changeFormat(char **comment)
+{
+    char *out = (char *) malloc((strlen(*comment) + 256) * sizeof(char));
+    char *token = strtok(*comment, "\n");
+
+    if (token == nullptr)
+        return;
+
+    sprintf(out, "%s", token);
+    for (token = strtok(nullptr, "\n"); token != nullptr; token = strtok(nullptr, "\n"))
+    {
+        strcat(out, "\n\t\t\t\t\t");
+        strcat(out, token);
+    }
+
+    *comment = out;
 }

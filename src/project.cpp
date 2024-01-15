@@ -7,7 +7,7 @@
 int parseProj(char *line, Env *env)
 {
     /**
-     *  15 comandi                                          <p>
+     *  16 comandi                                          <p>
      *  - exec          (Esegue frocerie)                   <p>
      *  - ls            (lista dei file)                    <p>
      *  - tree          (albero del progetto)               <p>
@@ -21,6 +21,7 @@ int parseProj(char *line, Env *env)
      *  - dix commit    (esegue il commit del dix)          <p>
      *  - dix reload    (ricarica un dix passato)           <p>
      *  - dix list      (elenca tutti i dix disponibili)    <p>
+     *  - force         (forza il push su db)               <p>
      *  - help          (lista dei comandi disponibili)     <p>
      *  - exit          (esce dal progetto)                 <p>
      */
@@ -54,6 +55,8 @@ int parseProj(char *line, Env *env)
         parseExitP(env);
     else if (strcmp(token, "dix") == 0)
         parseDix();
+    else if (strcmp(token, "force") == 0)
+        parseForce();
     else
         printf(RED "Command not found\n" RESET);
 
@@ -84,9 +87,12 @@ int parseLs()
         handle_error("usage" BOLD ITALIC " ls [path ...]\n" RESET);
     }
 
-    char *path_p = getStrFromKey("pPath");
-    if (path_p == nullptr) 
+    char *path_p = getStrFromKey((char *) "pPath");
+    if (path_p == nullptr)
+    {
         handle_error("");
+    }
+
     int res = isPathIn(path, path_p);
     if (res != 0)
     {
@@ -108,9 +114,11 @@ int parseTree()
         handle_error("usage" BOLD ITALIC " tree [path ...]\n" RESET);
     }
 
-    char *path_p = getStrFromKey("pPath");
-    if (path_p == nullptr) 
+    char *path_p = getStrFromKey((char *) "pPath");
+    if (path_p == nullptr)
+    {
         handle_error("");
+    }
     int res = isPathIn(path, path_p);
     if (res != 0)
     {
@@ -244,7 +252,7 @@ int parseSett(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage:" BOLD ITALIC " settings\n" RESET);
+        handle_error("usage" BOLD ITALIC " settings\n" RESET);
     }
 
     settings(env);
@@ -255,7 +263,7 @@ int parseHelpP()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage:" BOLD ITALIC " help\n" RESET);
+        handle_error("usage" BOLD ITALIC " help\n" RESET);
     }
 
     helpP();
@@ -294,6 +302,16 @@ int parseDix()
         handle_error("usage" BOLD " dix operation [name]\n" RESET);
     }
 
+    return 0;
+}
+int parseForce()
+{
+    if (strtok(nullptr, " ") != nullptr)
+    {
+        handle_error("usage" BOLD ITALIC " force\n" RESET);
+    }
+
+    force();
     return 0;
 }
 
@@ -464,15 +482,21 @@ int helpP()
 int exitP(Env *env)
 {
     //TODO: rimuovere tutta la roba da redis
+    //TODO: cambia ch
     D_PRINT("Uscita dal progetto in corso...\n");
     *env = HOMEPAGE;
     return 0;
 }
 int dixList()
 {
-    //TODO: gettare da redis il nome del progetto
-    char *dixs = getDixs(getStrFromKey("Project"));
-    //TODO: i commenti devono essere printati bene, devono avere delle intentazioni
+    char *projectName = getStrFromKey((char *) "Project");
+    char *dixs = getDixs(projectName);
+    if (dixs == nullptr)
+    {
+        free(projectName);
+        free(dixs);
+        return 1;
+    }
     printf("%s\n", dixs);
 
     free(dixs);
@@ -480,21 +504,70 @@ int dixList()
 }
 int dixCommit(char *name)
 {
-    char *comment = askComment();
-    if (comment == nullptr)
-        return 1;
-
-
-    D_PRINT("Saving on Postgres...\n");
-    addDix(getStrFromKey("Project"), name, comment);
-    
-
-    free(comment);
+    //TODO: fare una copia di TUTTO il progetto in una location dentro a .dix
+//    char *comment = askComment();
+//    if (comment == nullptr)
+//        return 1;
+//
+//
+//    char *projectName = getStrFromKey((char *) "Project");
+//    if (addDix(projectName, name, comment))
+//    {
+//        free(projectName);
+//        free(comment);
+//        return 1;
+//    }
+//
+//    free(projectName);
+//    free(comment);
     return 0;
 }
 int dixReload(char *name)
 {
-    //TODO
+    // TODO:
+    char *projectName = getStrFromKey((char *) "Project");
+    if (loadDix(name, projectName))
+    {
+        free(projectName);
+        return 1;
+    }
+
+
+    free(projectName);
+
+    return 0;
+}
+int force()
+{
+    //TODO: testare
+    D_PRINT("Forcing push...\n");
+    char **names = getCharArrayFromRedis((char *) "dixNames");
+    char **comments = getCharArrayFromRedis((char *) "dixComments");
+    char *projectName = getStrFromKey((char *) "pName");
+
+    for (int i = 0; names[i] != nullptr; ++i)
+    {
+        char key[256];
+        sprintf(key, "%sPaths", names[i]);
+        char **paths = getCharArrayFromRedis(key);
+        sprintf(key, "%sImages", names[i]);
+        char **images = getCharArrayFromRedis(key);
+
+        addDix(projectName, names[i], comments[i], images, paths);
+
+        for (int j = 0; paths[j] != nullptr; ++j)
+        {
+            free(paths[j]);
+            free(images[j]);
+        }
+        free(paths);
+        free(images);
+        free(names[i]);
+        free(comments[i]);
+    }
+    free(names);
+    free(comments);
+    free(projectName);
     return 0;
 }
 
