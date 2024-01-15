@@ -85,14 +85,14 @@ int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char
     initRedis(&context);
 
     //send settings to redis
-    setKeyValueInt("ID",id);
-    setKeyValueStr("Project",project);
-    setKeyValueStr("Mod_ex",mod_ex);
-    setKeyValueInt("TTS",tts);
-    setKeyValueInt("VCS",vcs);
-    setKeyValueStr("COMP",comp);
-    setKeyValueStr("TPP",tpp);
-    setKeyValueStr("TUP",tup);
+    setKeyValueInt((char *)"ID",id);
+    setKeyValueStr((char *)"Project",pName);
+    setKeyValueStr((char *)"Mod_ex",mod_ex);
+    setKeyValueInt((char *)"TTS",tts);
+    setKeyValueInt((char *)"VCS",vcs);
+    setKeyValueStr((char *)"COMP",comp);
+    setKeyValueStr((char *)"TPP",tpp);
+    setKeyValueStr((char *)"TUP",tup);
 
     //End redis connection
     redisFree(context);
@@ -112,23 +112,23 @@ int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tt
 
     // Recupera i dati dalle chiavi
  
-    *id = getIntFromKey("ID");
+    *id = getIntFromKey((char *)"ID");
 
-    *project = getStrFromKey("Project");
+    *pName = getStrFromKey((char *)"Project");
 
-    *mod_ex = getStrFromKey("Mod_ex");
+    *mod_ex = getStrFromKey((char *)"Mod_ex");
 
-    *tts = getIntFromKey("TTS");
+    *tts = getIntFromKey((char *)"TTS");
 
     auto *reply = (redisReply *) redisCommand(context, "GET VCS");
     getChecking((char *) "VCS", reply, context);
     *vcs = reply->integer == 1;
 
-    *comp = getStrFromKey("COMP");
+    *comp = getStrFromKey((char *)"COMP");
 
-    *tpp = getStrFromKey("TPP");
+    *tpp = getStrFromKey((char *)"TPP");
 
-    *tup = getStrFromKey("TUP");
+    *tup = getStrFromKey((char *)"TUP");
 
     //TODO: printa tutti i valori e compara con i SET
     //End redis connection
