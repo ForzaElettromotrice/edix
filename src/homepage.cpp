@@ -57,7 +57,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
     answer[bRead - 1] = '\0';
     sprintf(path, "%s/%s", answer, name);
 
-    printf("Che estenzione vuoi abbiano le immagini che crei?\n\t- PPM\n\t- PNG\n\t- JPEG\n-> ");
+    printf("Che estensione vuoi abbiano le immagini che crei?\n\t- PPM\n\t- PNG\n\t- JPEG\n-> ");
     if ((bRead = getline(&answer, &aSize, stdin)) == -1)
     {
         fprintf(stderr, "Bad answer!\n");

@@ -112,7 +112,7 @@ int loadProjectOnRedis(char *projectName)
                     strtoul(settings[4], nullptr, 10),
                     settings[5],
                     strcmp("t", settings[6]) == 0,
-                    (int) strtol(settings[7], nullptr, 10));
+                    settings[7]);
 
 
     for (int i = 0; settings[i] != nullptr; ++i)
