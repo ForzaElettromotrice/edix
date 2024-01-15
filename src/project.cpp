@@ -84,13 +84,17 @@ int parseLs()
         handle_error("usage" BOLD ITALIC " ls [path ...]\n" RESET);
     }
 
-    //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
-    int res = isPathIn(path, nullptr);
+    char *path_p = getStrFromKey("pPath");
+    if (path_p == nullptr) 
+        handle_error("");
+    int res = isPathIn(path, path_p);
     if (res != 0)
     {
+        free(path_p);
         handle_error("Il path non si trova all'interno del progetto\n");
     }
 
+    free(path_p);
     ls(path);
 
     return 0;
@@ -104,8 +108,10 @@ int parseTree()
         handle_error("usage" BOLD ITALIC " tree [path ...]\n" RESET);
     }
 
-    //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
-    int res = isPathIn(path, nullptr);
+    char *path_p = getStrFromKey("pPath");
+    if (path_p == nullptr) 
+        handle_error("");
+    int res = isPathIn(path, path_p);
     if (res != 0)
     {
         handle_error("Il path non si trova all'interno del progetto\n");
@@ -465,7 +471,7 @@ int exitP(Env *env)
 int dixList()
 {
     //TODO: gettare da redis il nome del progetto
-    char *dixs = getDixs(getStrFromKey("Project"););
+    char *dixs = getDixs(getStrFromKey("Project"));
     //TODO: i commenti devono essere printati bene, devono avere delle intentazioni
     printf("%s\n", dixs);
 
