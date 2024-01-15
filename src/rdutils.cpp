@@ -77,6 +77,25 @@ int getChecking(char *name, redisReply *reply, redisContext *context)
     return 0;
 }
 
+//cache project infos on redis
+int projectToRedis(char *name, char *cDate, char *mDate, char *path, int settings){
+    //initialize conn with redis
+    redisContext *context;
+    initRedis(&context)
+
+    //send project to redis
+    setKeyValueStr((char *)"Name",name);
+    setKeyValueStr((char *)"CDate",cDate);
+    setKeyValueStr((char *)"MDate",mDate);
+    setKeyValueStr((char *)"pPath",path);
+    setKeyValueInt((char *)"Settings",settings);
+
+    //end redis connection
+    redisFree(context);
+
+    return 0;
+}
+
 //cache all settings of a project to redis
 int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool vcs, char  *pName)
 {
@@ -100,7 +119,8 @@ int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char
     return 0;
 }
 
-//retrieve all settings cached in redis
+
+//retrieve all settings of a project cached in redis
 int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tts, char **tpp, bool *vcs, char **pName)
 {
     //init redis connection
