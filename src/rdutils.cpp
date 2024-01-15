@@ -257,3 +257,25 @@ int  getIntFromKey(char *key){
     redisFree(context);
     return value;
 }
+
+//cache on redis a dix commit
+int dixCommitToRedis(char *name, char *comment, char **paths){
+    /*
+    //init connection to redis
+    redisContext *context;
+    initRedis(&context);
+
+    //store data to redis
+    setKeyValueStr((char *)"dixName",name);
+    setKeyValueStr((char *)"dixComment",comment);
+    i < sizeof(myStrings) / sizeof(myStrings[0])
+    for(int i; i< sizeof())
+
+    //finalize connection
+    redisFree(context);
+    */
+}
+
+char **getCharArrayFromRedis(char *key){
+    return nullptr;
+}
