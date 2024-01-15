@@ -255,18 +255,47 @@ int getIntFromKey(char *key)
 }
 
 
-int dixCommitToRedis(char *name, char *comment, char **paths)
-{
+
+//cache on redis a dix commit
+int dixCommitToRedis(char *name, char *comment, char **paths, char **images){
     /*
     //init connection to redis
     redisContext *context;
     initRedis(&context);
 
     //store data to redis
-    setKeyValueStr((char *)"dixName",name);
-    setKeyValueStr((char *)"dixComment",comment);
-    i < sizeof(myStrings) / sizeof(myStrings[0])
-    for(int i; i< sizeof())
+    //TODO: CREA LE CHIAVI PERSISTENTI DEGLI ARRAY DIX
+    redisReply *reply = redisCommand(context,"SADD dixNames %s",name);
+    if (reply == NULL || reply->type == REDIS_REPLY_ERROR) {
+        printf("Error while appending\n");
+        freeReplyObject(reply);
+        redisFree(context);
+        exit(EXIT_FAILURE);
+    }
+    freeReplyObject(reply);
+    
+    *reply = redisCommand(context,"SADD dixComments %s",comment);
+    if (reply == NULL || reply->type == REDIS_REPLY_ERROR) {
+        printf("Errore durante l'aggiunta dell'elemento al set\n");
+        freeReplyObject(reply);
+        redisFree(context);
+        exit(EXIT_FAILURE);
+    }
+    freeReplyObject(reply);
+    
+    for(int i; i < sizeof(paths) / sizeof(paths[0]); ++i){
+        char path[32] = "path";
+        char *pathname = strdup(name);
+        if (pathname == nullptr){
+            handle_error("Error while duplicating string");
+            return 1;
+        }
+        strcat(pathname,path);
+        *reply = redisCommand(context,"RPUSH %s %s", pathname,paths[i]);
+        freeReplyObject(reply);
+    }
+
+
 
     //finalize connection
     redisFree(context);
