@@ -12,7 +12,7 @@
 */
 //TODO TEST DELLE FUNCS
 
-int initRedis(redisContext **context)
+int openConnection(redisContext **context)
 {
     *context = redisConnect("localhost", 6379);
 
@@ -73,18 +73,18 @@ int getChecking(char *name, redisReply *reply, redisContext *context)
 
 int projectToRedis(char *name, char *cDate, char *mDate, char *path, int settings)
 {
-    //initialize conn with redis
-    redisContext *context;
-    initRedis(&context);
 
-    //send project to redis
-    setKeyValueStr((char *) "Name", name);
+    redisContext *context;
+    openConnection(&context);
+
+    //TODO:
+    D_PRINT("Adding project name on redis...\n");
+    setKeyValueStr((char *) "pName", name);
     setKeyValueStr((char *) "CDate", cDate);
     setKeyValueStr((char *) "MDate", mDate);
     setKeyValueStr((char *) "pPath", path);
     setKeyValueInt((char *) "Settings", settings);
 
-    //end redis connection
     redisFree(context);
 
     return 0;
@@ -93,7 +93,7 @@ int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char
 {
     //Init redis connection
     redisContext *context;
-    initRedis(&context);
+    openConnection(&context);
 
     //send settings to redis
     setKeyValueInt((char *) "ID", id);
@@ -114,7 +114,7 @@ int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tt
 {
     //init redis connection
     redisContext *context;
-    initRedis(&context);
+    openConnection(&context);
 
     //TODO: controllare i return di getChecking...
     //TODO: poi sta funzione non me piace, ce deve esse un modo piu intelligente di farla
@@ -153,7 +153,7 @@ int setKeyValueStr(char *key, char *value)
 {
 
     redisContext *context;
-    initRedis(&context);
+    openConnection(&context);
 
 
     auto *reply = (redisReply *) redisCommand(context, "SET %s %s", key, value);
@@ -179,7 +179,7 @@ int setKeyValueInt(char *key, int value)
 {
 
     redisContext *context;
-    initRedis(&context);
+    openConnection(&context);
 
 
     auto *reply = (redisReply *) redisCommand(context, "SET %s %d", key, value);
@@ -201,121 +201,12 @@ int setKeyValueInt(char *key, int value)
 
     return 0;
 }
-
-
-char *getStrFromKey(char *key)
-{
-
-    redisContext *context;
-    initRedis(&context);
-
-
-    auto reply = (redisReply *) redisCommand(context, "GET %s", key);
-    getChecking(key, reply, context);
-
-    char *value;
-    if (reply->type == REDIS_REPLY_STRING)
-    {
-        value = strdup(reply->str);
-    } else
-    {
-        fprintf(stderr, "the object you received is not a str!");
-        return nullptr;
-    }
-
-    freeReplyObject(reply);
-
-    redisFree(context);
-    return value;
-}
-int getIntFromKey(char *key)
-{
-
-    redisContext *context;
-    initRedis(&context);
-
-
-    auto reply = (redisReply *) redisCommand(context, "GET %s", key);
-    getChecking(key, reply, context);
-
-    int value;
-    if (reply->type == REDIS_REPLY_STRING)
-    {
-        value = (int) strtol(reply->str, nullptr, 10);
-    } else
-    {
-        fprintf(stderr, "the object you received is not a str!");
-        return -9999;
-    }
-
-    freeReplyObject(reply);
-    //end connection;
-    redisFree(context);
-    return value;
-}
-
-
-//cache on redis a dix commit
-int dixCommitToRedis(char *name, char *comment, char **paths, char **images)
-{
-
-    redisContext *context;
-    initRedis(&context);
-
-    setElementToRedis((char *) "dixNames", name);
-    setElementToRedis((char *) "dixComments", comment);
-
-
-    char *pathname;
-    for (int i = 0; paths[i] != nullptr; i++)
-    {
-        char path[32] = "Paths";
-        pathname = strdup(name);
-        if (pathname == nullptr)
-        {
-            handle_error("Error while duplicating string");
-            return 1;
-        }
-        strcat(pathname, path);
-        setElementToRedis(pathname, paths[i]);
-    }
-
-    char *imgname;
-    for (int i = 0; images[i] != nullptr; i++)
-    {
-        char img[32] = "Images";
-        imgname = strdup(name);
-        if (imgname == nullptr)
-        {
-            handle_error("Error while duplicating string");
-            return 1;
-        }
-
-        strcat(imgname, img);
-        setElementToRedis(imgname, images[i]);
-
-
-    }
-
-    //finalize connection
-    getCharArrayFromRedis((char *) "dixNames");
-    getCharArrayFromRedis((char *) "dixComments");
-    getCharArrayFromRedis(pathname);
-    getCharArrayFromRedis(imgname);
-
-    free(pathname);
-    free(imgname);
-    redisFree(context);
-
-    return 0;
-}
-
 int setElementToRedis(char *key, char *value)
 {
     redisContext *context;
-    initRedis(&context);
+    openConnection(&context);
 
-    auto *reply = (redisReply *) redisCommand(context, "SADD %s %s", key, value);
+    auto *reply = (redisReply *) redisCommand(context, "RPUSH %s %s", key, value);
     if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
     {
         printf("Error while appending an element to list \n");
@@ -329,45 +220,96 @@ int setElementToRedis(char *key, char *value)
     return 0;
 }
 
+
+char *getStrFromKey(char *key)
+{
+
+    redisContext *context;
+    openConnection(&context);
+
+
+    auto reply = (redisReply *) redisCommand(context, "GET %s", key);
+    getChecking(key, reply, context);
+
+    char *value;
+    if (reply->type == REDIS_REPLY_STRING)
+    {
+        value = strdup(reply->str);
+    } else
+    {
+        fprintf(stderr, "the object you received is not a str!\n");
+        return nullptr;
+    }
+
+    freeReplyObject(reply);
+
+    redisFree(context);
+    return value;
+}
+int getIntFromKey(char *key)
+{
+
+    redisContext *context;
+    openConnection(&context);
+
+
+    auto reply = (redisReply *) redisCommand(context, "GET %s", key);
+    getChecking(key, reply, context);
+
+    int value;
+    if (reply->type == REDIS_REPLY_STRING)
+    {
+        value = (int) strtol(reply->str, nullptr, 10);
+    } else
+    {
+        fprintf(stderr, "the object you received is not a str!\n");
+        return -9999;
+    }
+
+    freeReplyObject(reply);
+    //end connection;
+    redisFree(context);
+    return value;
+}
 char **getCharArrayFromRedis(char *key)
 {
     redisContext *context;
-    initRedis(&context);
+    openConnection(&context);
 
-    auto *reply = (redisReply *) redisCommand(context, "SMEMBERS %s", key);
-    if (reply == NULL || reply->type != REDIS_REPLY_ARRAY)
+    auto *reply = (redisReply *) redisCommand(context, "LRANGE %s 0 -1", key);
+    if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY)
     {
-        printf("Error while retrieving set elements\n");
+        fprintf(stderr, RED "Error: " RESET "Error while retrieving set elements\n");
         freeReplyObject(reply);
         redisFree(context);
         exit(EXIT_FAILURE);
     }
 
-
     size_t num_elements = reply->elements;
-    char **elements_array = (char **) malloc(num_elements * sizeof(char *));
-    if (elements_array == NULL)
+    char **elements_array = (char **) malloc((num_elements + 1) * sizeof(char *));
+    if (elements_array == nullptr)
     {
-        printf("Error while allocating array\n");
+        fprintf(stderr, RED "Error: " RESET "Error while allocating array\n");
         freeReplyObject(reply);
         redisFree(context);
-        exit(EXIT_FAILURE);
+        return nullptr;
     }
 
     for (size_t i = 0; i < num_elements; ++i)
     {
         elements_array[i] = strdup(reply->element[i]->str);
-        if (elements_array[i] == NULL)
+        if (elements_array[i] == nullptr)
         {
-            printf("Error while duplicating string\n");
+            fprintf(stderr, RED "Error: " RESET "Error while duplicating string\n");
             freeReplyObject(reply);
             free(elements_array);
             redisFree(context);
-            exit(EXIT_FAILURE);
+            return nullptr;
         }
     }
 
+    elements_array[num_elements] = nullptr;
+    freeReplyObject(reply);
     redisFree(context);
-
     return elements_array;
 }

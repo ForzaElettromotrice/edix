@@ -198,6 +198,11 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
 }
 int addDix(char *projectName, char *dixName, char *comment, char **images, char **paths)
 {
+    for (int i = 0; paths[i] != nullptr; ++i)
+    {
+        D_PRINT("%s\n", paths[i]);
+    }
+
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
     if (PQstatus(conn) != CONNECTION_OK)
     {
@@ -217,6 +222,7 @@ int addDix(char *projectName, char *dixName, char *comment, char **images, char 
 
     for (int i = 0; paths[i] != nullptr; ++i)
     {
+        D_PRINT("path = %s\timage = %s\n", paths[i], images[i]);
         size_t iSize;
         char truePath[256];
         sprintf(truePath, "%s/.dix/%s/%s", pPath, dixName, images[i]);
@@ -257,9 +263,11 @@ int addDix(char *projectName, char *dixName, char *comment, char **images, char 
 
         free(imageData);
         free(line);
+        D_PRINT("Fine for\n");
     }
 
     free(pPath);
+
 
     qSize += 256;
     char *tmp = (char *) realloc(query, qSize * sizeof(char));
@@ -533,7 +541,6 @@ char *getPath(PGconn *conn, char *name)
 }
 unsigned char *getImageData(char *path, size_t *dim)
 {
-    D_PRINT("%s\n", path);
     FILE *file = fopen(path, "rb");
     if (!file)
     {
@@ -548,6 +555,7 @@ unsigned char *getImageData(char *path, size_t *dim)
 
     auto *bytea_data = (unsigned char *) malloc(file_size * sizeof(unsigned char));
 
+
     if (bytea_data == nullptr)
     {
         fclose(file);
@@ -555,9 +563,12 @@ unsigned char *getImageData(char *path, size_t *dim)
         return nullptr;
     }
 
+    D_PRINT("fread\n");
     fread(bytea_data, 1, file_size, file);
+    D_PRINT("fread done\n");
     fclose(file);
     *dim = file_size;
+
     return bytea_data;
 }
 bool existProject(char *name)

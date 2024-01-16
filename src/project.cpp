@@ -504,11 +504,14 @@ int dixList()
 }
 int dixCommit(char *name)
 {
+    //TODO: se una sola delle operazioni fallisce, tutte le altre devono essere annullate
     char *projectPath = getStrFromKey((char *) "pPath");
     if (checkDix(projectPath, name))
         return 1;
 
+
     char *comment = askComment();
+    setElementToRedis((char *) "dixNames", name);
     setElementToRedis((char *) "dixComments", comment);
 
     if (cloneProject(projectPath, projectPath, name))
@@ -541,6 +544,7 @@ int force()
     char **names = getCharArrayFromRedis((char *) "dixNames");
     char **comments = getCharArrayFromRedis((char *) "dixComments");
     char *projectName = getStrFromKey((char *) "pName");
+
 
     for (int i = 0; names[i] != nullptr; ++i)
     {
@@ -646,14 +650,15 @@ int checkDix(char *projectPath, char *dixName)
     DIR *dir = opendir(path);
     if (!dir)
     {
-        sprintf(path, "mkdir -p %s", path);
-        if (system(path) != 0)
+        char command[256];
+        sprintf(command, "mkdir -p %s", path);
+
+        if (system(command) != 0)
             return 1;
     } else
     {
         handle_error("Dix già esistente!\n");
     }
-
 
     return 0;
 }
@@ -669,28 +674,27 @@ int cloneProject(char *projectPath, char *path, char *dixName)
     struct dirent *entry;
     while ((entry = readdir(dir)) != nullptr)
     {
-        if(entry->d_name[0] == '.')
-                continue;
+        if (entry->d_name[0] == '.')
+            continue;
 
         struct stat file_stat{};
+        char *newPath = (char *) malloc(256 * sizeof(char));
+        if (newPath == nullptr)
+            return 1;
 
-        if (stat(path, &file_stat) == -1)
+        sprintf(newPath, "%s/%s", path, entry->d_name);
+
+        if (stat(newPath, &file_stat) == -1)
         {
             fprintf(stderr, RED "Error:" RESET "Errore nell'ottenere le informazioni sul file\n");
             continue;
         }
         if (S_ISDIR(file_stat.st_mode))
         {
-
-            char *newPath = (char *)malloc(256 * sizeof(char));
-            if (newPath == nullptr)
-                return 1;
-            sprintf(newPath, "%s/%s", path, entry->d_name);
             cloneProject(projectPath, newPath, dixName);
-            free(newPath);
         } else
         {
-            char *key = (char *)malloc(256 * sizeof(char));
+            char *key = (char *) malloc(256 * sizeof(char));
             if (key == nullptr)
                 return 1;
 
@@ -701,7 +705,7 @@ int cloneProject(char *projectPath, char *path, char *dixName)
 
             free(key);
 
-            char *command = (char *)malloc(256 * sizeof(char));
+            char *command = (char *) malloc(256 * sizeof(char));
             if (command == nullptr)
                 return 1;
 
@@ -709,8 +713,7 @@ int cloneProject(char *projectPath, char *path, char *dixName)
             system(command);
             free(command);
         }
-
-
+        free(newPath);
     }
     free(entry);
     closedir(dir);

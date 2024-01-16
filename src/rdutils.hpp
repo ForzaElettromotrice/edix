@@ -12,9 +12,9 @@ int projectToRedis(char *name, char *cDate, char *mDate, char *path, int setting
 
 //utils
 int dixCommitToRedis(char *name, char *comment, char **paths, char **images);
-int setElementToRedis(char *key,char *value);
+int setElementToRedis(char *key, char *value);
 char **getCharArrayFromRedis(char *key);
-int initRedis(redisContext **context);
+int openConnection(redisContext **context);
 int setChecking(char *name, redisReply *reply, redisContext *context);
 int getChecking(char *name, redisReply *reply, redisContext *context);
 int checkRedisService();
