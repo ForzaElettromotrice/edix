@@ -646,7 +646,7 @@ int checkDix(char *projectPath, char *dixName)
     DIR *dir = opendir(path);
     if (!dir)
     {
-        sprintf(path, "mkdir %s", path);
+        sprintf(path, "mkdir -p %s", path);
         if (system(path) != 0)
             return 1;
     } else
@@ -669,6 +669,9 @@ int cloneProject(char *projectPath, char *path, char *dixName)
     struct dirent *entry;
     while ((entry = readdir(dir)) != nullptr)
     {
+        if(entry->d_name[0] == '.')
+                continue;
+
         struct stat file_stat{};
 
         if (stat(path, &file_stat) == -1)
@@ -678,20 +681,33 @@ int cloneProject(char *projectPath, char *path, char *dixName)
         }
         if (S_ISDIR(file_stat.st_mode))
         {
-            char newPath[256];
+
+            char *newPath = (char *)malloc(256 * sizeof(char));
+            if (newPath == nullptr)
+                return 1;
             sprintf(newPath, "%s/%s", path, entry->d_name);
             cloneProject(projectPath, newPath, dixName);
+            free(newPath);
         } else
         {
-            char key[256];
+            char *key = (char *)malloc(256 * sizeof(char));
+            if (key == nullptr)
+                return 1;
+
             sprintf(key, "%sImages", dixName);
             setElementToRedis(key, entry->d_name);
             sprintf(key, "%sPaths", dixName);
             setElementToRedis(key, path);
 
-            char command[256];
+            free(key);
+
+            char *command = (char *)malloc(256 * sizeof(char));
+            if (command == nullptr)
+                return 1;
+
             sprintf(command, "cp %s/%s %s/.dix/%s", path, entry->d_name, projectPath, dixName);
             system(command);
+            free(command);
         }
 
 
