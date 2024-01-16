@@ -265,6 +265,7 @@ int dixCommitToRedis(char *name, char *comment, char **paths, char **images)
     setElementToRedis((char *) "dixNames", name);
     setElementToRedis((char *) "dixComments", comment);
 
+
     char *pathname;
     for (int i = 0; paths[i] != nullptr; i++)
     {
@@ -289,8 +290,10 @@ int dixCommitToRedis(char *name, char *comment, char **paths, char **images)
             handle_error("Error while duplicating string");
             return 1;
         }
+
         strcat(imgname, img);
         setElementToRedis(imgname, images[i]);
+
 
     }
 
@@ -365,6 +368,6 @@ char **getCharArrayFromRedis(char *key)
     }
 
     redisFree(context);
-    //TODO: la lista che ritorna deve avere come ultimo valore nullptr, così ci posso iterare sopra senza sapere la lunghezza
+
     return elements_array;
 }
