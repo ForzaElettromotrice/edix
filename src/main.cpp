@@ -3,6 +3,7 @@
 
 int main(int argc, char *argv[])
 {
+
     if (checkPostgresService() || checkRedisService())
         exit(EXIT_FAILURE);
     checkDb();

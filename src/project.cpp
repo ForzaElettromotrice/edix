@@ -504,22 +504,19 @@ int dixList()
 }
 int dixCommit(char *name)
 {
-    //TODO: fare una copia di TUTTO il progetto in una location dentro a .dix
-//    char *comment = askComment();
-//    if (comment == nullptr)
-//        return 1;
-//
-//
-//    char *projectName = getStrFromKey((char *) "Project");
-//    if (addDix(projectName, name, comment))
-//    {
-//        free(projectName);
-//        free(comment);
-//        return 1;
-//    }
-//
-//    free(projectName);
-//    free(comment);
+    char *projectPath = getStrFromKey((char *) "pPath");
+    if (checkDix(projectPath, name))
+        return 1;
+
+    char *comment = askComment();
+    setElementToRedis((char *) "dixComments", comment);
+
+    if (cloneProject(projectPath, projectPath, name))
+    {
+        handle_error("Errore nella clonazione del progetto!\n");
+    }
+
+
     return 0;
 }
 int dixReload(char *name)
@@ -640,4 +637,67 @@ char *askComment()
 
     return comment;
 
+}
+int checkDix(char *projectPath, char *dixName)
+{
+    char path[256];
+    sprintf(path, "%s/.dix/%s", projectPath, dixName);
+
+    DIR *dir = opendir(path);
+    if (!dir)
+    {
+        sprintf(path, "mkdir %s", path);
+        if (system(path) != 0)
+            return 1;
+    } else
+    {
+        handle_error("Dix già esistente!\n");
+    }
+
+
+    return 0;
+}
+int cloneProject(char *projectPath, char *path, char *dixName)
+{
+    DIR *dir = opendir(path);
+
+    if (dir == nullptr)
+    {
+        handle_error("Errore nell'apertura della directory: %s\n", strerror(errno));
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != nullptr)
+    {
+        struct stat file_stat{};
+
+        if (stat(path, &file_stat) == -1)
+        {
+            fprintf(stderr, RED "Error:" RESET "Errore nell'ottenere le informazioni sul file\n");
+            continue;
+        }
+        if (S_ISDIR(file_stat.st_mode))
+        {
+            char newPath[256];
+            sprintf(newPath, "%s/%s", path, entry->d_name);
+            cloneProject(projectPath, newPath, dixName);
+        } else
+        {
+            char key[256];
+            sprintf(key, "%sImages", dixName);
+            setElementToRedis(key, entry->d_name);
+            sprintf(key, "%sPaths", dixName);
+            setElementToRedis(key, path);
+
+            char command[256];
+            sprintf(command, "cp %s/%s %s/.dix/%s", path, entry->d_name, projectPath, dixName);
+            system(command);
+        }
+
+
+    }
+    free(entry);
+    closedir(dir);
+
+    return 0;
 }

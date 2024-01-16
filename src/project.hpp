@@ -8,6 +8,8 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include <dirent.h>
+#include <sys/stat.h>
 #include "dbutils.hpp"
 #include "utils.hpp"
 
@@ -15,6 +17,9 @@
 int isPathIn(const char *path, const char *pathProj);
 int isValidImage(char *path);
 char *askComment();
+int checkDix(char *projectPath, char *dixName);
+int cloneProject(char *projectPath, char *path, char *dixName);
+
 
 //PARSERS
 int parseProj(char *line, Env *env);
