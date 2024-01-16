@@ -258,54 +258,102 @@ int getIntFromKey(char *key)
 
 //cache on redis a dix commit
 int dixCommitToRedis(char *name, char *comment, char **paths, char **images){
-    /*
-    //init connection to redis
+
     redisContext *context;
     initRedis(&context);
 
-    //store data to redis
-    //TODO: CREA LE CHIAVI PERSISTENTI DEGLI ARRAY DIX
-    redisReply *reply = redisCommand(context,"SADD dixNames %s",name);
-    if (reply == NULL || reply->type == REDIS_REPLY_ERROR) {
-        printf("Error while appending\n");
-        freeReplyObject(reply);
-        redisFree(context);
-        exit(EXIT_FAILURE);
-    }
-    freeReplyObject(reply);
+    setElementToRedis((char *)"dixNames",name);
+    setElementToRedis((char *)"dixComments",comment);
     
-    *reply = redisCommand(context,"SADD dixComments %s",comment);
-    if (reply == NULL || reply->type == REDIS_REPLY_ERROR) {
-        printf("Errore durante l'aggiunta dell'elemento al set\n");
-        freeReplyObject(reply);
-        redisFree(context);
-        exit(EXIT_FAILURE);
-    }
-    freeReplyObject(reply);
-    
-    for(int i; i < sizeof(paths) / sizeof(paths[0]); ++i){
-        char path[32] = "path";
-        char *pathname = strdup(name);
+    char *pathname;
+    for(int i = 0; paths[i] != nullptr ; i++){
+        char path[32] = "Paths";
+        pathname = strdup(name);
         if (pathname == nullptr){
             handle_error("Error while duplicating string");
             return 1;
         }
         strcat(pathname,path);
-        *reply = redisCommand(context,"RPUSH %s %s", pathname,paths[i]);
-        freeReplyObject(reply);
+        setElementToRedis(pathname,paths[i]);
     }
 
-
+    char *imgname;
+    for(int i = 0; images[i] != nullptr ; i++){
+        char img[32] = "Images";
+        imgname = strdup(name);
+        if (imgname == nullptr){
+            handle_error("Error while duplicating string");
+            return 1;
+        }
+        strcat(imgname,img);
+        setElementToRedis(imgname,images[i]);
+        
+    }
 
     //finalize connection
+    getCharArrayFromRedis((char *)"dixNames");
+    getCharArrayFromRedis((char *)"dixComments");
+    getCharArrayFromRedis(pathname);
+    getCharArrayFromRedis(imgname);
+    
+    free(pathname);
+    free(imgname);
     redisFree(context);
-    */
+ 
     return 0;
 }
 
-char **getCharArrayFromRedis(char *key)
-{
+int setElementToRedis(char *key,char *value){
+    redisContext *context;
+    initRedis(&context);
 
+    redisReply *reply = (redisReply *)redisCommand(context,"SADD %s %s", key,value);
+    if (reply == NULL || reply->type == REDIS_REPLY_ERROR) {
+        printf("Error while appending an element to list \n");
+        freeReplyObject(reply);
+        redisFree(context);
+        return 1;
+    }
+    freeReplyObject(reply);
+
+    redisFree(context);
+    return 0;
+}
+
+char **getCharArrayFromRedis(char *key){
+    redisContext *context;
+    initRedis(&context);
+
+    redisReply *reply = (redisReply *)redisCommand(context, "SMEMBERS %s", key);
+    if (reply == NULL || reply->type != REDIS_REPLY_ARRAY) {
+        printf("Error while retrieving set elements\n");
+        freeReplyObject(reply);
+        redisFree(context);
+        exit(EXIT_FAILURE);
+    }
+
+
+    size_t num_elements = reply->elements;
+    char **elements_array = (char **)malloc(num_elements * sizeof(char *));
+    if (elements_array == NULL) {
+        printf("Error while allocating array\n");
+        freeReplyObject(reply);
+        redisFree(context);
+        exit(EXIT_FAILURE);
+    }
+
+    for (size_t i = 0; i < num_elements; ++i) {
+        elements_array[i] = strdup(reply->element[i]->str);
+        if (elements_array[i] == NULL) {
+            printf("Error while duplicating string\n");
+            freeReplyObject(reply);
+            free(elements_array);
+            redisFree(context);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    redisFree(context);
     //TODO: la lista che ritorna deve avere come ultimo valore nullptr, così ci posso iterare sopra senza sapere la lunghezza
-    return nullptr;
+    return elements_array;
 }
