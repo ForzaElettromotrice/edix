@@ -104,7 +104,7 @@ int loadProjectOnRedis(char *projectName)
     if (settings == nullptr)
         return 1;
 
-    char **project = getProject(projectName);
+    char **project = getProject(conn, projectName);
     if (project == nullptr)
         return 1;
 
@@ -112,7 +112,7 @@ int loadProjectOnRedis(char *projectName)
                    project[1],
                    project[2],
                    project[3],
-                  (int) strtol(project[4], nullptr, 10));
+                   (int) strtol(project[4], nullptr, 10));
 
     settingsToRedis((int) strtol(settings[0], nullptr, 10),
                     settings[1],
@@ -445,18 +445,8 @@ char *getDixs(char *projectName)
     return names;
 }
 
-char **getProject(char *projectName)
+char **getProject(PGconn *conn, char *projectName)
 {
-    PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
-
-
-    if (PQstatus(conn) != CONNECTION_OK)
-    {
-        PQfinish(conn);
-        fprintf(stderr, "Errore di connessione: %s\n", PQerrorMessage(conn));
-        return nullptr;
-    }
-
     char query[256];
     sprintf(query, "SELECT * FROM Project WHERE Name = '%s'", projectName);
 
@@ -488,7 +478,6 @@ char **getProject(char *projectName)
 
     return values;
 }
-
 char **getSettings(PGconn *conn, char *projectName)
 {
     char query[256];
