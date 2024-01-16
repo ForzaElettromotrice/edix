@@ -104,6 +104,15 @@ int loadProjectOnRedis(char *projectName)
     if (settings == nullptr)
         return 1;
 
+    char **project = getProject(projectName);
+    if (project == nullptr)
+        return 1;
+
+    projectToRedis(project[0],
+                   project[1],
+                   project[2],
+                   project[3],
+                  (int) strtol(project[4], nullptr, 10));
 
     settingsToRedis((int) strtol(settings[0], nullptr, 10),
                     settings[1],
@@ -118,6 +127,11 @@ int loadProjectOnRedis(char *projectName)
     for (int i = 0; settings[i] != nullptr; ++i)
         free(settings[i]);
     free(settings);
+
+    for (int i = 0; project[i] != nullptr; ++i)
+        free(project[i]);
+    free(project);
+
     PQfinish(conn);
 
     return 0;
@@ -379,6 +393,7 @@ char *getProjects()
 }
 char *getDixs(char *projectName)
 {
+    //TODO: da testare
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
 
 
@@ -429,6 +444,51 @@ char *getDixs(char *projectName)
     PQfinish(conn);
     return names;
 }
+
+char **getProject(char *projectName)
+{
+    PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
+
+
+    if (PQstatus(conn) != CONNECTION_OK)
+    {
+        PQfinish(conn);
+        fprintf(stderr, "Errore di connessione: %s\n", PQerrorMessage(conn));
+        return nullptr;
+    }
+
+    char query[256];
+    sprintf(query, "SELECT * FROM Project WHERE Name = '%s'", projectName);
+
+    PGresult *result = PQexec(conn, query);
+
+
+    if (PQresultStatus(result) != PGRES_TUPLES_OK)
+    {
+        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        PQclear(result);
+        PQfinish(conn);
+        return nullptr;
+    }
+
+
+    int numRows = PQntuples(result);
+    int numCols = PQnfields(result);
+
+
+    char **values = (char **) malloc((numCols + 1) * sizeof(char *));
+
+    for (int i = 0; i < numRows; i++)
+        for (int j = 0; j < numCols; j++)
+            values[j] = strdup(PQgetvalue(result, i, j));
+
+
+    values[numCols] = nullptr;
+    PQclear(result);
+
+    return values;
+}
+
 char **getSettings(PGconn *conn, char *projectName)
 {
     char query[256];

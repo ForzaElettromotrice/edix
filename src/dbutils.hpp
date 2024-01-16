@@ -26,6 +26,7 @@ int delProject(char *name);
 //UTILS
 char *getProjects();
 char *getDixs(char *projectName);
+char **getProject(char *projectName);
 char **getSettings(PGconn *conn, char *projectName);
 char *getPath(PGconn *conn, char *name);
 unsigned char *getImageData(char *path, size_t *dim);
