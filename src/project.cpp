@@ -239,12 +239,17 @@ int parseMv()
     }
 
     //TODO: Al posto di nullptr, va il path del progetto andra' preso da redis
-    int res = isPathIn(pathDst, nullptr);
+    //TODO: CONTROLLA SE è GIUSTO FE! (SIMONE)
+    char *projectPath = getStrFromKey((char *)"pPath");
+    // int res = isPathIn(pathDst, nullptr);
+    int res = isPathIn(pathDst, projectPath);
     if (res != 0)
     {
         handle_error("Il path non si trova all'interno del progetto\n");
     }
+
     mv(pathSrc, pathDst);
+    free(projectPath);
 
     return 0;
 }
@@ -356,7 +361,15 @@ int cd(char *path)
 
     char comm[256];
 
+    if(strcmp(path,"") == 0){
+        char * redisPath;
+        redisPath = getStrFromKey((char *)"pPath");
+        sprintf(path,redisPath);
+        free(redisPath);
+    }
     // TODO: se non viene specificato il path, torni alla $HOME del progetto; va presa da redis
+    // TODO: da testare
+
     sprintf(comm, "cd %s", path);
 
     int status = system(comm);
