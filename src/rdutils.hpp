@@ -11,7 +11,7 @@ int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tt
 int projectToRedis(char *name, char *cDate, char *mDate, char *path, int settings);
 
 //utils
-int dixCommitToRedis(char *name, char *comment, char **paths, char **images);
+//int dixCommitToRedis(char *name, char *comment, char **paths, char **images);
 int setElementToRedis(char *key, char *value);
 char **getCharArrayFromRedis(char *key);
 int openConnection(redisContext **context);

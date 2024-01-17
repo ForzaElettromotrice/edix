@@ -201,25 +201,6 @@ int setKeyValueInt(char *key, int value)
 
     return 0;
 }
-int setElementToRedis(char *key, char *value)
-{
-    redisContext *context;
-    openConnection(&context);
-
-    auto *reply = (redisReply *) redisCommand(context, "RPUSH %s %s", key, value);
-    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
-    {
-        printf("Error while appending an element to list \n");
-        freeReplyObject(reply);
-        redisFree(context);
-        return 1;
-    }
-    freeReplyObject(reply);
-
-    redisFree(context);
-    return 0;
-}
-
 
 char *getStrFromKey(char *key)
 {
@@ -232,11 +213,14 @@ char *getStrFromKey(char *key)
     getChecking(key, reply, context);
 
     char *value;
+    if (reply->type == REDIS_REPLY_NIL)
+        D_PRINT("NULL");
     if (reply->type == REDIS_REPLY_STRING)
     {
         value = strdup(reply->str);
     } else
     {
+        fprintf(stderr, "the object you received is not a str!\n");
         fprintf(stderr, "the object you received is not a str!\n");
         return nullptr;
     }
@@ -271,6 +255,27 @@ int getIntFromKey(char *key)
     redisFree(context);
     return value;
 }
+
+
+int setElementToRedis(char *key, char *value)
+{
+    redisContext *context;
+    openConnection(&context);
+
+    auto *reply = (redisReply *) redisCommand(context, "RPUSH %s %s", key, value);
+    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
+    {
+        fprintf(stderr,RED "Error: " RESET " while appending an element to list \n");
+        freeReplyObject(reply);
+        redisFree(context);
+        return 1;
+    }
+    freeReplyObject(reply);
+
+    redisFree(context);
+    return 0;
+}
+
 char **getCharArrayFromRedis(char *key)
 {
     redisContext *context;
@@ -279,6 +284,7 @@ char **getCharArrayFromRedis(char *key)
     auto *reply = (redisReply *) redisCommand(context, "LRANGE %s 0 -1", key);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY)
     {
+        D_PRINT("reply type : %d\n",reply->type);
         fprintf(stderr, RED "Error: " RESET "Error while retrieving set elements\n");
         freeReplyObject(reply);
         redisFree(context);
