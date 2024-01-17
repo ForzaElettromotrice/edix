@@ -10,7 +10,7 @@ int parseSettings(char *line, Env *env)
      *  3 comandi                                   <p>
      *  - set       (setta un' impostazione)        <p>
      *  - help     (lista dei comandi disponibili) <p>
-     *  - view     (visualizza settings correnti)
+     *  - listH     (visualizza settings correnti)
      *  - exit     (esce dal progetto)             <p>
      */
     char *copy = strdup(line);
@@ -23,6 +23,8 @@ int parseSettings(char *line, Env *env)
         parseHelpS();
     else if (strcmp(token, "exit") == 0)
         parseExitS(env);
+    else if (strcmp(token, "list") == 0)
+        parseListS();
     else
         printf(RED "Command not found\n" RESET);
 
@@ -39,7 +41,7 @@ int parseSet()
 
     if ((name != nullptr && value != nullptr) || strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " mv fromPath toPath\n" RESET);
+        handle_error("usage" BOLD ITALIC " set Key Value\n" RESET);
     }
 
 
@@ -69,27 +71,115 @@ int parseExitS(Env *env)
 
     return 0;
 }
+int parseListS()
+{
+    if (strtok(nullptr, " ") != nullptr)
+    {
+        handle_error("usage" BOLD ITALIC " list\n" RESET);
+    }
 
+    listS();
+
+    return 0;
+}
 
 int set(char *name, char *value)
 {
-    //TODO
+    if (strcmp(name, "Mod_ex") == 0)
+    {
+        if (strcmp(value, "Immediate") == 0 or strcmp(value, "Programmed") == 0)
+            setKeyValueStr((char *) "Mod_ex", value);
+        else
+        {
+            handle_error("Valore non valido!\n");
+        }
+    } else if (strcmp(name, "TTS") == 0)
+    {
+        uint val = strtol(value, nullptr, 10);
+        if (val > 5)
+            setKeyValueInt((char *) "TTS", (int) val);
+        else
+        {
+            handle_error("Valore non valido!\n");
+        }
+    } else if (strcmp(name, "VCS") == 0)
+    {
+
+        if (strcmp(value, "On") == 0)
+            setKeyValueStr((char *) "VCS", (char *) "true");
+        else if (strcmp(value, "Off") == 0)
+            setKeyValueStr((char *) "VCS", (char *) "false");
+        else
+        {
+            handle_error("Valore non valido!\n");
+        }
+    } else if (strcmp(name, "COMP") == 0)
+    {
+        if (strcmp(value, "PPM") == 0 or strcmp(value, "JPEG") == 0 or strcmp(value, "PNG") == 0)
+            setKeyValueStr((char *) "COMP", value);
+        else
+        {
+            handle_error("Valore non valido!\n");
+        }
+    } else if (strcmp(name, "TPP") == 0)
+    {
+        if (strcmp(value, "CUDA") == 0 or strcmp(value, "OMP") == 0 or strcmp(value, "Serial") == 0)
+            setKeyValueStr((char *) "TPP", value);
+        else
+        {
+            handle_error("Valore non valido!\n");
+        }
+    } else if (strcmp(name, "TUP") == 0)
+    {
+        if (strcmp(value, "Bilinear") == 0 or strcmp(value, "Bicubic") == 0)
+            setKeyValueStr((char *) "TUP", value);
+        else
+        {
+            handle_error("Valore non valido!\n");
+        }
+    } else
+    {
+        handle_error("Valore non valido!\n");
+    }
     return 0;
 }
 int helpS()
 {
     printf("Ecco la lista dei settings:\n\n"
-            RED BOLD " MODE" RESET  ITALIC"  Modalità di esecuzione\n\t" RESET " * Programmata: Effettua le modifiche apportate a un'immagine dopo un certo periodo di tempo" BOLD "\n\t * Immediata" RESET "(default): Le modifiche vengono effettuate subito\n\n" 
-            RED BOLD " TTS"  RESET  ITALIC"   Ogni quanti minuti salva su disco\n\t" RESET BOLD " * 5m" RESET "(default): Ogni 5m il progetto viene salvato su disco\n\n"
-            RED BOLD " VCS"  RESET  ITALIC"   Version Control System\n\t * On: Puoi tenere traccia nel tempo delle modifiche che si effettuano sulle immagini\n\t" RESET BOLD " * Off" RESET "(default): Non viene tenuta traccia delle modifiche\n\n"
-            RED BOLD " COMP" RESET  ITALIC"  Formato di compressione dell'immagine\n\t" RESET BOLD " * PPM" RESET "(default)\n\t * JPEG\n\t * PNG\n\n"
-            RED BOLD " TPP"  RESET  ITALIC"   Tecnologia di parallelismo\n\t" RESET " * CUDA: Elaborazione parallela su unità di elaborazione grafica (GPU)\n\t * OMP: Elaborazione parallela su sistemi condivisi di memoria\n\t *" BOLD " Seriale" RESET "(default): Non viene effettuata alcuna ottimizzazione\n\n"
-            RED BOLD " TUP"  RESET  ITALIC"   Tecnologia di upscaling\n\t" RESET BOLD " * Bilineare" RESET "(default)\n\t * Bicubica\n\n");
-            
+           RED BOLD " MODE" RESET  ITALIC"  Modalità di esecuzione\n\t" RESET " * Programmed: Effettua le modifiche apportate a un'immagine dopo un certo periodo di tempo" BOLD "\n\t * Immediate" RESET "(default): Le modifiche vengono effettuate subito\n\n"
+           RED BOLD " TTS"  RESET  ITALIC"   Ogni quanti minuti salva su disco\n\t" RESET BOLD " * 5" RESET "(default): Ogni 5m il progetto viene salvato su disco\n\n"
+           RED BOLD " VCS"  RESET  ITALIC"   Version Control System\n\t * On: Puoi tenere traccia nel tempo delle modifiche che si effettuano sulle immagini\n\t" RESET BOLD " * Off" RESET "(default): Non viene tenuta traccia delle modifiche\n\n"
+           RED BOLD " COMP" RESET  ITALIC"  Formato di compressione dell'immagine\n\t" RESET BOLD " * PPM" RESET "(default)\n\t * JPEG\n\t * PNG\n\n"
+           RED BOLD " TPP"  RESET  ITALIC"   Tecnologia di parallelismo\n\t" RESET " * CUDA: Elaborazione parallela su unità di elaborazione grafica (GPU)\n\t * OMP: Elaborazione parallela su sistemi condivisi di memoria\n\t *" BOLD " Serial" RESET "(default): Non viene effettuata alcuna ottimizzazione\n\n"
+           RED BOLD " TUP"  RESET  ITALIC"   Tecnologia di upscaling\n\t" RESET BOLD " * Bilinear" RESET "(default)\n\t * Bicubic\n\n");
+
     return 0;
 }
 int exitS(Env *env)
 {
     //TODO
+    return 0;
+}
+int listS()
+{
+    int id;
+    char *pName;
+    char *mod_ex;
+    uint tts;
+    bool vcs;
+    char *comp;
+    char *tpp;
+    char *tup;
+
+    settingsFromRedis(&id, &tup, &mod_ex, &comp, &tts, &tpp, &vcs, &pName);
+
+    //TODO: da farli piu carini
+    printf(BOLD YELLOW "IMPOSTAZIONI ATTUALI:" RESET "\n\tTUP = %s"
+           "\n\tMODEX = %s"
+           "\n\tCOMP = %s"
+           "\n\tTTS = %u"
+           "\n\tTPP = %s"
+           "\n\tVCS = %d\n", tup, mod_ex, comp, tts, tpp, vcs);
+
     return 0;
 }

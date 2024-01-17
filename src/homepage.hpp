@@ -25,7 +25,7 @@ int parseHome(char *line, Env *env);
 int parseNew(Env *env);
 int parseOpen(Env *env);
 int parseDel();
-int parseView();
+int parseListH();
 int parseHelpH();
 int parseExitH(Env *env);
 
@@ -33,7 +33,7 @@ int parseExitH(Env *env);
 int newP(char *name, bool ask, Env *env);
 int openP(char *name, Env *env);
 int delP(char *name);
-int view();
+int listH();
 int helpH();
 int exitH(Env *env);
 

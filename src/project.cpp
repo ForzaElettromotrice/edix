@@ -458,8 +458,8 @@ int mv(char *fromPath, char *toPath)
 }
 int settings(Env *env)
 {
-    //TODO:
-    D_PRINT("settings\n");
+    *env = SETTINGS;
+    D_PRINT("Entering settings...\n");
     return 0;
 }
 int helpP()
@@ -481,14 +481,18 @@ int helpP()
 }
 int exitP(Env *env)
 {
-    //TODO: rimuovere tutta la roba da redis
     //TODO: cambia ch
+
+    force();
+    deallocateFromRedis();
+
     D_PRINT("Uscita dal progetto in corso...\n");
     *env = HOMEPAGE;
     return 0;
 }
 int dixList()
 {
+    force();
     char *projectName = getStrFromKey((char *) "Project");
     char *dixs = getDixs(projectName);
     if (dixs == nullptr)
@@ -539,7 +543,6 @@ int dixReload(char *name)
 }
 int force()
 {
-    //TODO: testare
     D_PRINT("Forcing push...\n");
     char **names = getCharArrayFromRedis((char *) "dixNames");
     char **comments = getCharArrayFromRedis((char *) "dixComments");
@@ -569,6 +572,10 @@ int force()
     free(names);
     free(comments);
     free(projectName);
+
+    //TODO: deallocare da redis i dix
+    //TODO: caricare su postgre i settings
+
     return 0;
 }
 

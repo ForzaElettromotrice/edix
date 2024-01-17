@@ -141,7 +141,7 @@ int parseHome(char *line, Env *env)
      *  - new Name -m (crea il progetto) (-m sta per manuale) <p>
      *  - open Name (apre il progetto) <p>
      *  - del Name  (elimina il progetto) <p>
-     *  - view      (visualizza tutti i progetti) <p>
+     *  - listH      (visualizza tutti i progetti) <p>
      *  - helpH      (lista dei comandi disponibili) <p>
      *  - exitH      (esce da edix) <p>
      */
@@ -156,8 +156,8 @@ int parseHome(char *line, Env *env)
         parseOpen(env);
     else if (strcmp(token, "del") == 0)
         parseDel();
-    else if (strcmp(token, "view") == 0)
-        parseView();
+    else if (strcmp(token, "list") == 0)
+        parseListH();
     else if (strcmp(token, "help") == 0)
         parseHelpH();
     else if (strcmp(token, "exit") == 0)
@@ -233,14 +233,14 @@ int parseDel()
 
     return 0;
 }
-int parseView()
+int parseListH()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " view\n" RESET);
+        handle_error("usage" BOLD ITALIC " listH\n" RESET);
     }
 
-    view();
+    listH();
     return 0;
 }
 int parseHelpH()
@@ -336,7 +336,7 @@ int delP(char *name)
 
     return 0;
 }
-int view()
+int listH()
 {
     char *names = getProjects();
     printf("%s\n", names);
@@ -351,7 +351,7 @@ int helpH()
            BOLD YELLOW "  open\t" RESET "projectName\t\tApri il progetto projectName\n"
            BOLD YELLOW "  del\t" RESET "projectName\t\tCancella il progetto projectName\n"
            BOLD YELLOW "  help" RESET "\t\t\t\tPer maggiori informazioni\n"
-           BOLD YELLOW "  view" RESET "\t\t\t\tVisualizza tutti i progetti\n"
+           BOLD YELLOW "  list" RESET "\t\t\t\tVisualizza tutti i progetti\n"
            BOLD YELLOW "  exit" RESET "\t\t\t\tEsci\n");
     return 0;
 }

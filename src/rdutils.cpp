@@ -112,14 +112,9 @@ int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char
 }
 int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tts, char **tpp, bool *vcs, char **pName)
 {
-    //init redis connection
     redisContext *context;
     openConnection(&context);
 
-    //TODO: controllare i return di getChecking...
-    //TODO: poi sta funzione non me piace, ce deve esse un modo piu intelligente di farla
-
-    // Recupera i dati dalle chiavi
 
     *id = getIntFromKey((char *) "ID");
 
@@ -129,9 +124,9 @@ int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tt
 
     *tts = getIntFromKey((char *) "TTS");
 
-    auto *reply = (redisReply *) redisCommand(context, "GET VCS");
-    getChecking((char *) "VCS", reply, context);
-    *vcs = reply->integer == 1;
+    char *VCS = getStrFromKey((char *) "VCS");
+    *vcs = strcmp(VCS, "0");
+    free(VCS);
 
     *comp = getStrFromKey((char *) "COMP");
 
@@ -139,9 +134,6 @@ int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tt
 
     *tup = getStrFromKey((char *) "TUP");
 
-    //TODO: printa tutti i valori e compara con i SET
-    //End redis connection
-    freeReplyObject(reply);
     redisFree(context);
 
     return 0;
@@ -214,13 +206,14 @@ char *getStrFromKey(char *key)
 
     char *value;
     if (reply->type == REDIS_REPLY_NIL)
+    {
         D_PRINT("NULL");
+    }
     if (reply->type == REDIS_REPLY_STRING)
     {
         value = strdup(reply->str);
     } else
     {
-        fprintf(stderr, "the object you received is not a str!\n");
         fprintf(stderr, "the object you received is not a str!\n");
         return nullptr;
     }
@@ -251,7 +244,6 @@ int getIntFromKey(char *key)
     }
 
     freeReplyObject(reply);
-    //end connection;
     redisFree(context);
     return value;
 }
@@ -265,7 +257,7 @@ int setElementToRedis(char *key, char *value)
     auto *reply = (redisReply *) redisCommand(context, "RPUSH %s %s", key, value);
     if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
     {
-        fprintf(stderr,RED "Error: " RESET " while appending an element to list \n");
+        fprintf(stderr, RED "Error: " RESET " while appending an element to list \n");
         freeReplyObject(reply);
         redisFree(context);
         return 1;
@@ -284,7 +276,7 @@ char **getCharArrayFromRedis(char *key)
     auto *reply = (redisReply *) redisCommand(context, "LRANGE %s 0 -1", key);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY)
     {
-        D_PRINT("reply type : %d\n",reply->type);
+        D_PRINT("reply type : %d\n", reply->type);
         fprintf(stderr, RED "Error: " RESET "Error while retrieving set elements\n");
         freeReplyObject(reply);
         redisFree(context);
@@ -320,12 +312,14 @@ char **getCharArrayFromRedis(char *key)
     return elements_array;
 }
 
-int deallocateFromRedis(){
+int deallocateFromRedis()
+{
     redisContext *context;
     openConnection(&context);
 
-    auto *reply = (redisReply *)redisCommand(context ,"FLUSHALL");
-    if (reply == nullptr){
+    auto *reply = (redisReply *) redisCommand(context, "FLUSHALL");
+    if (reply == nullptr)
+    {
         fprintf(stderr, RED "Error: " RESET "Error while duplicating string\n", context->errstr);
         freeReplyObject(reply);
     }
