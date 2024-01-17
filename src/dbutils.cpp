@@ -11,7 +11,7 @@ int checkDb()
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        fprintf(stderr, "Errore di connessione a PostgreSQL: %s\n", PQerrorMessage(conn));
+        fprintf(stderr, RED "POSTGRES Error :" RESET "di connessione a PostgreSQL: %s\n", PQerrorMessage(conn));
         return 1;
     }
     const char *roleNameToCheck = "edix";
@@ -96,7 +96,7 @@ int loadProjectOnRedis(char *projectName)
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        handle_error("(Errore di connessione), %s\n", PQerrorMessage(conn));
+        handle_error("Errore di connessione a postgres), %s\n", PQerrorMessage(conn));
     }
 
 
@@ -142,7 +142,7 @@ int loadDix(char *name, char *projectName)
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        handle_error("(Errore di connessione), %s\n", PQerrorMessage(conn));
+        handle_error("(Errore di connessione a postgres), %s\n", PQerrorMessage(conn));
     }
 
 
@@ -159,7 +159,7 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        handle_error("Errore di connessione %s\n", PQerrorMessage(conn));
+        handle_error("Errore di connessione a postgres: %s\n", PQerrorMessage(conn));
     }
 
     char query[1024];
@@ -181,7 +181,7 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
         const char *sqlstate = PQresultErrorField(res, PG_DIAG_SQLSTATE);
 
         if (strcmp(sqlstate, "23505") == 0)
-            fprintf(stderr, RED "Error:" RESET " Questo progetto già esiste!\n");
+            fprintf(stderr, RED "POSTGRES Error:" RESET " Questo progetto già esiste!\n");
         else
             fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQerrorMessage(conn));
 
@@ -545,7 +545,7 @@ unsigned char *getImageData(char *path, size_t *dim)
     if (!file)
     {
         perror("daje");
-        fprintf(stderr, RED "Error: " RESET "Errore nell'apertura del file\n");
+        fprintf(stderr, RED "POSTGRES Error: " RESET "Errore nell'apertura del file\n");
         return nullptr;
     }
 
@@ -559,7 +559,7 @@ unsigned char *getImageData(char *path, size_t *dim)
     if (bytea_data == nullptr)
     {
         fclose(file);
-        fprintf(stderr, RED "Error:" RESET "Errore nell'allocazione di memoria\n");
+        fprintf(stderr, RED "POSTGRES Error:" RESET "Errore nell'allocazione di memoria\n");
         return nullptr;
     }
 
