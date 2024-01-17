@@ -319,3 +319,20 @@ char **getCharArrayFromRedis(char *key)
     redisFree(context);
     return elements_array;
 }
+
+int deallocateFromRedis(){
+    redisContext *context;
+    openConnection(&context);
+
+    auto *reply = (redisReply *)redisCommand(context ,"FLUSHALL");
+    if (reply == nullptr){
+        fprintf(stderr, RED "Error: " RESET "Error while duplicating string\n", context->errstr);
+        freeReplyObject(reply);
+    }
+
+    freeReplyObject(reply);
+
+    redisFree(context);
+
+    return 0;
+}
