@@ -645,3 +645,49 @@ void changeFormat(char **comment)
 
     *comment = out;
 }
+
+int updateSettings(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool vcs, char *pName){
+
+    PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
+    if (PQstatus(conn) != CONNECTION_OK)
+    {
+        PQfinish(conn);
+        handle_error("Errore di connessione a postgres: %s\n", PQerrorMessage(conn));
+        return 1;
+    }
+    char vcsChar[256];
+
+    if  (vcs == 0){
+        sprintf(vcsChar,"f");
+    }else {
+        sprintf(vcsChar,"t");
+    }
+
+
+    char query[256];
+
+    sprintf( query,"UPDATE Settings SET id = %d, tup = '%s', mod_ex = '%s', comp = '%s', tts = %u, tpp = '%s' , vcs = '%s' , project = '%s' WHERE Id = %d",
+             id,
+             tup,
+             mod_ex,
+             comp,
+             tts,
+             tpp,
+             vcsChar,
+             pName,
+             id);
+
+    PGresult *result = PQexec(conn,query);
+
+    if (PQresultStatus(result) != PGRES_COMMAND_OK) {
+        fprintf(stderr, "Query di UPDATE fallita: %s", PQresultErrorMessage(result));
+        PQclear(result);
+        PQfinish(conn);
+        return 1;
+    }
+    D_PRINT("query update eseguita su settings\n");
+    PQclear(result);
+    PQfinish(conn);
+
+    return 0;
+}

@@ -22,6 +22,7 @@ int loadDix(char *name, char *projectName);
 int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *modEx, uint TTS, bool VCS);
 int addDix(char *projectName, char *dixName, char *comment, char **images, char **paths);
 int delProject(char *name);
+int updateSettings(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool vcs, char *pName);
 
 //UTILS
 char *getProjects();
