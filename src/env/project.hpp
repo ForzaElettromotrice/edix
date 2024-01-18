@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include "../dbutils/pgutils.hpp"
 #include "../utils.hpp"
+#include <unistd.h>
 
 //UTILS
 int isPathIn(const char *path, const char *pathProj);
