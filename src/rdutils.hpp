@@ -13,6 +13,7 @@ int projectToRedis(char *name, char *cDate, char *mDate, char *path, int setting
 
 //utils
 //int dixCommitToRedis(char *name, char *comment, char **paths, char **images);
+void delDixFromRedis();
 int setElementToRedis(char *key, char *value);
 char **getCharArrayFromRedis(char *key);
 int openConnection(redisContext **context);

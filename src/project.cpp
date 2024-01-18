@@ -770,6 +770,7 @@ int force()
     free(projectName);
 
     //TODO: deallocare da redis i dix
+    delDixFromRedis();
 
     int id = getIntFromKey((char *) "ID");
     char *tup = getStrFromKey((char *) "TUP");
