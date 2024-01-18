@@ -10,8 +10,8 @@
 #include <dirent.h>
 #include <unistd.h>
 #include "project.hpp"
-#include "dbutils.hpp"
-#include "utils.hpp"
+#include "../dbutils/pgutils.hpp"
+#include "../utils.hpp"
 
 //UTILS
 int banner();

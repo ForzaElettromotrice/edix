@@ -3,10 +3,10 @@
 
 #include <iostream>
 #include <uv.h>
-#include "homepage.hpp"
-#include "project.hpp"
-#include "settings.hpp"
-#include "dbutils.hpp"
+#include "env/homepage.hpp"
+#include "env/project.hpp"
+#include "env/settings.hpp"
+#include "dbutils/pgutils.hpp"
 
 
 //MAIN

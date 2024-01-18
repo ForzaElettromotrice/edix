@@ -1,4 +1,4 @@
-#include "grayscale.hpp"
+#include "grayscale.hu"
 
 int grayScaleSerial(char *pathIn, char *pathOut) {
     int width, height;
