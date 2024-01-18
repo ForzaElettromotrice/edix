@@ -325,11 +325,14 @@ int removeKeyFromRedis(char *key)
 
     return 0;
 }
+void delDixFromRedis(){
 
+}
 int deallocateFromRedis()
 {
     redisContext *context;
     openConnection(&context);
+
 
     auto *reply = (redisReply *) redisCommand(context, "FLUSHALL");
     if (reply == nullptr)

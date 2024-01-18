@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "rdutils.hpp"
-#include "utils.hpp"
+#include "../utils.hpp"
 
 
 int initDb();
