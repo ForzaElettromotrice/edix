@@ -88,7 +88,7 @@ int projectToRedis(char *name, char *cDate, char *mDate, char *path, int setting
 
     return 0;
 }
-int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool vcs, char *pName)
+int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool backup, char *pName)
 {
     //Init redis connection
     redisContext *context;
@@ -100,7 +100,7 @@ int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char
     setKeyValueStr((char *) "Project", pName);
     setKeyValueStr((char *) "Mod_ex", mod_ex);
     setKeyValueInt((char *) "TTS", (int) tts);
-    setKeyValueInt((char *) "VCS", vcs);
+    setKeyValueInt((char *) "Backup", backup);
     setKeyValueStr((char *) "COMP", comp);
     setKeyValueStr((char *) "TPP", tpp);
     setKeyValueStr((char *) "TUP", tup);
@@ -110,7 +110,8 @@ int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char
 
     return 0;
 }
-int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tts, char **tpp, bool *vcs, char **pName)
+int
+settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tts, char **tpp, bool *backup, char **pName)
 {
     redisContext *context;
     openConnection(&context);
@@ -124,9 +125,9 @@ int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tt
 
     *tts = getIntFromKey((char *) "TTS");
 
-    char *VCS = getStrFromKey((char *) "VCS");
-    *vcs = strcmp(VCS, "0");
-    free(VCS);
+    char *Backup = getStrFromKey((char *) "Backup");
+    *backup = strcmp(Backup, "0");
+    free(Backup);
 
     *comp = getStrFromKey((char *) "COMP");
 
@@ -253,7 +254,7 @@ int setElementToRedis(char *key, char *value)
     auto *reply = (redisReply *) redisCommand(context, "RPUSH %s %s", key, value);
     if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
     {
-        fprintf(stderr,RED "REDIS Error: " RESET " while appending an element to list \n");
+        fprintf(stderr, RED "REDIS Error: " RESET " while appending an element to list \n");
         freeReplyObject(reply);
         redisFree(context);
         return 1;
@@ -272,7 +273,7 @@ char **getCharArrayFromRedis(char *key)
     auto *reply = (redisReply *) redisCommand(context, "LRANGE %s 0 -1", key);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY)
     {
-        D_PRINT("reply type : %d\n",reply->type);
+        D_PRINT("reply type : %d\n", reply->type);
         fprintf(stderr, RED "REDIS Error: " RESET "Error while retrieving set elements\n");
         freeReplyObject(reply);
         redisFree(context);
@@ -313,7 +314,7 @@ int deallocateFromRedis()
     redisContext *context;
     openConnection(&context);
 
-    auto *reply = (redisReply *)redisCommand(context ,"FLUSHALL");
+    auto *reply = (redisReply *) redisCommand(context, "FLUSHALL");
     if (reply == nullptr)
     {
         fprintf(stderr, RED "REDIS Error: " RESET "Error while duplicating string\n", context->errstr);

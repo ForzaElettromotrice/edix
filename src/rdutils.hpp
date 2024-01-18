@@ -6,8 +6,9 @@
 
 //communication with db
 
-int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool vcs, char *pName);
-int settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tts, char **tpp, bool *vcs, char **pName);
+int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool backup, char *pName);
+int
+settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tts, char **tpp, bool *backup, char **pName);
 int projectToRedis(char *name, char *cDate, char *mDate, char *path, int settings);
 
 //utils

@@ -5,24 +5,6 @@
 #include "homepage.hpp"
 
 
-bool isValidName(char *word)
-{
-    for (size_t i = 0; i < strlen(word) - 1; ++i)
-    {
-        if (!isalnum(word[i]) && word[i] != '_')
-        {
-            //TODO: fare i print carini
-            D_PRINT("Invalid character %c\n", word[i]);
-            return false;
-        }
-    }
-
-    return true;
-}
-bool isValidFlag(const char *flag)
-{
-    return flag[0] == '-' && flag[1] == 'm';
-}
 int banner()
 {
     printf(BOLD GREEN
@@ -36,87 +18,9 @@ int banner()
            BOLD YELLOW "new" RESET " projectName\t\t"
            ITALIC "Se e' la tua prima volta crea un progetto tramite il comando\n" RESET
            BOLD YELLOW "help\t\t\t" RESET
-           ITALIC "Se hai bisogno di maggiori informazioni sui comandi, esegui\n" RESET
+           ITALIC "Se hai bisogno di maggiori informazioni sui comandi\n" RESET
            BOLD YELLOW "exit" RESET " /" BOLD YELLOW " Ctrl + D\t\t" RESET
            ITALIC "Per uscire\n" RESET);
-    return 0;
-}
-int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *vcs)
-{
-    size_t aSize = 256;
-    char *answer = (char *) malloc(256 * sizeof(char));
-    size_t bRead;
-
-    printf("Dove vuoi salvare il progetto? (inserisci un path relativo o assoluto): ");
-    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
-    {
-        fprintf(stderr, "Bad answer!\n");
-        return 1;
-    }
-    //TODO: controllare
-    answer[bRead - 1] = '\0';
-    sprintf(path, "%s/%s", answer, name);
-
-    printf("Che estensione vuoi abbiano le immagini che crei?\n\t- PPM\n\t- PNG\n\t- JPEG\n-> ");
-    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
-    {
-        fprintf(stderr, "Bad answer!\n");
-        return 1;
-    }
-    //TODO: controllare
-    answer[bRead - 1] = '\0';
-    sprintf(comp, "%s", answer);
-
-    printf("Che tipo di parallelismo vuoi usare?\n\t- Serial\n\t- OMP\n\t- CUDA\n-> ");
-    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
-    {
-        fprintf(stderr, "Bad answer!\n");
-        return 1;
-    }
-    //TODO: controllare
-    answer[bRead - 1] = '\0';
-    sprintf(tpp, "%s", answer);
-
-    printf("Che algoritmo di upscaling vuoi usare?\n\t- Bilinear\n\t- Bicubic\n-> ");
-    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
-    {
-        fprintf(stderr, "Bad answer!\n");
-        return 1;
-    }
-    //TODO: controllare
-    answer[bRead - 1] = '\0';
-    sprintf(tup, "%s", answer);
-
-    printf("Che modalità di esecuzione vuoi usare?\n\t- Immediate\n\t- Programmed\n-> ");
-    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
-    {
-        fprintf(stderr, "Bad answer!\n");
-        return 1;
-    }
-    //TODO: controllare
-    answer[bRead - 1] = '\0';
-    sprintf(modEx, "%s", answer);
-
-    printf("Ogni quanto tempo vuoi salvare un backup del progetto? (secondi): ");
-    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
-    {
-        fprintf(stderr, "Bad answer!\n");
-        return 1;
-    }
-    //TODO: controllare
-    answer[bRead - 1] = '\0';
-    *tts = strtoul(answer, nullptr, 10);
-
-    printf("Vuoi attivare il version control? [y,n]: ");
-    if ((bRead = getline(&answer, &aSize, stdin)) == -1)
-    {
-        fprintf(stderr, "Bad answer!\n");
-        return 1;
-    }
-    //TODO: controllare
-    answer[bRead - 1] = '\0';
-    *vcs = strcmp(answer, "y") == 0;
-
     return 0;
 }
 int checkDefaultFolder()
@@ -133,6 +37,251 @@ int checkDefaultFolder()
     closedir(defaultDir);
     return 0;
 }
+int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *backup)
+{
+    size_t aSize = 256;
+    char *answer = (char *) malloc(256 * sizeof(char));
+    size_t bRead;
+
+    do
+    {
+        printf(BOLD YELLOW "Dove vuoi salvare il progetto? " RESET " (inserisci un path relativo o assoluto) (default: ~/EdixProjects): ");
+        if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+        {
+            free(answer);
+            printf("\n");
+            D_PRINT("Operazione annullata\n");
+            return 1;
+        }
+        if (bRead == 1)
+            sprintf(answer, "~/EdixProjects");
+        else
+            answer[bRead - 1] = '\0';
+    } while (!isValidPath(answer));
+    sprintf(path, "%s/%s", answer, name);
+
+    do
+    {
+        printf(BOLD YELLOW "Che estensione vuoi abbiano le immagini che crei?\n" RESET "\t- PPM (Default)\n\t- PNG\n\t- JPEG\n-> ");
+        if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+        {
+            free(answer);
+            printf("\n");
+            D_PRINT("Operazione annullata\n");
+            return 1;
+        }
+        if (bRead == 1)
+            sprintf(answer, "PPM");
+        else
+            answer[bRead - 1] = '\0';
+    } while (!isValidComp(answer));
+    sprintf(comp, "%s", answer);
+
+    do
+    {
+        printf(BOLD YELLOW "Che tipo di parallelismo vuoi usare?\n" RESET "\t- Serial (Default)\n\t- OMP\n\t- CUDA\n-> ");
+        if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+        {
+            free(answer);
+            printf("\n");
+            D_PRINT("Operazione annullata\n");
+            return 1;
+        }
+        if (bRead == 1)
+            sprintf(answer, "Serial");
+        else
+            answer[bRead - 1] = '\0';
+    } while (!isValidTPP(answer));
+    sprintf(tpp, "%s", answer);
+
+    do
+    {
+        printf(BOLD YELLOW "Che algoritmo di upscaling vuoi usare?\n " RESET "\t- Bilinear (Default)\n\t- Bicubic\n-> ");
+        if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+        {
+            free(answer);
+            printf("\n");
+            D_PRINT("Operazione annullata\n");
+            return 1;
+        }
+        if (bRead == 1)
+            sprintf(answer, "Bilinear");
+        else
+            answer[bRead - 1] = '\0';
+
+    } while (!isValidTUP(answer));
+    sprintf(tup, "%s", answer);
+
+    do
+    {
+        printf(BOLD YELLOW "Che modalità di esecuzione vuoi usare?\n" RESET "\t- Immediate (Default)\n\t- Programmed\n-> ");
+        if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+        {
+            free(answer);
+            printf("\n");
+            D_PRINT("Operazione annullata\n");
+            return 1;
+        }
+        if (bRead == 1)
+            sprintf(answer, "Immediate");
+        else
+            answer[bRead - 1] = '\0';
+
+    } while (!isValidModex(answer));
+    sprintf(modEx, "%s", answer);
+
+    do
+    {
+        printf(BOLD YELLOW "Vuoi attivare il version control? " RESET "[y,N]: ");
+        if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+        {
+            free(answer);
+            printf("\n");
+            D_PRINT("Operazione annullata\n");
+            return 1;
+        }
+        if (bRead == 1)
+            sprintf(answer, "N");
+        else
+            answer[bRead - 1] = '\0';
+    } while (!isValidBackup(answer));
+    *backup = answer[0] == 'y' || answer[0] == 'Y';
+
+
+    if (*backup)
+    {
+        do
+        {
+            printf(BOLD YELLOW "Ogni quante istruzioni vuoi salvare un backup del progetto? " RESET "(istruzioni >= 5) (default: 5): ");
+            if ((bRead = getline(&answer, &aSize, stdin)) == -1)
+            {
+                free(answer);
+                printf("\n");
+                D_PRINT("Operazione annullata\n");
+                return 1;
+            }
+            if (bRead == 1)
+                sprintf(answer, "5");
+            else
+                answer[bRead - 1] = '\0';
+        } while (!isValidTTS(answer));
+        *tts = strtoul(answer, nullptr, 10);
+    } else
+        *tts = 5UL;
+
+
+    free(answer);
+
+    return 0;
+}
+bool isValidName(char *word)
+{
+    for (size_t i = 0; i < strlen(word) - 1; ++i)
+        if (!isalnum(word[i]) && word[i] != '_')
+        {
+            fprintf(stderr, RED "Error: " RESET "Invalid character " BOLD ITALIC "%c\n" RESET, word[i]);
+            return false;
+        }
+
+    return true;
+}
+bool isValidFlag(const char *flag)
+{
+    return flag[0] == '-' && flag[1] == 'm' && flag[2] == '\0';
+}
+bool isValidPath(char *path)
+{
+    D_PRINT("Checking path...\n");
+
+    if (path[0] == '~')
+    {
+        char *home = getenv("HOME");
+        char *tmp = (char *) malloc((strlen(path) + strlen(home) + 1) * sizeof(char));
+        if (tmp == nullptr)
+        {
+            fprintf(stderr, RED "Error: " RESET "Error while malloc!\n");
+            return false;
+        }
+        sprintf(tmp, "%s%s", home, path + 1);
+        memmove(path, tmp, strlen(tmp) + 1);
+    }
+
+    char *result = realpath(path, nullptr);
+
+    if (result == nullptr)
+    {
+        fprintf(stderr, RED "Error: " RESET "Path non valido!\n");
+        return false;
+    }
+
+    char *tmp = (char *) realloc(path, (strlen(result) + 1) * sizeof(char *));
+    if (tmp == nullptr)
+    {
+        free(result);
+        fprintf(stderr, RED "Error: " RESET "Error while realloc!\n");
+        return false;
+    }
+    path = tmp;
+    sprintf(path, "%s", result);
+    free(result);
+
+    return true;
+}
+bool isValidComp(char *comp)
+{
+    if (strcmp(comp, "PPM") != 0 && strcmp(comp, "PNG") != 0 && strcmp(comp, "JPEG") != 0)
+    {
+        fprintf(stderr, RED "Error: " RESET "Risposta non valida!\n");
+        return false;
+    }
+    return true;
+}
+bool isValidTPP(char *tpp)
+{
+    if (strcmp(tpp, "Serial") != 0 && strcmp(tpp, "OMP") != 0 && strcmp(tpp, "CUDA") != 0)
+    {
+        fprintf(stderr, RED "Error: " RESET "Risposta non valida!\n");
+        return false;
+    }
+    return true;
+}
+bool isValidTUP(char *tup)
+{
+    if (strcmp(tup, "Bilinear") != 0 && strcmp(tup, "Bicubic") != 0)
+    {
+        fprintf(stderr, RED "Error: " RESET "Risposta non valida!\n");
+        return false;
+    }
+    return true;
+}
+bool isValidModex(char *modex)
+{
+    if (strcmp(modex, "Immediate") != 0 && strcmp(modex, "Programmed") != 0)
+    {
+        fprintf(stderr, RED "Error: " RESET "Risposta non valida!\n");
+        return false;
+    }
+    return true;
+}
+bool isValidTTS(char *tts)
+{
+    if (strtoul(tts, nullptr, 10) < 5)
+    {
+        fprintf(stderr, RED "Error: " RESET "Risposta non valida!\n");
+        return false;
+    }
+    return true;
+}
+bool isValidBackup(char *backup)
+{
+    if (strcmp(backup, "y") != 0 && strcmp(backup, "n") != 0 && strcmp(backup, "Y") != 0 && strcmp(backup, "N") != 0)
+    {
+        fprintf(stderr, RED "Error: " RESET "Risposta non valida!\n");
+        return false;
+    }
+    return true;
+}
+
 
 int parseHome(char *line, Env *env)
 {
@@ -169,7 +318,6 @@ int parseHome(char *line, Env *env)
     free(copy);
     return 0;
 }
-
 int parseNew(Env *env)
 {
 
@@ -188,12 +336,17 @@ int parseNew(Env *env)
     {
         char *name;
 
-        if (isValidName(token1) && isValidFlag(token2))
+        if (isValidFlag(token1))
+        {
+            if (isValidName(token2))
+                name = token2;
+            else
+            {
+                handle_error("usage " BOLD ITALIC "new ProjectName [-m]\n" RESET);
+            }
+        } else if (isValidFlag(token2) && isValidName(token1))
         {
             name = token1;
-        } else if (isValidName(token2) && isValidFlag(token1))
-        {
-            name = token2;
         } else
         {
             handle_error("usage " BOLD ITALIC "new ProjectName [-m]\n" RESET);
@@ -274,42 +427,49 @@ int newP(char *name, bool ask, Env *env)
     char tpp[16] = "Serial";
     char tup[16] = "Bilinear";
     char modEx[16] = "Immediate";
-    uint tts = 600;
-    bool vcs = false;
+    bool backup = false;
+    uint tts = 5;
     sprintf(path, "%s/EdixProjects/%s", getenv("HOME"), name);
 
-    if (ask && askParams(name, path, comp, tpp, tup, modEx, &tts, &vcs))
-    {
-        handle_error("Errore inserimento parametri!\n");
-    }
+    if (ask && askParams(name, path, comp, tpp, tup, modEx, &tts, &backup))
+        return 1;
 
-    if (addProject(name, path, comp, tpp, tup, modEx, tts, vcs))
+    if (addProject(name, path, comp, tpp, tup, modEx, tts, backup))
         return EXIT_FAILURE;
 
     char command[256];
-    sprintf(command, "mkdir %s > /dev/null", path);
-    system(command);
+    sprintf(command, "mkdir %s > /dev/null 2> /dev/null", path);
+    if (system(command) != 0)
+        fprintf(stderr, RED
+                        "Error: "
+                        RESET
+                        "Errore nella creazione della cartella!\n");
 
     if (chdir(path) != 0)
     {
-        perror("Errore durante il cambio della working directory");
-        printf(YELLOW "Progetto creato, usare open per tentare di aprirlo\n" RESET);
+        perror(RED
+               "CHDIR Error"
+               RESET);
+        printf(YELLOW
+               "Progetto creato, usare open per tentare di aprirlo\n"
+               RESET);
         return EXIT_FAILURE;
     }
 
     if (loadProjectOnRedis(name))
     {
         handle_error(
-                "Failed to load project on redis\n" YELLOW "Progetto creato, usare open per tentare di aprirlo\n" RESET);
+                "Failed to load project on redis\n"
+                YELLOW
+                "Progetto creato, usare open per tentare di aprirlo\n"
+                RESET);
     }
 
     *env = PROJECT;
-    //TODO: startare il time di TTS in base ai settings
     return 0;
 }
 int openP(char *name, Env *env)
 {
-    //TODO: startare il timer di TTS in base ai settings
     if (!existProject(name))
     {
         handle_error("Questo progetto non esiste!\n");
@@ -350,14 +510,13 @@ int helpH()
            BOLD YELLOW "  new\t" RESET "projectName\t\tCrea un nuovo progetto projectName\n"
            BOLD YELLOW "  open\t" RESET "projectName\t\tApri il progetto projectName\n"
            BOLD YELLOW "  del\t" RESET "projectName\t\tCancella il progetto projectName\n"
-           BOLD YELLOW "  help" RESET "\t\t\t\tPer maggiori informazioni\n"
            BOLD YELLOW "  list" RESET "\t\t\t\tVisualizza tutti i progetti\n"
+           BOLD YELLOW "  help" RESET "\t\t\t\tPer maggiori informazioni\n"
            BOLD YELLOW "  exit" RESET "\t\t\t\tEsci\n");
     return 0;
 }
 int exitH(Env *env)
 {
-    D_PRINT("Uscita in corso...\n");
     *env = EXIT;
     return 0;
 }

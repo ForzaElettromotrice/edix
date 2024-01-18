@@ -9,16 +9,24 @@
 #include <cstring>
 #include <dirent.h>
 #include <unistd.h>
+#include "project.hpp"
 #include "dbutils.hpp"
 #include "utils.hpp"
 
-
 //UTILS
+int banner();
+int checkDefaultFolder();
+int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *backup);
 bool isValidName(char *name);
 bool isValidFlag(const char *flag);
-int banner();
-int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *vcs);
-int checkDefaultFolder();
+bool isValidPath(char *path);
+bool isValidComp(char *comp);
+bool isValidTPP(char *tpp);
+bool isValidTUP(char *tup);
+bool isValidModex(char *modex);
+bool isValidTTS(char *tts);
+bool isValidBackup(char *backup);
+void periodicSave(int i, short i1, void *pVoid);
 
 //PARSERS
 int parseHome(char *line, Env *env);

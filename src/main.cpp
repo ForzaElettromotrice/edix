@@ -3,12 +3,12 @@
 
 int main(int argc, char *argv[])
 {
-
     if (checkPostgresService() || checkRedisService())
         exit(EXIT_FAILURE);
     checkDb();
     banner();
     // TODO: magari puoi aprire direttamente un progetto passandolo come argomento
+    // TODO: ovunque si usi il path, mettere PATH_MAX oppure (meglio) far si che l'allocazione sia dinamica
     switch (argc)
     {
         case 1:
@@ -58,6 +58,7 @@ int inputLoop()
     }
 
     free(line);
+    D_PRINT("Uscita in corso...\n");
 
     return 0;
 }
