@@ -5,7 +5,7 @@
 #ifndef EDIX_PROJECT_CH
 #define EDIX_PROJECT_CH
 
-#include <iostream>
+
 #include <cstring>
 #include <cstdlib>
 #include <dirent.h>
@@ -16,7 +16,7 @@
 
 //UTILS
 int isPathIn(const char *path, const char *pathProj);
-int isValidImage(char *path);
+bool isValidImage(char *path);
 char *askComment();
 int checkDix(char *projectPath, char *dixName);
 int cloneProject(char *projectPath, char *path, char *dixName);
@@ -26,7 +26,6 @@ int cloneProject(char *projectPath, char *path, char *dixName);
 int parseProj(char *line, Env *env);
 int parseLs();
 int parseExec();
-int parseTree();
 int parseCd();
 int parseLoad();
 int parseRm();
@@ -43,7 +42,6 @@ int parseExitP(Env *env);
 //COMMANDS
 int ls(const char *path);
 int exec(char *path);
-int tree(const char *path);
 int cd(char *path);
 int loadI(char *path);
 int rm(char *name);

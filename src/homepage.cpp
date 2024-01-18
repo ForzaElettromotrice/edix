@@ -127,7 +127,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         else
             answer[bRead - 1] = '\0';
 
-    } while (!isValidModex(answer));
+    } while (!isValidMode(answer));
     sprintf(modEx, "%s", answer);
 
     do
@@ -254,9 +254,9 @@ bool isValidTUP(char *tup)
     }
     return true;
 }
-bool isValidModex(char *modex)
+bool isValidMode(char *mode)
 {
-    if (strcmp(modex, "Immediate") != 0 && strcmp(modex, "Programmed") != 0)
+    if (strcmp(mode, "Immediate") != 0 && strcmp(mode, "Programmed") != 0)
     {
         fprintf(stderr, RED "Error: " RESET "Risposta non valida!\n");
         return false;

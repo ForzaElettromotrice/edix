@@ -85,10 +85,10 @@ int parseListS()
 
 int set(char *name, char *value)
 {
-    if (strcmp(name, "Modex") == 0)
+    if (strcmp(name, "Mode") == 0)
     {
         if (strcmp(value, "Immediate") == 0 or strcmp(value, "Programmed") == 0)
-            setKeyValueStr((char *) "Modex", value);
+            setKeyValueStr((char *) "Mode", value);
         else
         {
             handle_error("Valore non valido!\n");
@@ -164,14 +164,14 @@ int listS()
 {
     int id;
     char *pName;
-    char *modex;
+    char *mode;
     uint tts;
     bool backup;
     char *comp;
     char *tpp;
     char *tup;
 
-    settingsFromRedis(&id, &tup, &modex, &comp, &tts, &tpp, &backup, &pName);
+    settingsFromRedis(&id, &tup, &mode, &comp, &tts, &tpp, &backup, &pName);
 
     //TODO: da farli piu carini
     printf(BOLD YELLOW "IMPOSTAZIONI ATTUALI:" RESET "\n\tTUP = %s"
@@ -179,7 +179,7 @@ int listS()
            "\n\tCOMP = %s"
            "\n\tTTS = %u"
            "\n\tTPP = %s"
-           "\n\tBackup = %d\n", tup, modex, comp, tts, tpp, backup);
+           "\n\tBackup = %d\n", tup, mode, comp, tts, tpp, backup);
 
     return 0;
 }

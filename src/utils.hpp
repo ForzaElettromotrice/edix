@@ -5,6 +5,7 @@
 #ifndef EDIX_UTILS_HPP
 #define EDIX_UTILS_HPP
 
+#include <iostream>
 #include <cstdlib>
 
 #define DEBUG 1

@@ -57,7 +57,7 @@ int initDb()
     D_PRINT("Creating table Project...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Project (Name VARCHAR(50) PRIMARY KEY NOT NULL,CDate TIMESTAMP NOT NULL,MDate TIMESTAMP NOT NULL,Path VARCHAR(256) UNIQUE NOT NULL,Settings INT NOT NULL);\" > /dev/null");
     D_PRINT("Creating table Settings...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Modex Modex NOT NULL,Comp Compx NOT NULL,TTS Uint5 NOT NULL,TPP Tppx NOT NULL,Backup BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
+    system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Mode Modex NOT NULL,Comp Compx NOT NULL,TTS Uint5 NOT NULL,TPP Tppx NOT NULL,Backup BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
     D_PRINT("Creating table Dix...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP PRIMARY KEY NOT NULL,Project VARCHAR(50) NOT NULL, Name VARCHAR(50) NOT NULL, Comment VARCHAR(1024),UNIQUE (Project, Name),CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE);\" > /dev/null");
     D_PRINT("Creating table Image...\n");
@@ -136,7 +136,7 @@ int loadProjectOnRedis(char *projectName)
 
     return 0;
 }
-int loadDix(char *name, char *projectName)
+int loadDix(char *name, char *projectName, char *pPath)
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
     if (PQstatus(conn) != CONNECTION_OK)
@@ -145,8 +145,50 @@ int loadDix(char *name, char *projectName)
         handle_error("(Errore di connessione a postgres), %s\n", PQerrorMessage(conn));
     }
 
+    char query[256];
+    sprintf(query, "SELECT Instant FROM Dix d WHERE d.Project = '%s' AND d.Name = '%s';", projectName, name);
 
-    //TODO: prendere tutte le informazioni associate
+    PGresult *result = PQexec(conn, query);
+    if (PQresultStatus(result) != PGRES_TUPLES_OK)
+    {
+        PQclear(result);
+        PQfinish(conn);
+        handle_error("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+    }
+
+    int numRows = PQntuples(result);
+    PQclear(result);
+    if (numRows == 0)
+    {
+        PQfinish(conn);
+        handle_error("Il dix %s non esiste\n", name);
+    }
+
+    char *instant = PQgetvalue(result, 0, 0);
+
+    sprintf(query, "SELECT Path, Name FROM Image i WHERE i.Dix = '%s' ORDER BY Id", instant);
+
+    result = PQexec(conn, query);
+    if (PQresultStatus(result) != PGRES_TUPLES_OK)
+    {
+        PQclear(result);
+        PQfinish(conn);
+        handle_error("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+    }
+
+    numRows = PQntuples(result);
+
+    char *image;
+    char *path;
+
+    for (int i = 0; i < numRows; ++i)
+    {
+        path = PQgetvalue(result, i, 0);
+        image = PQgetvalue(result, i, 1);
+
+        checkPath(path, pPath);
+        saveImage(path, image);
+    }
 
 
     PQfinish(conn);
@@ -169,7 +211,7 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
                    "settingsId INT;\n"
                    "BEGIN\n"
                    "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), '%s', -1);\n"
-                   "INSERT INTO Settings (TUP, Modex, Comp, TTS, TPP, Backup, Project) VALUES ('%s', '%s', '%s', %d, '%s', %s, '%s') RETURNING Id INTO settingsId;\n"
+                   "INSERT INTO Settings (TUP, Mode, Comp, TTS, TPP, Backup, Project) VALUES ('%s', '%s', '%s', %d, '%s', %s, '%s') RETURNING Id INTO settingsId;\n"
                    "UPDATE Project SET Settings = settingsId WHERE Name = '%s';\n"
                    "END $$;\n"
                    "COMMIT;\n", name, path, TUP, modEx, comp, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name);
@@ -281,8 +323,6 @@ int addDix(char *projectName, char *dixName, char *comment, char **images, char 
 
     strcat(query, "COMMIT;");
 
-    D_PRINT("%s\n", query);
-
     D_PRINT("Adding dix to project %s...\n", projectName);
     PGresult *res = PQexec(conn, query);
 
@@ -307,8 +347,6 @@ int addDix(char *projectName, char *dixName, char *comment, char **images, char 
     PQfinish(conn);
     return 0;
 }
-
-
 int delProject(char *name)
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
@@ -349,6 +387,56 @@ int delProject(char *name)
     PQclear(res);
 
 
+    PQfinish(conn);
+
+    return 0;
+}
+int updateSettings(int id, char *tup, char *mode, char *comp, u_int tts, char *tpp, bool backup, char *pName)
+{
+
+    PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
+    if (PQstatus(conn) != CONNECTION_OK)
+    {
+        PQfinish(conn);
+        handle_error("Errore di connessione a postgres: %s\n", PQerrorMessage(conn));
+        return 1;
+    }
+    char backupChar[256];
+
+    if (backup == 0)
+    {
+        sprintf(backupChar, "f");
+    } else
+    {
+        sprintf(backupChar, "t");
+    }
+
+
+    char query[256];
+
+    sprintf(query,
+            "UPDATE Settings SET id = %d, tup = '%s', mode = '%s', comp = '%s', tts = %u, tpp = '%s' , backup = '%s' , project = '%s' WHERE Id = %d",
+            id,
+            tup,
+            mode,
+            comp,
+            tts,
+            tpp,
+            backupChar,
+            pName,
+            id);
+
+    PGresult *result = PQexec(conn, query);
+
+    if (PQresultStatus(result) != PGRES_COMMAND_OK)
+    {
+        fprintf(stderr, "Query di UPDATE fallita: %s", PQresultErrorMessage(result));
+        PQclear(result);
+        PQfinish(conn);
+        return 1;
+    }
+    D_PRINT("query update eseguita su settings\n");
+    PQclear(result);
     PQfinish(conn);
 
     return 0;
@@ -452,7 +540,6 @@ char *getDixs(char *projectName)
     PQfinish(conn);
     return names;
 }
-
 char **getProject(PGconn *conn, char *projectName)
 {
     char query[256];
@@ -544,8 +631,7 @@ unsigned char *getImageData(char *path, size_t *dim)
     FILE *file = fopen(path, "rb");
     if (!file)
     {
-        perror("daje");
-        fprintf(stderr, RED "POSTGRES Error: " RESET "Errore nell'apertura del file\n");
+        fprintf(stderr, RED "POSTGRES Error: " RESET "Errore nell'apertura del file -> %s\n", strerror(errno));
         return nullptr;
     }
 
@@ -604,8 +690,6 @@ bool existProject(char *name)
     PQfinish(conn);
     return numRows == 1;
 }
-
-
 bool checkRoleExists(PGconn *conn, const char *roleName)
 {
     char query[256];
@@ -645,54 +729,34 @@ void changeFormat(char **comment)
 
     *comment = out;
 }
-
-int updateSettings(int id, char *tup, char *modex, char *comp, u_int tts, char *tpp, bool backup, char *pName)
+int checkPath(char *path, char *pPath)
 {
+    if (strcmp(path, pPath) == 0)
+        return 0;
 
-    PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
-    if (PQstatus(conn) != CONNECTION_OK)
+    D_PRINT("Creating folder %s...\n", path);
+    char *command = (char *) malloc((strlen(path) + 10) * sizeof(char));
+    sprintf(command, "mkdir -p %s", path);
+
+    if (system(command) != 0)
     {
-        PQfinish(conn);
-        handle_error("Errore di connessione a postgres: %s\n", PQerrorMessage(conn));
+        free(command);
+        handle_error("Error while creating dir!\n");
+    }
+
+    return 0;
+}
+int saveImage(char *path, char *img)
+{
+    FILE *file = fopen(path, "wb");
+    if (!file)
+    {
+        fprintf(stderr, RED "POSTGRES Error: " RESET "Errore nell'apertura del file -> %s\n", strerror(errno));
         return 1;
     }
-    char backupChar[256];
 
-    if (backup == 0)
-    {
-        sprintf(backupChar, "f");
-    } else
-    {
-        sprintf(backupChar, "t");
-    }
-
-
-    char query[256];
-
-    sprintf(query,
-            "UPDATE Settings SET id = %d, tup = '%s', modex = '%s', comp = '%s', tts = %u, tpp = '%s' , backup = '%s' , project = '%s' WHERE Id = %d",
-            id,
-            tup,
-            modex,
-            comp,
-            tts,
-            tpp,
-            backupChar,
-            pName,
-            id);
-
-    PGresult *result = PQexec(conn, query);
-
-    if (PQresultStatus(result) != PGRES_COMMAND_OK)
-    {
-        fprintf(stderr, "Query di UPDATE fallita: %s", PQresultErrorMessage(result));
-        PQclear(result);
-        PQfinish(conn);
-        return 1;
-    }
-    D_PRINT("query update eseguita su settings\n");
-    PQclear(result);
-    PQfinish(conn);
+    fwrite(img, sizeof(char), strlen(img), file);
+    fclose(file);
 
     return 0;
 }

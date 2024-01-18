@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
     banner();
     // TODO: magari puoi aprire direttamente un progetto passandolo come argomento
     // TODO: ovunque si usi il path, mettere PATH_MAX oppure (meglio) far si che l'allocazione sia dinamica
+    // TODO: stiamo usando ovunque path assoluti, dovremmo usare dei path relativi
     switch (argc)
     {
         case 1:

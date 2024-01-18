@@ -86,7 +86,7 @@ int projectToRedis(char *name, char *cDate, char *mDate, char *path, int setting
 
     return 0;
 }
-int settingsToRedis(int id, char *tup, char *modex, char *comp, u_int tts, char *tpp, bool backup, char *pName)
+int settingsToRedis(int id, char *tup, char *mode, char *comp, u_int tts, char *tpp, bool backup, char *pName)
 {
     //Init redis connection
     redisContext *context;
@@ -96,7 +96,7 @@ int settingsToRedis(int id, char *tup, char *modex, char *comp, u_int tts, char 
     D_PRINT("Adding settings on redis...\n");
     setKeyValueInt((char *) "ID", id);
     setKeyValueStr((char *) "Project", pName);
-    setKeyValueStr((char *) "Modex", modex);
+    setKeyValueStr((char *) "Mode", mode);
     setKeyValueInt((char *) "TTS", (int) tts);
     setKeyValueInt((char *) "Backup", backup);
     setKeyValueStr((char *) "COMP", comp);
@@ -109,7 +109,7 @@ int settingsToRedis(int id, char *tup, char *modex, char *comp, u_int tts, char 
     return 0;
 }
 int
-settingsFromRedis(int *id, char **tup, char **modex, char **comp, u_int *tts, char **tpp, bool *backup, char **pName)
+settingsFromRedis(int *id, char **tup, char **mode, char **comp, u_int *tts, char **tpp, bool *backup, char **pName)
 {
     redisContext *context;
     openConnection(&context);
@@ -119,7 +119,7 @@ settingsFromRedis(int *id, char **tup, char **modex, char **comp, u_int *tts, ch
 
     *pName = getStrFromKey((char *) "Project");
 
-    *modex = getStrFromKey((char *) "Modex");
+    *mode = getStrFromKey((char *) "Mode");
 
     *tts = getIntFromKey((char *) "TTS");
 

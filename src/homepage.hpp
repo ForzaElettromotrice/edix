@@ -23,7 +23,7 @@ bool isValidPath(char *path);
 bool isValidComp(char *comp);
 bool isValidTPP(char *tpp);
 bool isValidTUP(char *tup);
-bool isValidModex(char *modex);
+bool isValidMode(char *mode);
 bool isValidTTS(char *tts);
 bool isValidBackup(char *backup);
 void periodicSave(int i, short i1, void *pVoid);

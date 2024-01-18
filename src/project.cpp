@@ -8,17 +8,15 @@
 int isPathIn(const char *path, const char *pathProj)
 {
 
-    char *absPath = realpath(path, nullptr);
-    if (absPath == nullptr)
-    {
-        handle_error("Errore nella risoluzione del percorso\n");
-    }
+    char *absPath = (char *) malloc((strlen(path) + PATH_MAX) * sizeof(char));
+    sprintf(absPath, "%s/%s", getcwd(nullptr, 0), path);
 
     int res = strncmp(absPath, pathProj, strlen(pathProj));
+    free(absPath);
 
     return res;
 }
-int isValidImage(char *path)
+bool isValidImage(char *path)
 {
     char *ext = strrchr(path, '.');
 
@@ -27,9 +25,10 @@ int isValidImage(char *path)
         handle_error("Errore nella risoluzione del percorso\n");
     }
 
-    if (strcmp(ext, ".png") != 0 || strcmp(ext, ".jpeg") != 0 || strcmp(ext, ".ppm") != 0)
-        return 1;
-    return 0;
+
+    if (strcmp(ext, ".png") != 0 && strcmp(ext, ".jpeg") != 0 && strcmp(ext, ".ppm") != 0)
+        return false;
+    return true;
 }
 char *askComment()
 {
@@ -70,8 +69,6 @@ char *askComment()
         strcat(comment, line);
     }
     comment[499] = '\0';
-
-    D_PRINT("Il commento risultante finale è : \n\"\n%s\"\n", comment);
 
     return comment;
 
@@ -199,8 +196,6 @@ int parseProj(char *line, Env *env)
         parseLs();
     else if (strcmp(token, "exec") == 0)
         parseExec();
-    else if (strcmp(token, "tree") == 0)
-        parseTree();
     else if (strcmp(token, "cd") == 0)
         parseCd();
     else if (strcmp(token, "load") == 0)
@@ -273,31 +268,6 @@ int parseLs()
 
     return 0;
 }
-int parseTree()
-{
-    char *path = strtok(nullptr, " ");
-
-    if (strtok(nullptr, " ") != nullptr)
-    {
-        handle_error("usage" BOLD ITALIC " tree [path ...]\n" RESET);
-    }
-
-    if (path == nullptr)
-        return tree(nullptr);
-
-    char *path_p = getStrFromKey((char *) "pPath");
-    if (path_p == nullptr)
-        return 1;
-    int res = isPathIn(path, path_p);
-    if (res != 0)
-    {
-        handle_error("Il path non si trova all'interno del progetto\n");
-    }
-
-    tree(path);
-
-    return 0;
-}
 int parseCd()
 {
     char *path = strtok(nullptr, " ");
@@ -328,12 +298,12 @@ int parseLoad()
 {
     char *path = strtok(nullptr, " ");
 
-    if (path != nullptr || strtok(nullptr, " ") != nullptr)
+    if (path == nullptr || strtok(nullptr, " ") != nullptr)
     {
         handle_error("usage" BOLD ITALIC " load pathToFile\n" RESET);
     }
 
-    if (isValidImage(path))
+    if (!isValidImage(path))
     {
         handle_error("I formati ammessi sono png/jpeg/ppm\n");
     }
@@ -345,7 +315,7 @@ int parseRm()
 {
     char *path = strtok(nullptr, " ");
 
-    if (path != nullptr || strtok(nullptr, " ") != nullptr)
+    if (path == nullptr || strtok(nullptr, " ") != nullptr)
     {
         handle_error("usage" BOLD ITALIC " rm filename\n" RESET);
     }
@@ -367,8 +337,9 @@ int parseRm()
 int parseMkdir()
 {
     char *name = strtok(nullptr, " ");
+    char *err = strtok(nullptr, " ");
 
-    if (name != nullptr || strtok(nullptr, " ") != nullptr)
+    if (name == nullptr || err != nullptr)
     {
         handle_error("usage:" BOLD ITALIC " mkdir nameDir\n" RESET);
     }
@@ -390,7 +361,7 @@ int parseRmdir()
 {
     char *name = strtok(nullptr, " ");
 
-    if (name != nullptr || strtok(nullptr, " ") != nullptr)
+    if (name == nullptr || strtok(nullptr, " ") != nullptr)
     {
         handle_error("usage:" BOLD ITALIC " rmdir nameDir\n" RESET);
     }
@@ -414,7 +385,7 @@ int parseMv()
     char *pathDst = strtok(nullptr, " ");
 
 
-    if ((pathSrc != nullptr && pathDst != nullptr) || strtok(nullptr, " ") != nullptr)
+    if (pathSrc == nullptr || pathDst == nullptr || strtok(nullptr, " ") != nullptr)
     {
         handle_error("usage" BOLD ITALIC " mv fromPath toPath\n" RESET);
     }
@@ -512,13 +483,14 @@ int exec(char *path)
 }
 int ls(const char *path)
 {
-
+    path = path == nullptr ? "." : path;
     char *comm = (char *) malloc((strlen(path) + 4) * sizeof(char));
     if (comm == nullptr)
     {
         handle_error("Error while malloc!\n");
     }
-    sprintf(comm, "ls %s", path == nullptr ? "." : path);
+
+    sprintf(comm, "ls --color=auto %s", path);
 
     if (system(comm))
     {
@@ -528,28 +500,10 @@ int ls(const char *path)
     free(comm);
     return 0;
 }
-int tree(const char *path)
-{
-    char *comm = (char *) malloc((strlen(path) + 6) * sizeof(char));
-    if (comm == nullptr)
-    {
-        handle_error("Error while malloc!\n");
-    }
-
-    sprintf(comm, "tree %s", path == nullptr ? "." : path);
-
-    if (system(comm))
-    {
-        free(comm);
-        handle_error("Errore nell'esecuzione del comando tree\n");
-    }
-    free(comm);
-    return 0;
-}
 int cd(char *path)
 {
-
-    if (path == nullptr)
+    bool toFree = path == nullptr;
+    if (toFree)
     {
         path = getStrFromKey((char *) "pPath");
     }
@@ -557,10 +511,13 @@ int cd(char *path)
 
     if (chdir(path) != 0)
     {
-        free(path);
+        if (toFree)
+            free(path);
         handle_error("Errore nell'esecuzione del comando cd\n");
     }
-    free(path);
+
+    if (toFree)
+        free(path);
     return 0;
 }
 int loadI(char *path)
@@ -594,7 +551,7 @@ int rm(char *name)
         handle_error("Error while malloc!\n");
     }
 
-    sprintf(comm, "rm %s", name);
+    sprintf(comm, "rm -rf %s", name);
 
     if (system(comm))
     {
@@ -614,7 +571,7 @@ int mkdir(char *name)
         handle_error("Error while malloc!");
     }
 
-    sprintf(comm, "mkdir %s", name);
+    sprintf(comm, "mkdir -p %s", name);
 
     if (system(comm))
     {
@@ -664,7 +621,6 @@ int helpP()
 {
     printf("Ecco la lista dei comandi che puoi utilizzare all'interno del tuo progetto:\n\n"
            YELLOW BOLD "  ls"    RESET " [path ...]\t\t\tStampa il contenuto della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
-           YELLOW BOLD "  tree"  RESET " [path ...]\t\tStampa il contenuto della directory in un formato ad albero della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
            YELLOW BOLD "  exec"  RESET " nameFroc\t\t\tEsegui la froceria nameFroc\n"
            YELLOW BOLD "  cd"    RESET " nameDir\t\t\tCambia la directory corrente a nameDir\n"
            YELLOW BOLD "  loadI" RESET " pathToFile\t\tCarica l'immagine pathToFile\n"
@@ -724,16 +680,36 @@ int dixCommit(char *name)
 }
 int dixReload(char *name)
 {
-    // TODO:
-    char *projectName = getStrFromKey((char *) "Project");
-    if (loadDix(name, projectName))
+    force();
+
+    char *pPath = getStrFromKey((char *) "pPath");
+    if (pPath == nullptr)
+        return 1;
+
+    char *comm = (char *) malloc((strlen(pPath) + 8) * sizeof(char));
+    if (comm == nullptr)
     {
-        free(projectName);
+        free(pPath);
+        handle_error("Error while malloc!\n");
+    }
+    sprintf(comm, "rm -rf %s", pPath);
+    if (system(comm))
+    {
+        free(comm);
+        free(pPath);
+        handle_error("Errore nell'esecuzione del comando rm\n");
+    }
+    free(comm);
+
+
+    char *projectName = getStrFromKey((char *) "Project");
+    if (projectName == nullptr)
+    {
+        free(pPath);
         return 1;
     }
 
-
-    free(projectName);
+    loadDix(name, projectName, pPath);
 
     return 0;
 }
@@ -773,14 +749,13 @@ int force()
 
     int id = getIntFromKey((char *) "ID");
     char *tup = getStrFromKey((char *) "TUP");
-    char *modex = getStrFromKey((char *) "Modex");
+    char *mode = getStrFromKey((char *) "Mode");
     char *comp = getStrFromKey((char *) "COMP");
     uint tts = (uint) getIntFromKey((char *) "TTS");
     char *tpp = getStrFromKey((char *) "TPP");
     bool backup = getIntFromKey((char *) "Backup") == 1;
     char *pName = getStrFromKey((char *) "pName");
-
-    updateSettings(id, tup, modex, comp, tts, tpp, backup, pName);
+    updateSettings(id, tup, mode, comp, tts, tpp, backup, pName);
 
     return 0;
 }
