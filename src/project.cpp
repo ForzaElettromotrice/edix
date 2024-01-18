@@ -533,6 +533,8 @@ int dixCommit(char *name)
 
     if (cloneProject(projectPath, projectPath, name))
     {
+        removeKeyFromRedis((char *)"dixNames");
+        removeKeyFromRedis((char *)"dixComments");
         handle_error("Errore nella clonazione del progetto!\n");
     }
 
