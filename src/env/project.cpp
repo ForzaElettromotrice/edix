@@ -692,7 +692,7 @@ int dixReload(char *name)
         free(pPath);
         handle_error("Error while malloc!\n");
     }
-    sprintf(comm, "rm -rf %s", pPath);
+    sprintf(comm, "rm -rf %s/*", pPath);
     if (system(comm))
     {
         free(comm);
@@ -746,6 +746,7 @@ int force()
     free(projectName);
 
     //TODO: deallocare da redis i dix
+    delDixFromRedis();
 
     int id = getIntFromKey((char *) "ID");
     char *tup = getStrFromKey((char *) "TUP");

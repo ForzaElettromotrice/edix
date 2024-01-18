@@ -3,7 +3,7 @@
 #define EDIX_GRAYSCALE_HU
 
 #include <iostream>
-#include "utils.hpp"
+#include "../utils.hpp"
 #include <cstdlib>
 
 #define CHANNELS 3

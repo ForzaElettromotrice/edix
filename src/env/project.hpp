@@ -10,9 +10,9 @@
 #include <cstdlib>
 #include <dirent.h>
 #include <sys/stat.h>
+#include "../dbutils/pgutils.hpp"
+#include "../utils.hpp"
 #include <unistd.h>
-#include "dbutils.hpp"
-#include "utils.hpp"
 
 //UTILS
 int isPathIn(const char *path, const char *pathProj);

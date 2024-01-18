@@ -7,8 +7,8 @@
 
 #include <iostream>
 #include <cstring>
-#include "rdutils.hpp"
-#include "utils.hpp"
+#include "../dbutils/rdutils.hpp"
+#include "../utils.hpp"
 
 //PARSERS
 int parseSettings(char *line, Env *env);

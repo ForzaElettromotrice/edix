@@ -5,18 +5,20 @@ set(CMAKE_CUDA_STANDARD 23)
 set(CMAKE_CXX_STANDARD 20)
 
 set(SOURCE_FILES
-        src/dbutils.cpp
-        src/dbutils.hpp
-        src/homepage.cpp
-        src/homepage.hpp
-        src/project.cpp
-        src/project.hpp
-        src/settings.cpp
-        src/settings.hpp
+        src/dbutils/pgutils.cpp
+        src/dbutils/pgutils.hpp
+        src/env/homepage.cpp
+        src/env/homepage.hpp
+        src/env/project.cpp
+        src/env/project.hpp
+        src/env/settings.cpp
+        src/env/settings.hpp
         src/main.cpp
         src/main.hpp
-        src/rdutils.cpp
-        src/rdutils.hpp
+        src/dbutils/rdutils.cpp
+        src/dbutils/rdutils.hpp
+        src/functions/grayscale.hu
+        src/functions/grayscale.cu
 )
 
 # Aggiungi tutte le sorgenti del progetto
