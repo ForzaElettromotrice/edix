@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "dbutils.hpp"
 #include "utils.hpp"
 
@@ -33,16 +34,16 @@ int parseMkdir();
 int parseRmdir();
 int parseMv();
 int parseSett(Env *env);
-int parseHelpP();
-int parseExitP(Env *env);
 int parseDix();
 int parseForce();
+int parseHelpP();
+int parseExitP(Env *env);
 
 
 //COMMANDS
 int ls(const char *path);
 int exec(char *path);
-int tree(char *path);
+int tree(const char *path);
 int cd(char *path);
 int loadI(char *path);
 int rm(char *name);

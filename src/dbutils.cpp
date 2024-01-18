@@ -57,7 +57,7 @@ int initDb()
     D_PRINT("Creating table Project...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Project (Name VARCHAR(50) PRIMARY KEY NOT NULL,CDate TIMESTAMP NOT NULL,MDate TIMESTAMP NOT NULL,Path VARCHAR(256) UNIQUE NOT NULL,Settings INT NOT NULL);\" > /dev/null");
     D_PRINT("Creating table Settings...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Mod_ex Modex NOT NULL,Comp Compx NOT NULL,TTS Uint5 NOT NULL,TPP Tppx NOT NULL,Backup BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
+    system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Modex Modex NOT NULL,Comp Compx NOT NULL,TTS Uint5 NOT NULL,TPP Tppx NOT NULL,Backup BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
     D_PRINT("Creating table Dix...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP PRIMARY KEY NOT NULL,Project VARCHAR(50) NOT NULL, Name VARCHAR(50) NOT NULL, Comment VARCHAR(1024),UNIQUE (Project, Name),CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE);\" > /dev/null");
     D_PRINT("Creating table Image...\n");
@@ -169,7 +169,7 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
                    "settingsId INT;\n"
                    "BEGIN\n"
                    "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), '%s', -1);\n"
-                   "INSERT INTO Settings (TUP, Mod_ex, Comp, TTS, TPP, Backup, Project) VALUES ('%s', '%s', '%s', %d, '%s', %s, '%s') RETURNING Id INTO settingsId;\n"
+                   "INSERT INTO Settings (TUP, Modex, Comp, TTS, TPP, Backup, Project) VALUES ('%s', '%s', '%s', %d, '%s', %s, '%s') RETURNING Id INTO settingsId;\n"
                    "UPDATE Project SET Settings = settingsId WHERE Name = '%s';\n"
                    "END $$;\n"
                    "COMMIT;\n", name, path, TUP, modEx, comp, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name);
@@ -646,7 +646,7 @@ void changeFormat(char **comment)
     *comment = out;
 }
 
-int updateSettings(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool backup, char *pName)
+int updateSettings(int id, char *tup, char *modex, char *comp, u_int tts, char *tpp, bool backup, char *pName)
 {
 
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
@@ -670,10 +670,10 @@ int updateSettings(int id, char *tup, char *mod_ex, char *comp, u_int tts, char 
     char query[256];
 
     sprintf(query,
-            "UPDATE Settings SET id = %d, tup = '%s', mod_ex = '%s', comp = '%s', tts = %u, tpp = '%s' , backup = '%s' , project = '%s' WHERE Id = %d",
+            "UPDATE Settings SET id = %d, tup = '%s', modex = '%s', comp = '%s', tts = %u, tpp = '%s' , backup = '%s' , project = '%s' WHERE Id = %d",
             id,
             tup,
-            mod_ex,
+            modex,
             comp,
             tts,
             tpp,

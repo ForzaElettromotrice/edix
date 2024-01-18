@@ -55,8 +55,6 @@ int setChecking(char *name, redisReply *reply, redisContext *context)
 
     return 0;
 }
-
-
 int getChecking(char *name, redisReply *reply, redisContext *context)
 {
     if (reply == nullptr)
@@ -88,7 +86,7 @@ int projectToRedis(char *name, char *cDate, char *mDate, char *path, int setting
 
     return 0;
 }
-int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool backup, char *pName)
+int settingsToRedis(int id, char *tup, char *modex, char *comp, u_int tts, char *tpp, bool backup, char *pName)
 {
     //Init redis connection
     redisContext *context;
@@ -98,7 +96,7 @@ int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char
     D_PRINT("Adding settings on redis...\n");
     setKeyValueInt((char *) "ID", id);
     setKeyValueStr((char *) "Project", pName);
-    setKeyValueStr((char *) "Mod_ex", mod_ex);
+    setKeyValueStr((char *) "Modex", modex);
     setKeyValueInt((char *) "TTS", (int) tts);
     setKeyValueInt((char *) "Backup", backup);
     setKeyValueStr((char *) "COMP", comp);
@@ -111,7 +109,7 @@ int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char
     return 0;
 }
 int
-settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tts, char **tpp, bool *backup, char **pName)
+settingsFromRedis(int *id, char **tup, char **modex, char **comp, u_int *tts, char **tpp, bool *backup, char **pName)
 {
     redisContext *context;
     openConnection(&context);
@@ -121,7 +119,7 @@ settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tts, c
 
     *pName = getStrFromKey((char *) "Project");
 
-    *mod_ex = getStrFromKey((char *) "Mod_ex");
+    *modex = getStrFromKey((char *) "Modex");
 
     *tts = getIntFromKey((char *) "TTS");
 
@@ -309,13 +307,15 @@ char **getCharArrayFromRedis(char *key)
     return elements_array;
 }
 
-int removeKeyFromRedis(char *key){
+int removeKeyFromRedis(char *key)
+{
     redisContext *context;
     openConnection(&context);
 
-    auto *reply = (redisReply *) redisCommand(context,"DEL %s",key);
-    if (reply == nullptr){
-        fprintf(stderr, RED "REDIS Error: " RESET "Error while deleting key: %s\n",key);
+    auto *reply = (redisReply *) redisCommand(context, "DEL %s", key);
+    if (reply == nullptr)
+    {
+        fprintf(stderr, RED "REDIS Error: " RESET "Error while deleting key: %s\n", key);
         return 1;
     }
 
