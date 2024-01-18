@@ -153,15 +153,15 @@ int setKeyValueStr(char *key, char *value)
 
     freeReplyObject(reply);
 
-    auto *persist = (redisReply *) redisCommand(context, "PERSIST %s", key);
+    // auto *persist = (redisReply *) redisCommand(context, "PERSIST %s", key);
 
-    if (persist == nullptr || persist->type == REDIS_REPLY_ERROR)
-    {
-        fprintf(stderr, RED "REDIS Error:" RESET "while setting PERSISTENT to key\n");
-        redisFree(context);
-        return -1;
-    }
-    freeReplyObject(persist);
+    // if (persist == nullptr || persist->type == REDIS_REPLY_ERROR)
+    // {
+    //     fprintf(stderr, RED "REDIS Error:" RESET "while setting PERSISTENT to key\n");
+    //     redisFree(context);
+    //     return -1;
+    // }
+    // freeReplyObject(persist);
 
     redisFree(context);
 
@@ -179,15 +179,15 @@ int setKeyValueInt(char *key, int value)
 
     freeReplyObject(reply);
 
-    auto *persist = (redisReply *) redisCommand(context, "PERSIST %s", key);
+    // auto *persist = (redisReply *) redisCommand(context, "PERSIST %s", key);
 
-    if (persist == nullptr || persist->type == REDIS_REPLY_ERROR)
-    {
-        fprintf(stderr, RED "REDIS Error:" RESET "while setting PERSISTENT to key\n");
-        redisFree(context);
-        return -1;
-    }
-    freeReplyObject(persist);
+    // if (persist == nullptr || persist->type == REDIS_REPLY_ERROR)
+    // {
+    //     fprintf(stderr, RED "REDIS Error:" RESET "while setting PERSISTENT to key\n");
+    //     redisFree(context);
+    //     return -1;
+    // }
+    // freeReplyObject(persist);
 
     redisFree(context);
 
@@ -306,6 +306,18 @@ char **getCharArrayFromRedis(char *key)
     freeReplyObject(reply);
     redisFree(context);
     return elements_array;
+}
+
+int removeKeyFromRedis(char *key){
+    redisContext *context;
+    openConnection(&context);
+
+    auto *reply = (redisCommand *)redisCommand(context,"DEL %s",key);
+    if (reply == nullptr)
+        fprintf(stderr, RED "REDIS Error: " RESET "Error while deleting key: %s\n",key);
+
+    freeReplyObject(reply);
+    redisFree(context);
 }
 
 int deallocateFromRedis()

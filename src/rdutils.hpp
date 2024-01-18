@@ -15,6 +15,7 @@ int projectToRedis(char *name, char *cDate, char *mDate, char *path, int setting
 int setElementToRedis(char *key, char *value);
 char **getCharArrayFromRedis(char *key);
 int openConnection(redisContext **context);
+int removeKeyFromRedis(char *key);
 int deallocateFromRedis();
 int setChecking(char *name, redisReply *reply, redisContext *context);
 int getChecking(char *name, redisReply *reply, redisContext *context);
