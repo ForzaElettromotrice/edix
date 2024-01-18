@@ -312,12 +312,17 @@ int removeKeyFromRedis(char *key){
     redisContext *context;
     openConnection(&context);
 
-    auto *reply = (redisCommand *)redisCommand(context,"DEL %s",key);
-    if (reply == nullptr)
+    auto *reply = (redisReply *) redisCommand(context,"DEL %s",key);
+    if (reply == nullptr){
         fprintf(stderr, RED "REDIS Error: " RESET "Error while deleting key: %s\n",key);
+        return 1;
+    }
+
 
     freeReplyObject(reply);
     redisFree(context);
+
+    return 0;
 }
 
 int deallocateFromRedis()
