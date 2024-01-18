@@ -6,13 +6,14 @@
 
 //communication with db
 
-int settingsToRedis(int id, char *tup, char *mod_ex, char *comp, u_int tts, char *tpp, bool backup, char *pName);
+int settingsToRedis(int id, char *tup, char *modex, char *comp, u_int tts, char *tpp, bool backup, char *pName);
 int
-settingsFromRedis(int *id, char **tup, char **mod_ex, char **comp, u_int *tts, char **tpp, bool *backup, char **pName);
+settingsFromRedis(int *id, char **tup, char **modex, char **comp, u_int *tts, char **tpp, bool *backup, char **pName);
 int projectToRedis(char *name, char *cDate, char *mDate, char *path, int settings);
 
 //utils
 //int dixCommitToRedis(char *name, char *comment, char **paths, char **images);
+void delDixFromRedis();
 int setElementToRedis(char *key, char *value);
 char **getCharArrayFromRedis(char *key);
 int openConnection(redisContext **context);

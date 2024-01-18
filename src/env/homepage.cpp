@@ -478,6 +478,15 @@ int openP(char *name, Env *env)
     if (loadProjectOnRedis(name))
         return EXIT_FAILURE;
 
+    char *path = getStrFromKey((char *) "pPath");
+    if (path == nullptr)
+        return 1;
+
+    if (chdir(path) != 0)
+    {
+        handle_error("chdir: %s", strerror(errno));
+    }
+
     D_PRINT("Entering %s...\n", name);
     *env = PROJECT;
     return 0;
