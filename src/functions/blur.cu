@@ -1,9 +1,21 @@
+#include "functions.hu"
 
-void blurSerial(){
+int parseBlurArgs(char *args)
+{
+    return 0;
 }
 
-void blurOMP(){
+int blurSerial(char *pathIn, char *pathOut, int radius)
+{
+    return 0;
 }
 
-void blurCUDA(){
+int blurOmp(char *pathIn, char *pathOut, int radius)
+{
+    return 0;
+}
+
+int blurCuda(char *pathIn, char *pathOut, int radius)
+{
+    return 0;
 }

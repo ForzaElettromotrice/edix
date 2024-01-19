@@ -19,6 +19,8 @@ set(SOURCE_FILES
         src/dbutils/rdutils.hpp
         src/functions/functions.hu
         src/functions/grayscale.cu
+        src/functions/blur.cu
+        src/functions/imgutils.cpp
 )
 
 # Aggiungi tutte le sorgenti del progetto

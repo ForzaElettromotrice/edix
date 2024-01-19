@@ -8,6 +8,10 @@
 
 #define CHANNELS 3
 
+// utils
+unsigned char *loadPPM(const char *path, int *width, int *height);
+void writePPM(const char *path, unsigned char *img, int width, int height, const char *format);
+
 //parsers
 int parseBlurArgs(char *args);
 int parseGrayScaleArgs(char *args);
@@ -17,12 +21,35 @@ int parseDownscalingArgs(char *args);
 int parseOverlapArgs(char *args);
 int parseCompositionArgs(char *args);
 
-//int grayScaleCuda();
-//int grayScaleOmp();
-int grayScaleSerial(char *pathIn, char *pathOut);
 
-// utils
-unsigned char *loadPPM(const char *path, int *width, int *height);
-void writePPM(const char *path, unsigned char *img, int width, int height);
+//funx
+int blurSerial(char *pathIn, char *pathOut, int radius);
+int blurOmp(char *pathIn, char *pathOut, int radius);
+int blurCuda(char *pathIn, char *pathOut, int radius);
+
+int grayScaleSerial(char *pathIn, char *pathOut);
+int grayScaleCuda(char *pathIn, char *pathOut);
+int grayScaleOmp(char *pathIn, char *pathOut);
+
+int colorFilterSerial(char *pathIn, char *pathOut, int color);
+int colorFilterOmp(char *pathIn, char *pathOut, int color);
+int colorFilterCuda(char *pathIn, char *pathOut, int color);
+
+int overlapSerial(char *pathIn1, char *pathIn2, char *pathOut, int factor);
+int overlapOmp(char *pathIn1, char *pathIn2, char *pathOut, int factor);
+int overlapCuda(char *pathIn1, char *pathIn2, char *pathOut, int factor);
+
+int compositionSerial(char *pathIn1, char *pathIn2, char *pathOut, int factor);
+int compositionOmp(char *pathIn1, char *pathIn2, char *pathOut, int factor);
+int compositionCuda(char *pathIn1, char *pathIn2, char *pathOut, int factor);
+
+int upscalingSerial(char *pathIn, char *pathOut, int factor);
+int upscalingOmp(char *pathIn, char *pathOut, int factor);
+int upscalingCuda(char *pathIn, char *pathOut, int factor);
+
+int downscalingSerial(char *pathIn, char *pathOut, int factor);
+int downscalingOmp(char *pathIn, char *pathOut, int factor);
+int downscalingCuda(char *pathIn, char *pathOut, int factor);
+
 
 #endif  //EDIX_GRAYSCALE_HU
