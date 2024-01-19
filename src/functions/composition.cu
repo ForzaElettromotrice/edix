@@ -31,11 +31,8 @@ int parseCompositionArgs(char *args)
         unsigned char *img1_1 = loadPPM(img1, &width1, &height1);
         unsigned char *img2_1 = loadPPM(img2, &width2, &height2);
         compositionSerial(img1_1, img2_1, pathOut, width1, height1, width2, height2, side);
-        D_PRINT("free2 %p\n", img1_1);
         free(img1_1);
-        D_PRINT("free3 %p\n", img2_1);
         free(img2_1);
-        D_PRINT("qui\n");
     } else if (strcmp(tpp, "OMP") == 0)
     {
         unsigned char *img1_1 = loadPPM(img1, &width1, &height1);
@@ -133,7 +130,6 @@ int compositionSerial(unsigned char *img1, unsigned char *img2, char *pathOut, u
     }
     writePPM(pathOut, imgOut, widthOut, heightOut, "P6");
 
-    D_PRINT("free1 %p\n", imgOut);
     free(imgOut);
     return 0;
 }
