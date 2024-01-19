@@ -9,18 +9,15 @@
 
 #define CHANNELS 3
 
-typedef enum
-{
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT
-} Direction;
-
+#define UP 0
+#define DOWN 1
+#define LEFT 2
+#define RIGHT 3
 
 // utils
 unsigned char *loadPPM(const char *path, uint *width, uint *height);
 void writePPM(const char *path, unsigned char *img, uint width, uint height, const char *format);
+
 
 //parsers
 int parseBlurArgs(char *args);
@@ -37,28 +34,31 @@ int blurSerial(unsigned char *imgIn, char *pathOut, uint width, uint height, int
 int blurOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
 int blurCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
 
-int grayScaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height);
-int grayScaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height);
-int grayScaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height);
+int grayscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height);
+int grayscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height);
+int grayscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height);
 
 int colorFilterSerial(unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b);
 int colorFilterOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b);
 int colorFilterCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b);
 
-int overlapSerial(char *img1, char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x,
+int overlapSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
+                  uint height2, uint x,
                   uint y);
 int
-overlapOmp(char *img1, char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x, uint y);
+overlapOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
+           uint height2, uint x, uint y);
 int
-overlapCuda(char *img1, char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x,
+overlapCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
+            uint height2, uint x,
             uint y);
 
 int compositionSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-                      uint height2, Direction side);
+                      uint height2, int side);
 int compositionOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-                   uint height2, Direction side);
+                   uint height2, int side);
 int compositionCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-                    uint height2, Direction side);
+                    uint height2, int side);
 
 int upscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
 int upscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);

@@ -1,11 +1,45 @@
-#include "functions.hu"
+#include "functions.cuh"
 
 int parseGrayscaleArgs(char *args)
 {
+    char *imgIn = strtok(args, ",");
+    char *pathOut = strtok(nullptr, ",");
+
+    if (imgIn == nullptr || pathOut == nullptr)
+    {
+        handle_error("Errore nel parsing degli argomenti\n");
+    }
+    // TODO: leggere le immagini in base all'estenzione
+
+    char *tpp = getStrFromKey((char *) "tpp");
+    uint width;
+    uint height;
+
+    if (strcmp(tpp, "Serial") == 0)
+    {
+        unsigned char *img = loadPPM(imgIn, &width, &height);
+        grayscaleSerial(img, pathOut, width, height);
+        free(img);
+    } else if (strcmp(tpp, "OMP") == 0)
+    {
+        unsigned char *img = loadPPM(imgIn, &width, &height);
+        grayscaleOmp(img, pathOut, width, height);
+        free(img);
+    } else if (strcmp(tpp, "CUDA") == 0)
+    {
+        unsigned char *img = loadPPM(imgIn, &width, &height);
+        grayscaleCuda(img, pathOut, width, height);
+        free(img);
+    } else
+    {
+        free(tpp);
+        handle_error("Errore nel parsing degli argomenti\n");
+    }
+    free(tpp);
     return 0;
 }
 
-int grayscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height)
+int grayscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height)
 {
     auto *img_out = (unsigned char *) malloc((width * height) * sizeof(unsigned char));
 

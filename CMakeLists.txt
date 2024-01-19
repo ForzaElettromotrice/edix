@@ -17,7 +17,7 @@ set(SOURCE_FILES
         src/main.hpp
         src/dbutils/rdutils.cpp
         src/dbutils/rdutils.hpp
-        src/functions/functions.hu
+        src/functions/functions.cuh
         src/functions/grayscale.cu
         src/functions/blur.cu
         src/functions/imgutils.cpp
@@ -26,6 +26,7 @@ set(SOURCE_FILES
         src/functions/downscale.cu
         src/functions/overlap.cu
         src/functions/composition.cu
+        src/functions/composition.cuh
 )
 
 # Aggiungi tutte le sorgenti del progetto

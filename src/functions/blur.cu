@@ -1,4 +1,4 @@
-#include "functions.hu"
+#include "functions.cuh"
 
 int parseBlurArgs(char *args)
 {
@@ -34,8 +34,10 @@ int parseBlurArgs(char *args)
         free(img);
     } else
     {
+        free(tpp);
         handle_error("Invalid arguments for blur function.\n");
     }
+    free(tpp);
 
     return 0;
 }

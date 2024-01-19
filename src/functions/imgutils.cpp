@@ -2,7 +2,7 @@
 // Created by f3m on 19/01/24.
 //
 
-#include "functions.hu"
+#include "functions.cuh"
 
 unsigned char *loadPPM(const char *path, uint *width, uint *height)
 {
@@ -10,7 +10,7 @@ unsigned char *loadPPM(const char *path, uint *width, uint *height)
 
     if (!file)
     {
-        fprintf(stderr, "Failed to open file\n");
+        fprintf(stderr, "Failed to open file %s\n", path);
         return nullptr;
     }
 
@@ -29,11 +29,11 @@ unsigned char *loadPPM(const char *path, uint *width, uint *height)
 
     fgetc(file);  // Skip single whitespace character
 
-    unsigned char *img = (unsigned char *) malloc((*width) * (*height) * CHANNELS);
+    auto *img = (unsigned char *) malloc((*width) * (*height) * CHANNELS);
     if (!img)
     {
         fprintf(stderr, "Failed to allocate memory\n");
-        return NULL;
+        return nullptr;
     }
 
     fread(img, CHANNELS, *width * *height, file);
@@ -49,7 +49,7 @@ void writePPM(const char *path, unsigned char *img, uint width, uint height, con
 
     if (!file)
     {
-        fprintf(stderr, "Failed to open file\n");
+        fprintf(stderr, "Failed to open file %s\n", path);
         return;
     }
 
