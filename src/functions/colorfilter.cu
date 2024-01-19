@@ -1,6 +1,10 @@
+//
+// Created by f3m on 19/01/24.
+//
+
 #include "functions.hu"
 
-int parseBlurArgs(char *args)
+int parseColorFilterArgs(char *args)
 {
     return 0;
 }

@@ -21,6 +21,11 @@ set(SOURCE_FILES
         src/functions/grayscale.cu
         src/functions/blur.cu
         src/functions/imgutils.cpp
+        src/functions/colorfilter.cu
+        src/functions/upscale.cu
+        src/functions/downscale.cu
+        src/functions/overlap.cu
+        src/functions/composition.cu
 )
 
 # Aggiungi tutte le sorgenti del progetto

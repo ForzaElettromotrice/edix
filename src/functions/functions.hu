@@ -8,9 +8,18 @@
 
 #define CHANNELS 3
 
+typedef enum
+{
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT
+} Direction;
+
+
 // utils
-unsigned char *loadPPM(const char *path, int *width, int *height);
-void writePPM(const char *path, unsigned char *img, int width, int height, const char *format);
+unsigned char *loadPPM(const char *path, uint *width, uint *height);
+void writePPM(const char *path, unsigned char *img, uint width, uint height, const char *format);
 
 //parsers
 int parseBlurArgs(char *args);
@@ -23,33 +32,40 @@ int parseCompositionArgs(char *args);
 
 
 //funx
-int blurSerial(char *pathIn, char *pathOut, int radius);
-int blurOmp(char *pathIn, char *pathOut, int radius);
-int blurCuda(char *pathIn, char *pathOut, int radius);
+int blurSerial(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
+int blurOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
+int blurCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
 
-int grayScaleSerial(char *pathIn, char *pathOut);
-int grayScaleCuda(char *pathIn, char *pathOut);
-int grayScaleOmp(char *pathIn, char *pathOut);
+int grayScaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height);
+int grayScaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height);
+int grayScaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height);
 
-int colorFilterSerial(char *pathIn, char *pathOut, int color);
-int colorFilterOmp(char *pathIn, char *pathOut, int color);
-int colorFilterCuda(char *pathIn, char *pathOut, int color);
+int colorFilterSerial(unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b);
+int colorFilterOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b);
+int colorFilterCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b);
 
-int overlapSerial(char *pathIn1, char *pathIn2, char *pathOut, int factor);
-int overlapOmp(char *pathIn1, char *pathIn2, char *pathOut, int factor);
-int overlapCuda(char *pathIn1, char *pathIn2, char *pathOut, int factor);
+int overlapSerial(char *img1, char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x,
+                  uint y);
+int
+overlapOmp(char *img1, char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x, uint y);
+int
+overlapCuda(char *img1, char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x,
+            uint y);
 
-int compositionSerial(char *pathIn1, char *pathIn2, char *pathOut, int factor);
-int compositionOmp(char *pathIn1, char *pathIn2, char *pathOut, int factor);
-int compositionCuda(char *pathIn1, char *pathIn2, char *pathOut, int factor);
+int compositionSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
+                      uint height2, Direction side);
+int compositionOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
+                   uint height2, Direction side);
+int compositionCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
+                    uint height2, Direction side);
 
-int upscalingSerial(char *pathIn, char *pathOut, int factor);
-int upscalingOmp(char *pathIn, char *pathOut, int factor);
-int upscalingCuda(char *pathIn, char *pathOut, int factor);
+int upscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
+int upscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
+int upscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
 
-int downscalingSerial(char *pathIn, char *pathOut, int factor);
-int downscalingOmp(char *pathIn, char *pathOut, int factor);
-int downscalingCuda(char *pathIn, char *pathOut, int factor);
+int downscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
+int downscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
+int downscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
 
 
 #endif  //EDIX_GRAYSCALE_HU
