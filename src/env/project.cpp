@@ -171,7 +171,7 @@ int parseProj(char *line, Env *env)
 {
     /**
      *  16 comandi                                          <p>
-     *  - exec          (Esegue frocerie)                   <p>
+     *  - funx          (Esegue frocerie)                   <p>
      *  - ls            (lista dei file)                    <p>
      *  - tree          (albero del progetto)               <p>
      *  - cd            (cambia ambiente di lavoro)         <p>
@@ -194,8 +194,8 @@ int parseProj(char *line, Env *env)
 
     if (strcmp(token, "ls") == 0)
         parseLs();
-    else if (strcmp(token, "exec") == 0)
-        parseExec();
+    else if (strcmp(token, "funx") == 0)
+        parseFunx();
     else if (strcmp(token, "cd") == 0)
         parseCd();
     else if (strcmp(token, "load") == 0)
@@ -225,16 +225,21 @@ int parseProj(char *line, Env *env)
     free(copy);
     return 0;
 }
-int parseExec()
+int parseFunx()
 {
-    char *path = strtok(nullptr, " ");
-
-    if (strtok(nullptr, " ") != nullptr)
+    char *name = strtok(nullptr, " ");
+    if (name == nullptr)
     {
-        handle_error("usage" BOLD ITALIC " exec frocName\n" RESET);
+        handle_error("usage" BOLD ITALIC " funx nameFunx [args ...]\n" RESET);
     }
 
-    exec(path);
+    char *args = name + strlen(name) + 1;
+    if (args == nullptr)
+    {
+        handle_error("usage" BOLD ITALIC " funx nameFunx [args ...]\n" RESET);
+    }
+
+    funx(name, args);
 
     return 0;
 }
@@ -476,9 +481,27 @@ int parseExitP(Env *env)
 }
 
 
-int exec(char *path)
+int funx(char *name, char *args)
 {
-    // TODO:
+    if (strcmp(name, "blur") == 0)
+        parseBlurArgs(args);
+    else if (strcmp(name, "grayscale") == 0)
+        parseGrayScaleArgs(args);
+    else if (strcmp(name, "colorfilter") == 0)
+        parseColorFilterArgs(args);
+    else if (strcmp(name, "upscale") == 0)
+        parseUpscalingArgs(args);
+    else if (strcmp(name, "downscale") == 0)
+        parseDownscalingArgs(args);
+    else if (strcmp(name, "overlap") == 0)
+        parseOverlapArgs(args);
+    else if (strcmp(name, "composition") == 0)
+        parseCompositionArgs(args);
+    else
+    {
+        handle_error("Funx non trovata\n");
+    }
+
     return 0;
 }
 int ls(const char *path)
@@ -617,33 +640,6 @@ int settings(Env *env)
     D_PRINT("Entering settings...\n");
     return 0;
 }
-int helpP()
-{
-    printf("Ecco la lista dei comandi che puoi utilizzare all'interno del tuo progetto:\n\n"
-           YELLOW BOLD "  ls"    RESET " [path ...]\t\t\tStampa il contenuto della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
-           YELLOW BOLD "  exec"  RESET " nameFroc\t\t\tEsegui la froceria nameFroc\n"
-           YELLOW BOLD "  cd"    RESET " nameDir\t\t\tCambia la directory corrente a nameDir\n"
-           YELLOW BOLD "  loadI" RESET " pathToFile\t\tCarica l'immagine pathToFile\n"
-           YELLOW BOLD "  rm"    RESET " filename ...\t\tRimuovi file filename\n"
-           YELLOW BOLD "  mkdir" RESET " nameDir ...\t\tCrea la directory nameDir\n"
-           YELLOW BOLD "  rmdir" RESET " nameDir ...\t\tRimuovi la directory nameDir\n"
-           YELLOW BOLD "  mv"    RESET " source target\t\tRinomina il file source in target \n"
-           YELLOW BOLD "  mv"    RESET " source ... nameDir\t\tSposta il file source alla directory nameDir\n"
-           YELLOW BOLD "  sett"  RESET "\t\t\t\tAccedi ai settings\n"
-           YELLOW BOLD "  exit"  RESET "\t\t\t\tEsci dal progetto\n");
-    return 0;
-}
-int exitP(Env *env)
-{
-    //TODO: cambia ch
-
-    force();
-    deallocateFromRedis();
-
-    D_PRINT("Uscita dal progetto in corso...\n");
-    *env = HOMEPAGE;
-    return 0;
-}
 int dixList()
 {
     force();
@@ -745,7 +741,6 @@ int force()
     free(comments);
     free(projectName);
 
-    //TODO: deallocare da redis i dix
     delDixFromRedis();
 
     int id = getIntFromKey((char *) "ID");
@@ -758,5 +753,30 @@ int force()
     char *pName = getStrFromKey((char *) "pName");
     updateSettings(id, tup, mode, comp, tts, tpp, backup, pName);
 
+    return 0;
+}
+int helpP()
+{
+    printf("Ecco la lista dei comandi che puoi utilizzare all'interno del tuo progetto:\n\n"
+           YELLOW BOLD "  ls"    RESET " [path ...]\t\t\tStampa il contenuto della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
+           YELLOW BOLD "  funx"  RESET " nameFroc\t\t\tEsegui la froceria nameFroc\n"
+           YELLOW BOLD "  cd"    RESET " nameDir\t\t\tCambia la directory corrente a nameDir\n"
+           YELLOW BOLD "  loadI" RESET " pathToFile\t\tCarica l'immagine pathToFile\n"
+           YELLOW BOLD "  rm"    RESET " filename ...\t\tRimuovi file filename\n"
+           YELLOW BOLD "  mkdir" RESET " nameDir ...\t\tCrea la directory nameDir\n"
+           YELLOW BOLD "  rmdir" RESET " nameDir ...\t\tRimuovi la directory nameDir\n"
+           YELLOW BOLD "  mv"    RESET " source target\t\tRinomina il file source in target \n"
+           YELLOW BOLD "  mv"    RESET " source ... nameDir\t\tSposta il file source alla directory nameDir\n"
+           YELLOW BOLD "  sett"  RESET "\t\t\t\tAccedi ai settings\n"
+           YELLOW BOLD "  exit"  RESET "\t\t\t\tEsci dal progetto\n");
+    return 0;
+}
+int exitP(Env *env)
+{
+    force();
+    deallocateFromRedis();
+
+    D_PRINT("Uscita dal progetto in corso...\n");
+    *env = HOMEPAGE;
     return 0;
 }

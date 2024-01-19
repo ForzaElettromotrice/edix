@@ -1,16 +1,7 @@
+#ifndef REDIS_RDUTILS_HPP
+#define REDIS_RDUTILS_HPP
+
 #include "rdutils.hpp"
-/*
-    Operation IDs delle frocerie:
-    -Upscaling
-    -Downscaling
-    -Composizione
-    -Blur
-    -GrayScale
-    -Sovrapposizione
-
-
-*/
-//TODO TEST DELLE FUNCS
 
 int openConnection(redisContext **context)
 {
@@ -29,7 +20,6 @@ int openConnection(redisContext **context)
     }
     return 0;
 }
-
 int checkRedisService()
 {
 
@@ -44,37 +34,55 @@ int checkRedisService()
 }
 
 
-int setChecking(char *name, redisReply *reply, redisContext *context)
+int
+settingsFromRedis(int *id, char **tup, char **mode, char **comp, u_int *tts, char **tpp, bool *backup, char **pName)
 {
-    if (reply == nullptr)
-    {
-        freeReplyObject(reply);
-        redisFree(context);
-        handle_error("REDIS Error while executing redis SET command %s\n", name);
-    }
+    redisContext *context;
+    openConnection(&context);
+
+
+    *id = getIntFromKey((char *) "ID");
+    *pName = getStrFromKey((char *) "Project");
+    *mode = getStrFromKey((char *) "Mode");
+    *tts = getIntFromKey((char *) "TTS");
+    char *Backup = getStrFromKey((char *) "Backup");
+    *backup = strcmp(Backup, "0");
+    free(Backup);
+    *comp = getStrFromKey((char *) "COMP");
+    *tpp = getStrFromKey((char *) "TPP");
+    *tup = getStrFromKey((char *) "TUP");
+
+    redisFree(context);
+
+    return 0;
+
+}
+int settingsToRedis(int id, char *tup, char *mode, char *comp, u_int tts, char *tpp, bool backup, char *pName)
+{
+    redisContext *context;
+    openConnection(&context);
+
+    D_PRINT("Adding settings on redis...\n");
+    setKeyValueInt((char *) "ID", id);
+    setKeyValueStr((char *) "Project", pName);
+    setKeyValueStr((char *) "Mode", mode);
+    setKeyValueInt((char *) "TTS", (int) tts);
+    setKeyValueInt((char *) "Backup", backup);
+    setKeyValueStr((char *) "COMP", comp);
+    setKeyValueStr((char *) "TPP", tpp);
+    setKeyValueStr((char *) "TUP", tup);
+
+    redisFree(context);
 
     return 0;
 }
-int getChecking(char *name, redisReply *reply, redisContext *context)
-{
-    if (reply == nullptr)
-    {
-        handle_error("REDIS Error while executing GET command %s\n", name);
-        freeReplyObject(reply);
-        redisFree(context);
-        return 1;
-    }
-    return 0;
-}
-
-
 int projectToRedis(char *name, char *cDate, char *mDate, char *path, int settings)
 {
 
     redisContext *context;
     openConnection(&context);
 
-    //TODO:
+    //TODO: mettere i D_PRINT
     D_PRINT("Adding project name on redis...\n");
     setKeyValueStr((char *) "pName", name);
     setKeyValueStr((char *) "CDate", cDate);
@@ -86,60 +94,18 @@ int projectToRedis(char *name, char *cDate, char *mDate, char *path, int setting
 
     return 0;
 }
-int settingsToRedis(int id, char *tup, char *mode, char *comp, u_int tts, char *tpp, bool backup, char *pName)
+
+
+int checkResponse(char *name, redisReply *reply, redisContext *context)
 {
-    //Init redis connection
-    redisContext *context;
-    openConnection(&context);
-
-    //send settings to redis
-    D_PRINT("Adding settings on redis...\n");
-    setKeyValueInt((char *) "ID", id);
-    setKeyValueStr((char *) "Project", pName);
-    setKeyValueStr((char *) "Mode", mode);
-    setKeyValueInt((char *) "TTS", (int) tts);
-    setKeyValueInt((char *) "Backup", backup);
-    setKeyValueStr((char *) "COMP", comp);
-    setKeyValueStr((char *) "TPP", tpp);
-    setKeyValueStr((char *) "TUP", tup);
-
-    //End redis connection
-    redisFree(context);
-
+    if (reply == nullptr)
+    {
+        freeReplyObject(reply);
+        redisFree(context);
+        handle_error("REDIS Error while executing command %s\n", name);
+    }
     return 0;
 }
-int
-settingsFromRedis(int *id, char **tup, char **mode, char **comp, u_int *tts, char **tpp, bool *backup, char **pName)
-{
-    redisContext *context;
-    openConnection(&context);
-
-
-    *id = getIntFromKey((char *) "ID");
-
-    *pName = getStrFromKey((char *) "Project");
-
-    *mode = getStrFromKey((char *) "Mode");
-
-    *tts = getIntFromKey((char *) "TTS");
-
-    char *Backup = getStrFromKey((char *) "Backup");
-    *backup = strcmp(Backup, "0");
-    free(Backup);
-
-    *comp = getStrFromKey((char *) "COMP");
-
-    *tpp = getStrFromKey((char *) "TPP");
-
-    *tup = getStrFromKey((char *) "TUP");
-
-    redisFree(context);
-
-    return 0;
-
-}
-
-
 int setKeyValueStr(char *key, char *value)
 {
 
@@ -148,19 +114,9 @@ int setKeyValueStr(char *key, char *value)
 
 
     auto *reply = (redisReply *) redisCommand(context, "SET %s %s", key, value);
-    setChecking(key, reply, context);
+    checkResponse(key, reply, context);
 
     freeReplyObject(reply);
-
-    // auto *persist = (redisReply *) redisCommand(context, "PERSIST %s", key);
-
-    // if (persist == nullptr || persist->type == REDIS_REPLY_ERROR)
-    // {
-    //     fprintf(stderr, RED "REDIS Error:" RESET "while setting PERSISTENT to key\n");
-    //     redisFree(context);
-    //     return -1;
-    // }
-    // freeReplyObject(persist);
 
     redisFree(context);
 
@@ -174,25 +130,32 @@ int setKeyValueInt(char *key, int value)
 
 
     auto *reply = (redisReply *) redisCommand(context, "SET %s %d", key, value);
-    setChecking(key, reply, context);
+    checkResponse(key, reply, context);
 
     freeReplyObject(reply);
-
-    // auto *persist = (redisReply *) redisCommand(context, "PERSIST %s", key);
-
-    // if (persist == nullptr || persist->type == REDIS_REPLY_ERROR)
-    // {
-    //     fprintf(stderr, RED "REDIS Error:" RESET "while setting PERSISTENT to key\n");
-    //     redisFree(context);
-    //     return -1;
-    // }
-    // freeReplyObject(persist);
 
     redisFree(context);
 
     return 0;
 }
+int setElementToRedis(char *key, char *value)
+{
+    redisContext *context;
+    openConnection(&context);
 
+    auto *reply = (redisReply *) redisCommand(context, "RPUSH %s %s", key, value);
+    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
+    {
+        fprintf(stderr, RED "REDIS Error: " RESET " while appending an element to list \n");
+        freeReplyObject(reply);
+        redisFree(context);
+        return 1;
+    }
+    freeReplyObject(reply);
+
+    redisFree(context);
+    return 0;
+}
 char *getStrFromKey(char *key)
 {
 
@@ -201,7 +164,7 @@ char *getStrFromKey(char *key)
 
 
     auto reply = (redisReply *) redisCommand(context, "GET %s", key);
-    getChecking(key, reply, context);
+    checkResponse(key, reply, context);
 
     char *value;
     if (reply->type == REDIS_REPLY_STRING)
@@ -226,7 +189,7 @@ int getIntFromKey(char *key)
 
 
     auto reply = (redisReply *) redisCommand(context, "GET %s", key);
-    getChecking(key, reply, context);
+    checkResponse(key, reply, context);
 
     int value;
     if (reply->type == REDIS_REPLY_STRING)
@@ -242,27 +205,6 @@ int getIntFromKey(char *key)
     redisFree(context);
     return value;
 }
-
-
-int setElementToRedis(char *key, char *value)
-{
-    redisContext *context;
-    openConnection(&context);
-
-    auto *reply = (redisReply *) redisCommand(context, "RPUSH %s %s", key, value);
-    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
-    {
-        fprintf(stderr, RED "REDIS Error: " RESET " while appending an element to list \n");
-        freeReplyObject(reply);
-        redisFree(context);
-        return 1;
-    }
-    freeReplyObject(reply);
-
-    redisFree(context);
-    return 0;
-}
-
 char **getCharArrayFromRedis(char *key)
 {
     redisContext *context;
@@ -307,6 +249,7 @@ char **getCharArrayFromRedis(char *key)
     return elements_array;
 }
 
+
 int removeKeyFromRedis(char *key)
 {
     redisContext *context;
@@ -325,25 +268,52 @@ int removeKeyFromRedis(char *key)
 
     return 0;
 }
-void delDixFromRedis(){
+int delDixFromRedis()
+{
+    redisContext *context;
+    openConnection(&context);
+    char *key = (char *) malloc(256 * sizeof(char));
 
+    char **dixs = getCharArrayFromRedis((char *) "dixNames");
+    for (int i = 0; dixs[i] != nullptr; ++i)
+    {
+        sprintf(key, "%sPaths", dixs[i]);
+        removeKeyFromRedis(key);
+        sprintf(key, "%sImages", dixs[i]);
+        removeKeyFromRedis(key);
+        free(dixs[i]);
+    }
+    free(dixs);
+
+    removeKeyFromRedis((char *) "dixNames");
+    removeKeyFromRedis((char *) "dixComments");
+
+    return 0;
 }
 int deallocateFromRedis()
 {
     redisContext *context;
     openConnection(&context);
 
+    delDixFromRedis();
+    removeKeyFromRedis((char *) "pName");
+    removeKeyFromRedis((char *) "CDate");
+    removeKeyFromRedis((char *) "MDate");
+    removeKeyFromRedis((char *) "pPath");
+    removeKeyFromRedis((char *) "Settings");
 
-    auto *reply = (redisReply *) redisCommand(context, "FLUSHALL");
-    if (reply == nullptr)
-    {
-        fprintf(stderr, RED "REDIS Error: " RESET "Error while duplicating string\n", context->errstr);
-        freeReplyObject(reply);
-    }
-
-    freeReplyObject(reply);
+    removeKeyFromRedis((char *) "ID");
+    removeKeyFromRedis((char *) "Project");
+    removeKeyFromRedis((char *) "Mode");
+    removeKeyFromRedis((char *) "TTS");
+    removeKeyFromRedis((char *) "Backup");
+    removeKeyFromRedis((char *) "COMP");
+    removeKeyFromRedis((char *) "TPP");
+    removeKeyFromRedis((char *) "TUP");
 
     redisFree(context);
 
     return 0;
 }
+
+#endif //REDIS_RDUTILS_HPP

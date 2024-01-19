@@ -17,7 +17,7 @@ set(SOURCE_FILES
         src/main.hpp
         src/dbutils/rdutils.cpp
         src/dbutils/rdutils.hpp
-        src/functions/grayscale.hu
+        src/functions/functions.hu
         src/functions/grayscale.cu
 )
 

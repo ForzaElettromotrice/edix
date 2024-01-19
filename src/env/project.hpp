@@ -10,9 +10,10 @@
 #include <cstdlib>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "../dbutils/pgutils.hpp"
 #include "../utils.hpp"
-#include <unistd.h>
+#include "../functions/functions.hu"
 
 //UTILS
 int isPathIn(const char *path, const char *pathProj);
@@ -25,7 +26,7 @@ int cloneProject(char *projectPath, char *path, char *dixName);
 //PARSERS
 int parseProj(char *line, Env *env);
 int parseLs();
-int parseExec();
+int parseFunx();
 int parseCd();
 int parseLoad();
 int parseRm();
@@ -41,7 +42,7 @@ int parseExitP(Env *env);
 
 //COMMANDS
 int ls(const char *path);
-int exec(char *path);
+int funx(char *name, char *args);
 int cd(char *path);
 int loadI(char *path);
 int rm(char *name);
