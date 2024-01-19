@@ -27,6 +27,8 @@ set(SOURCE_FILES
         src/functions/overlap.cu
         src/functions/composition.cu
         src/functions/composition.cuh
+        src/functions/upscale.cuh
+        src/functions/downscale.cuh
 )
 
 # Aggiungi tutte le sorgenti del progetto

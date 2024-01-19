@@ -4,6 +4,34 @@
 
 #include "composition.cuh"
 
+int
+copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y)
+{
+
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+
+    for (int i = 0; i < widthI; ++i)
+    {
+        for (int j = 0; j < heightI; ++j)
+        {
+            r = mIn[(i + j * widthI) * 3];
+            g = mIn[(i + j * widthI) * 3 + 1];
+            b = mIn[(i + j * widthI) * 3 + 2];
+
+            uint xO = x + i;
+            uint yO = y + j;
+
+            mOut[(xO + yO * widthO) * 3] = r;
+            mOut[(xO + yO * widthO) * 3 + 1] = g;
+            mOut[(xO + yO * widthO) * 3 + 2] = b;
+        }
+    }
+
+    return 0;
+}
+
 int parseCompositionArgs(char *args)
 {
     char *img1 = strtok(args, " ");
@@ -53,34 +81,6 @@ int parseCompositionArgs(char *args)
         handle_error("Invalid arguments for composition function.\n");
     }
     free(tpp);
-    return 0;
-}
-
-int
-copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y)
-{
-
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-
-    for (int i = 0; i < widthI; ++i)
-    {
-        for (int j = 0; j < heightI; ++j)
-        {
-            r = mIn[(i + j * widthI) * 3];
-            g = mIn[(i + j * widthI) * 3 + 1];
-            b = mIn[(i + j * widthI) * 3 + 2];
-
-            uint xO = x + i;
-            uint yO = y + j;
-
-            mOut[(xO + yO * widthO) * 3] = r;
-            mOut[(xO + yO * widthO) * 3 + 1] = g;
-            mOut[(xO + yO * widthO) * 3 + 2] = b;
-        }
-    }
-
     return 0;
 }
 

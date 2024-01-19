@@ -2,8 +2,8 @@
 
 int parseGrayscaleArgs(char *args)
 {
-    char *imgIn = strtok(args, ",");
-    char *pathOut = strtok(nullptr, ",");
+    char *imgIn = strtok(args, " ");
+    char *pathOut = strtok(nullptr, " ");
 
     if (imgIn == nullptr || pathOut == nullptr)
     {
@@ -11,7 +11,7 @@ int parseGrayscaleArgs(char *args)
     }
     // TODO: leggere le immagini in base all'estenzione
 
-    char *tpp = getStrFromKey((char *) "tpp");
+    char *tpp = getStrFromKey((char *) "TPP");
     uint width;
     uint height;
 

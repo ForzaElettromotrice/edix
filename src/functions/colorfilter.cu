@@ -89,7 +89,7 @@ int colorFilterSerial(const unsigned char *imgIn, char *pathOut, uint width, uin
         }
     }
 
-    writePPM(strcat(pathOut, ".ppm"), filteredImage, width, height, "P6");
+    writePPM(pathOut, filteredImage, width, height, "P6");
     free(filteredImage);
 
     return 0;

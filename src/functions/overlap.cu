@@ -6,12 +6,12 @@
 
 int parseOverlapArgs(char *args)
 {
-    char *img1 = strtok(args, ",");
-    char *img2 = strtok(nullptr, ",");
-    char *pathOut = strtok(nullptr, ",");
+    char *img1 = strtok(args, " ");
+    char *img2 = strtok(nullptr, " ");
+    char *pathOut = strtok(nullptr, " ");
     //TODO: controllare se x e y sono stringhe o meno
-    uint x = (uint) strtoul(strtok(nullptr, ","), nullptr, 10);
-    uint y = (uint) strtoul(strtok(nullptr, ","), nullptr, 10);
+    uint x = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
+    uint y = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
 
     if (img1 == nullptr || img2 == nullptr || pathOut == nullptr)
     {

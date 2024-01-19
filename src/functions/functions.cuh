@@ -63,11 +63,11 @@ int compositionOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint
 int compositionCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
                     uint height2, int side);
 
-int upscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
+int upscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
 int upscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
 int upscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
 
-int downscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
+int downscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
 int downscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
 int downscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
 

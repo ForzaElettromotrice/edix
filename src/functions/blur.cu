@@ -60,14 +60,14 @@ int blurSerial(const unsigned char *imgIn, char *pathOut, uint width, uint heigh
     {
         for (int j = 0; j < height; j++)
         {
-
-            unsigned int red = 0;
-            unsigned int green = 0;
-            unsigned int blue = 0;
+            uint red = 0;
+            uint green = 0;
+            uint blue = 0;
 
             int num = 0;
-            int curr_i, curr_j;
-            //borders of every px
+            int curr_i;
+            int curr_j;
+
             for (int m = -radius; m <= radius; m++)
             {
                 for (int n = -radius; n <= radius; n++)
@@ -75,44 +75,28 @@ int blurSerial(const unsigned char *imgIn, char *pathOut, uint width, uint heigh
 
                     curr_i = i + m;
                     curr_j = j + n;
-                    //check if iteration is out of borders
-                    if ((curr_i < 0) || (curr_i > height - 1) || (curr_j < 0) || (curr_j > width - 1)) continue;
+                    if ((curr_i < 0) || (curr_i > width - 1) || (curr_j < 0) || (curr_j > height - 1)) continue;
 
-                    //to access red channel column +(row*columns)
-                    red += imgIn[(3 * (curr_j + curr_i * width))];
-                    //to access green channel column +(row*columns) + 1
-                    green += imgIn[(3 * (curr_j + curr_i * width)) + 1];
-                    //to access blue channel column +(row*columns) + 2
-                    blue += imgIn[(3 * (curr_j + curr_i * width)) + 2];
+                    red += imgIn[(3 * (curr_i + curr_j * width))];
+                    green += imgIn[(3 * (curr_i + curr_j * width)) + 1];
+                    blue += imgIn[(3 * (curr_i + curr_j * width)) + 2];
 
                     num++;
                 }
             }
-
             red /= num;
             green /= num;
             blue /= num;
 
-            blurImage[3 * (j + i * width)] = red;
-            blurImage[3 * (j + i * width) + 1] = green;
-            blurImage[3 * (j + i * width) + 2] = blue;
-
+            blurImage[3 * (i + j * width)] = red;
+            blurImage[3 * (i + j * width) + 1] = green;
+            blurImage[3 * (i + j * width) + 2] = blue;
         }
     }
 
-    char *tmp;
 
-    tmp = (char *) malloc((strlen(pathOut) + 10) * sizeof(char));
-    if (tmp == nullptr)
-    {
-        fprintf(stderr, RED "FUNX Error: " RESET "Errore nell'allocare memoria\n");
-        return 1;
-    }
-    strcpy(tmp, pathOut);
-    writePPM(strcat(tmp, ".ppm"), blurImage, width, height, "P6");
-
+    writePPM(pathOut, blurImage, width, height, "P6");
     free(blurImage);
-    free(tmp);
 
     return 0;
 }
