@@ -30,7 +30,7 @@ int parseCompositionArgs(char *args);
 
 
 //funx
-int blurSerial(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
+int blurSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
 int blurOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
 int blurCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
 
@@ -38,9 +38,12 @@ int grayscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height
 int grayscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height);
 int grayscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height);
 
-int colorFilterSerial(unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b);
-int colorFilterOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b);
-int colorFilterCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b);
+int colorFilterSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b,
+                      uint tolerance);
+int colorFilterOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b,
+                   uint tolerance);
+int colorFilterCuda(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b,
+                    uint tolerance);
 
 int overlapSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
                   uint height2, uint x,
