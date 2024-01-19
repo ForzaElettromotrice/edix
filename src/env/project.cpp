@@ -486,13 +486,13 @@ int funx(char *name, char *args)
     if (strcmp(name, "blur") == 0)
         parseBlurArgs(args);
     else if (strcmp(name, "grayscale") == 0)
-        parseGrayScaleArgs(args);
+        parseGrayscaleArgs(args);
     else if (strcmp(name, "colorfilter") == 0)
         parseColorFilterArgs(args);
     else if (strcmp(name, "upscale") == 0)
-        parseUpscalingArgs(args);
+        parseUpscaleArgs(args);
     else if (strcmp(name, "downscale") == 0)
-        parseDownscalingArgs(args);
+        parseDownscaleArgs(args);
     else if (strcmp(name, "overlap") == 0)
         parseOverlapArgs(args);
     else if (strcmp(name, "composition") == 0)

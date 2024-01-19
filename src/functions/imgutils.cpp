@@ -4,7 +4,7 @@
 
 #include "functions.hu"
 
-unsigned char *loadPPM(const char *path, int *width, int *height)
+unsigned char *loadPPM(const char *path, uint *width, uint *height)
 {
     FILE *file = fopen(path, "rb");
 
@@ -43,7 +43,7 @@ unsigned char *loadPPM(const char *path, int *width, int *height)
     return img;
 }
 
-void writePPM(const char *path, unsigned char *img, int width, int height, const char *format)
+void writePPM(const char *path, unsigned char *img, uint width, uint height, const char *format)
 {
     FILE *file = fopen(path, "wb");
 
