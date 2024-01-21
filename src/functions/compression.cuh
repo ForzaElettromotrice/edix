@@ -12,7 +12,7 @@ typedef struct
     int o;
     int l;
     unsigned char a;
-} __attribute__((packed)) triple_t;
+} triple_t;
 
 
 //UTILS
@@ -24,6 +24,9 @@ triple_t *lzTriples(unsigned char *img, size_t maxSize, size_t *oSize, int n);
 unsigned char *lzTransformer(unsigned char *img, size_t maxSize, size_t *oSize, int n);
 
 unsigned char *decoder(const unsigned char *img, size_t maxSize, size_t *oSize);
+
+
+unsigned char *chunkEncoder(unsigned char *img, uint widht, uint height, size_t cSize);
 
 
 #endif //EDIX_COMPRESSION_CUH

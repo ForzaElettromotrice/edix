@@ -280,3 +280,5 @@ unsigned char *decoder(const unsigned char *img, size_t maxSize, size_t *oSize)
     *oSize = iLen;
     return oImg;
 }
+
+//TODO: separare gli rgb e fare dei chunk
