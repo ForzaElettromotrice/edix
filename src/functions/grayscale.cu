@@ -73,6 +73,31 @@ int grayscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height
 }
 int grayscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height)
 {
+    auto *img_out = (unsigned char *) malloc((width * height) * sizeof(unsigned char));
+
+    if (img_out == nullptr)
+    {
+        handle_error("Errore nell'allocazione della memoria");
+    }
+
+    int r, g, b, grayValue;
+
+#pragma omp parallel for num_threads(omp_get_max_threads()) default(none) private(r, g, b, grayValue) shared(img_out, imgIn, width, height)
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            r = imgIn[((y * width) + x) * 3];
+            g = imgIn[((y * width) + x) * 3 + 1];
+            b = imgIn[((y * width) + x) * 3 + 2];
+            grayValue = (r + g + b) / CHANNELS;
+
+            img_out[y * width + x] = grayValue;
+        }
+    }
+
+    writePPM(pathOut, img_out, width, height, "P5");
+
     return 0;
 }
 int grayscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height)
