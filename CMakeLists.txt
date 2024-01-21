@@ -4,6 +4,8 @@ project(edix CUDA CXX)
 set(CMAKE_CUDA_STANDARD 23)
 set(CMAKE_CXX_STANDARD 20)
 
+find_package(OpenMP REQUIRED)
+
 set(SOURCE_FILES
         src/dbutils/pgutils.cpp
         src/dbutils/pgutils.hpp
@@ -41,3 +43,4 @@ target_compile_options(edix PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler -fopen
 
 # Link alle librerie necessarie
 target_link_libraries(edix PRIVATE -lhiredis -lpq -ljpeg -lpng)
+target_link_libraries(edix PRIVATE OpenMP::OpenMP_CXX)

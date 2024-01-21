@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <omp.h>
 #include "../dbutils/rdutils.hpp"
 #include "../utils.hpp"
 
@@ -32,7 +33,7 @@ int parseCompositionArgs(char *args);
 
 //funx
 int blurSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
-int blurOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
+int blurOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
 int blurCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
 
 int grayscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height);

@@ -39,7 +39,7 @@ int parseSet()
     char *value = strtok(nullptr, " ");
 
 
-    if ((name != nullptr && value != nullptr) || strtok(nullptr, " ") != nullptr)
+    if ((name == nullptr || value == nullptr) || strtok(nullptr, " ") != nullptr)
     {
         handle_error("usage" BOLD ITALIC " set Key Value\n" RESET);
     }
@@ -157,7 +157,8 @@ int helpS()
 }
 int exitS(Env *env)
 {
-    //TODO
+    *env = PROJECT;
+
     return 0;
 }
 int listS()
