@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <omp.h>
+#include <chrono>
 #include "../dbutils/rdutils.hpp"
 #include "../utils.hpp"
 
@@ -36,8 +37,8 @@ int blurSerial(const unsigned char *imgIn, char *pathOut, uint width, uint heigh
 int blurOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
 int blurCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
 
-int grayscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height);
-int grayscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height);
+int grayscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height);
+int grayscaleOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height);
 int grayscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height);
 
 int colorFilterSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b, uint tolerance);

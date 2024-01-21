@@ -6,24 +6,24 @@ int main(int argc, char *argv[])
 
     uint width;
     uint height;
-    unsigned char *img = loadPPM("/home/f3m/EdixProjects/matteo/immagine.ppm", &width, &height);
+    unsigned char *img = loadPPM("/home/f3m/EdixProjects/matteo/tmp.ppm", &width, &height);
 
     printf("Numbero of max threads = %d\n", omp_get_max_threads());
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    blurSerial(img, (char *) "/home/f3m/Scrivania/Serial.ppm", width, height, 30);
+    grayscaleSerial(img, (char *) "/home/f3m/Scrivania/Serial.ppm", width, height);
 
     auto start2 = std::chrono::high_resolution_clock::now();
 
-    blurOmp(img, (char *) "/home/f3m/Scrivania/Omp.ppm", width, height, 30);
+    grayscaleOmp(img, (char *) "/home/f3m/Scrivania/Omp.ppm", width, height);
 
     auto end = std::chrono::high_resolution_clock::now();
 
-    auto deltaSerial = std::chrono::duration_cast<std::chrono::milliseconds>(start2 - start);
-    auto deltaOmp = std::chrono::duration_cast<std::chrono::milliseconds>(end - start2);
+    auto deltaSerial = std::chrono::duration_cast<std::chrono::microseconds>(start2 - start);
+    auto deltaOmp = std::chrono::duration_cast<std::chrono::microseconds>(end - start2);
 
-    printf(YELLOW BOLD "Serial" RESET " = %ld ms\n" YELLOW BOLD "Omp" RESET " = %ld ms\n", deltaSerial.count(), deltaOmp.count());
+    printf(YELLOW BOLD "Serial" RESET " = %ld us\n" YELLOW BOLD "Omp" RESET " = %ld us\n", deltaSerial.count(), deltaOmp.count());
 
 
 
