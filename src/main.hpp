@@ -7,6 +7,7 @@
 #include "env/project.hpp"
 #include "env/settings.hpp"
 #include "dbutils/pgutils.hpp"
+#include "functions/compression.cuh"
 
 
 //MAIN

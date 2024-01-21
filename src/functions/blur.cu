@@ -100,12 +100,10 @@ int blurSerial(const unsigned char *imgIn, char *pathOut, uint width, uint heigh
 
     return 0;
 }
-
 int blurOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius)
 {
     return 0;
 }
-
 int blurCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius)
 {
     return 0;

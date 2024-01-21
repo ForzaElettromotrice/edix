@@ -50,8 +50,7 @@ int parseColorFilterArgs(char *args)
     return 0;
 }
 
-int colorFilterSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b,
-                      uint tolerance)
+int colorFilterSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b, uint tolerance)
 {
     unsigned char *filteredImage;
 
@@ -94,13 +93,11 @@ int colorFilterSerial(const unsigned char *imgIn, char *pathOut, uint width, uin
 
     return 0;
 }
-int colorFilterOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b,
-                   uint tolerance)
+int colorFilterOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b, uint tolerance)
 {
     return 0;
 }
-int colorFilterCuda(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b,
-                    uint tolerance)
+int colorFilterCuda(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b, uint tolerance)
 {
     return 0;
 }

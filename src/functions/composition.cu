@@ -4,8 +4,7 @@
 
 #include "composition.cuh"
 
-int
-copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y)
+int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y)
 {
 
     unsigned char r;
@@ -85,8 +84,7 @@ int parseCompositionArgs(char *args)
 }
 
 
-int compositionSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-                      uint height2, int side)
+int compositionSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side)
 {
     uint widthOut = width1;
     uint heightOut = height1;
@@ -133,13 +131,11 @@ int compositionSerial(unsigned char *img1, unsigned char *img2, char *pathOut, u
     free(imgOut);
     return 0;
 }
-int compositionOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-                   uint height2, int side)
+int compositionOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side)
 {
     return 0;
 }
-int compositionCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-                    uint height2, int side)
+int compositionCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side)
 {
     return 0;
 }

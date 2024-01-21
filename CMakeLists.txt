@@ -29,6 +29,8 @@ set(SOURCE_FILES
         src/functions/composition.cuh
         src/functions/upscale.cuh
         src/functions/downscale.cuh
+        src/functions/compression.cu
+        src/functions/compression.cuh
 )
 
 # Aggiungi tutte le sorgenti del progetto

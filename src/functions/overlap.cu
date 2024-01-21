@@ -49,23 +49,15 @@ int parseOverlapArgs(char *args)
     return 0;
 }
 
-int overlapSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-                  uint height2, uint x,
-                  uint y)
+int overlapSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x, uint y)
 {
     return 0;
 }
-
-int
-overlapOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-           uint height2, uint x, uint y)
+int overlapOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x, uint y)
 {
     return 0;
 }
-
-int
-overlapCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-            uint height2, uint x, uint y)
+int overlapCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x, uint y)
 {
     return 0;
 }

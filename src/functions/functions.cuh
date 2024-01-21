@@ -39,30 +39,17 @@ int grayscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height
 int grayscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height);
 int grayscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height);
 
-int colorFilterSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b,
-                      uint tolerance);
-int colorFilterOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b,
-                   uint tolerance);
-int colorFilterCuda(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b,
-                    uint tolerance);
+int colorFilterSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b, uint tolerance);
+int colorFilterOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b, uint tolerance);
+int colorFilterCuda(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b, uint tolerance);
 
-int overlapSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-                  uint height2, uint x,
-                  uint y);
-int
-overlapOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-           uint height2, uint x, uint y);
-int
-overlapCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-            uint height2, uint x,
-            uint y);
+int overlapSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x, uint y);
+int overlapOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x, uint y);
+int overlapCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x, uint y);
 
-int compositionSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-                      uint height2, int side);
-int compositionOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-                   uint height2, int side);
-int compositionCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2,
-                    uint height2, int side);
+int compositionSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side);
+int compositionOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side);
+int compositionCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side);
 
 int upscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
 int upscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);

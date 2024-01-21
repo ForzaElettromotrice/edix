@@ -7,7 +7,6 @@
 
 #include "functions.cuh"
 
-int
-copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y);
+int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y);
 
 #endif //EDIX_COMPOSITION_CUH
