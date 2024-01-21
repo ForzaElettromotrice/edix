@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <jpeglib.h>
+#include <png.h>
 
 #define DEBUG 1
 #define D_PRINT(format, ...) \

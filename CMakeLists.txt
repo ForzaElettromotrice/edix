@@ -38,4 +38,4 @@ add_executable(edix ${SOURCE_FILES})
 target_compile_options(edix PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler -fopenmp>)
 
 # Link alle librerie necessarie
-target_link_libraries(edix PRIVATE -lhiredis -lpq)
+target_link_libraries(edix PRIVATE -lhiredis -lpq -ljpeg -lpng)
