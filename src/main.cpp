@@ -4,28 +4,50 @@
 int main(int argc, char *argv[])
 {
 
+    uint width;
+    uint height;
+    unsigned char *img = loadPPM("/home/f3m/EdixProjects/matteo/immagine.ppm", &width, &height);
 
-    if (checkPostgresService() || checkRedisService())
-        exit(EXIT_FAILURE);
-    checkDb();
-    banner();
-    // TODO: magari puoi aprire direttamente un progetto passandolo come argomento
-    // TODO: ovunque si usi il path, mettere PATH_MAX oppure (meglio) far si che l'allocazione sia dinamica
-    // TODO: stiamo usando ovunque path assoluti, dovremmo usare dei path relativi
-    switch (argc)
-    {
-        case 1:
-            inputLoop();
-            break;
-        default:
-            fprintf(stderr, RED
-            "usage:"
-            RESET
-            " ./edix\n");
-            exit(EXIT_FAILURE);
-    }
+    printf("Numbero of max threads = %d\n", omp_get_max_threads());
 
-    //TODO: fare tutte le cose da fare prima di chiudere
+    auto start = std::chrono::high_resolution_clock::now();
+
+    blurSerial(img, (char *) "/home/f3m/Scrivania/Serial.ppm", width, height, 30);
+
+    auto start2 = std::chrono::high_resolution_clock::now();
+
+    blurOmp(img, (char *) "/home/f3m/Scrivania/Omp.ppm", width, height, 30);
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto deltaSerial = std::chrono::duration_cast<std::chrono::milliseconds>(start2 - start);
+    auto deltaOmp = std::chrono::duration_cast<std::chrono::milliseconds>(end - start2);
+
+    printf(YELLOW BOLD "Serial" RESET " = %ld ms\n" YELLOW BOLD "Omp" RESET " = %ld ms\n", deltaSerial.count(), deltaOmp.count());
+
+
+
+//    if (checkPostgresService() || checkRedisService())
+//        exit(EXIT_FAILURE);
+//    checkDb();
+//    banner();
+//    // TODO: magari puoi aprire direttamente un progetto passandolo come argomento
+//    // TODO: ovunque si usi il path, mettere PATH_MAX oppure (meglio) far si che l'allocazione sia dinamica
+//    // TODO: stiamo usando ovunque path assoluti, dovremmo usare dei path relativi
+//    switch (argc)
+//    {
+//        case 1:
+//            inputLoop();
+//            break;
+//        default:
+//            fprintf(stderr, RED
+//            "usage:"
+//            RESET
+//            " ./edix\n");
+//            exit(EXIT_FAILURE);
+//    }
+//
+//    //TODO: fare tutte le cose da fare prima di chiudere
 
 
     return 0;
