@@ -64,6 +64,8 @@ unsigned char *grayscaleSerial(const unsigned char *imgIn, uint width, uint heig
     int i = 0;
     int grayValue;
 
+    
+
 
     for (int y = 0; y < height; y += 1)
     {

@@ -104,7 +104,70 @@ unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint he
 }
 unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
 {
+<<<<<<< Updated upstream
     return nullptr;
+=======
+    uint diffR,
+         diffG,
+         diffB,
+         distance,
+         totalPixels = width * height; 
+
+    unsigned char *filteredImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * CHANNELS);
+
+    if (filteredImage == nullptr)
+    {
+        fprintf(stderr, RED "FUNX Error: " RESET "Errore durante l'allocazione di memoria");
+        return 1;
+    }   
+
+    #pragma omp parallel for num_threads(4) \
+    default(none) private(diffR, diffG, diffB, distance) shared(filteredImage, imgIn, width, height, r, g, b, tolerance) \
+    collapse(2) 
+    // for (int i = 0; i < (width * height) * 3; i++) {
+    //     diffR = imgIn[i] - r;
+    //     diffG = imgIn[i + 1] - g;
+    //     diffB = imgIn[i + 2] - b;
+
+    //     distance = (diffR * diffR) + (diffG * diffG) + (diffB * diffB); 
+
+    //     if (distance > tolerance * tolerance) {
+    //         filteredImage[i] = (imgIn[i] + r) / 2;
+    //         filteredImage[i + 1] = (imgIn[i + 1] + g) / 2;
+    //         filteredImage[i + 2] = (imgIn[i + 2] + b) / 2;
+    //     } else {
+    //         filteredImage[i] = imgIn[i];
+    //         filteredImage[i + 1] = imgIn[i + 1];
+    //         filteredImage[i + 2] = imgIn[i + 2];
+    //     }
+    // }
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            uint rPix = ((y * width) + x) * 3,
+                 gPix = ((y * width) + x) * 3 + 1, 
+                 bPix = ((y * width) + x) * 3 + 2;
+            diffR = imgIn[rPix] - r;
+            diffG = imgIn[gPix] - g;
+            diffB = imgIn[bPix] - b;
+
+            distance = (diffR * diffR) + (diffG * diffG) + (diffB * diffB); 
+
+            if (distance > tolerance * tolerance) {
+                filteredImage[rPix] = (imgIn[rPix] + r) / 2;
+                filteredImage[gPix] = (imgIn[gPix] + g) / 2;
+                filteredImage[bPix] = (imgIn[bPix] + b) / 2;
+            } else {
+                filteredImage[rPix] = imgIn[rPix];
+                filteredImage[gPix] = imgIn[gPix];
+                filteredImage[bPix] = imgIn[bPix];
+            }
+        }
+    }
+
+    writePPM(pathOut, filteredImage, width, height, "P6");
+    free(filteredImage);
+    return 0;
+>>>>>>> Stashed changes
 }
 unsigned char *colorFilterCuda(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
 {
