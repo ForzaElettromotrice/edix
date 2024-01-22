@@ -61,7 +61,7 @@ unsigned char *upscaleSerialBilinear(const unsigned char *imgIn, uint width, uin
 unsigned char *upscaleOmpBilinear(const unsigned char *imgIn, uint width, uint height, int factor, uint *hWidth, uint *oHeight);
 unsigned char *upscaleCudaBilinear(const unsigned char *imgIn, uint width, uint height, int factor, uint *hWidth, uint *oHeight);
 
-unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint height, int factor, uint *hWidth, uint *oHeight);
+unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight);
 unsigned char *upscaleOmpBicubic(const unsigned char *imgIn, uint width, uint height, int factor, uint *hWidth, uint *oHeight);
 unsigned char *upscaleCudaBicubic(const unsigned char *imgIn, uint width, uint height, int factor, uint *hWidth, uint *oHeight);
 

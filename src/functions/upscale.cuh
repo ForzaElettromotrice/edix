@@ -9,5 +9,6 @@
 
 int bilinearInterpolation(int p00, int p01, int p10, int p11, double alpha, double beta);
 double cubicInterpolate(double A, double B, double C, double D, double t);
+void createSquare(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width);
 
 #endif //EDIX_UPSCALE_CUH
