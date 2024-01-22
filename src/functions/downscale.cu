@@ -104,11 +104,11 @@ unsigned char *downscaleSerial(const unsigned char *imgIn, uint width, uint heig
 
     return imgOut;
 }
-unsigned char *downscaleOmp(unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
+unsigned char *downscaleOmp(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
 {
     return nullptr;
 }
-unsigned char *downscaleCuda(unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
+unsigned char *downscaleCuda(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
 {
     return nullptr;
 }

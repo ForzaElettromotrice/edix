@@ -140,11 +140,11 @@ unsigned char *compositionSerial(const unsigned char *img1, const unsigned char 
 
     return imgOut;
 }
-unsigned char *compositionOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, uint x, uint y, uint *oWidth, uint *oHeight)
+unsigned char *compositionOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, int side, uint *oWidth, uint *oHeight)
 {
     return nullptr;
 }
-unsigned char *compositionCuda(const unsigned char *img1, const unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side, uint *oWidth, uint *oHeight)
+unsigned char *compositionCuda(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, int side, uint *oWidth, uint *oHeight)
 {
     return nullptr;
 }
