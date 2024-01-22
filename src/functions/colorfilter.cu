@@ -104,9 +104,6 @@ unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint he
 }
 unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
 {
-<<<<<<< Updated upstream
-    return nullptr;
-=======
     uint diffR,
          diffG,
          diffB,
@@ -118,7 +115,7 @@ unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint heigh
     if (filteredImage == nullptr)
     {
         fprintf(stderr, RED "FUNX Error: " RESET "Errore durante l'allocazione di memoria");
-        return 1;
+        return nullptr;
     }   
 
     #pragma omp parallel for num_threads(4) \
@@ -163,11 +160,9 @@ unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint heigh
             }
         }
     }
-
-    writePPM(pathOut, filteredImage, width, height, "P6");
-    free(filteredImage);
-    return 0;
->>>>>>> Stashed changes
+    *oWidth = width;
+    *oHeight = height;
+    return filteredImage;
 }
 unsigned char *colorFilterCuda(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
 {
