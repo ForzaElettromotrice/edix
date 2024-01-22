@@ -112,7 +112,9 @@ int blurOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, 
         fprintf(stderr, RED "FUNX Error: " RESET "Errore nell'allocare memoria\n");
         return 1;
     }
-
+//TODO: collapse
+//TODO: schedule
+//TODO: numero di thread ottimale
 #pragma omp parallel for num_threads(omp_get_max_threads()) default(none) shared(width, height, radius, imgIn, blurImage)
     for (int j = 0; j < height; ++j)
     {

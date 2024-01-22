@@ -39,7 +39,7 @@ int parseGrayscaleArgs(char *args)
     return 0;
 }
 
-int grayscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height)
+int grayscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height)
 {
     auto *img_out = (unsigned char *) malloc((width * height) * sizeof(unsigned char));
 
@@ -53,6 +53,8 @@ int grayscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height
     int b;
     int i = 0;
     int grayValue;
+
+    auto start = std::chrono::high_resolution_clock::now();
 
     for (int y = 0; y < height; y += 1)
     {
@@ -68,10 +70,17 @@ int grayscaleSerial(unsigned char *imgIn, char *pathOut, uint width, uint height
             img_out[i++] = grayValue;
         }
     }
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto deltaOmp = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    printf("Serial %ld us\n", deltaOmp.count());
+
     writePPM(pathOut, img_out, width, height, "P5");
     return 0;
 }
-int grayscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height)
+int grayscaleOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height)
 {
     auto *img_out = (unsigned char *) malloc((width * height) * sizeof(unsigned char));
 
@@ -82,7 +91,10 @@ int grayscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height)
 
     int r, g, b, grayValue;
 
-#pragma omp parallel for num_threads(omp_get_max_threads()) default(none) private(r, g, b, grayValue) shared(img_out, imgIn, width, height)
+    auto start = std::chrono::high_resolution_clock::now();
+//TODO: studiare il numero di thread ottimale per eseguire questo for
+//TODO: mettere la schedule
+#pragma omp parallel for collapse(2) num_threads(4) default(none) private(r, g, b, grayValue) shared(img_out, imgIn, width, height)
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)
@@ -95,6 +107,12 @@ int grayscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height)
             img_out[y * width + x] = grayValue;
         }
     }
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto deltaOmp = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    printf("omp %ld us\n", deltaOmp.count());
 
     writePPM(pathOut, img_out, width, height, "P5");
 
