@@ -15,35 +15,45 @@ int parseBlurArgs(char *args)
     char *tpp = getStrFromKey((char *) "TPP");
     uint width;
     uint height;
+    unsigned char *img;
 
+    uint oWidth;
+    uint oHeight;
+    unsigned char *oImg;
 
     if (strcmp(tpp, "Serial") == 0)
     {
-        unsigned char *img = loadPPM(imgIn, &width, &height);
-        blurSerial(img, pathOut, width, height, radius);
-        free(img);
+        img = loadPPM(imgIn, &width, &height);
+        oImg = blurSerial(img, width, height, radius, &oWidth, &oHeight);
+
     } else if (strcmp(tpp, "OMP") == 0)
     {
-        unsigned char *img = loadPPM(imgIn, &width, &height);
-        blurOmp(img, pathOut, width, height, radius);
-        free(img);
+        img = loadPPM(imgIn, &width, &height);
+        oImg = blurOmp(img, width, height, radius, &oWidth, &oHeight);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
-        unsigned char *img = loadPPM(imgIn, &width, &height);
-        blurCuda(img, pathOut, width, height, radius);
-        free(img);
+        img = loadPPM(imgIn, &width, &height);
+        oImg = blurCuda(img, width, height, radius, &oWidth, &oHeight);
     } else
     {
         free(tpp);
         handle_error("Invalid arguments for blur function.\n");
     }
+
+    if (oImg != nullptr)
+    {
+        //TODO: scrivere le immagini in base alla loro estensione
+        writePPM(pathOut, oImg, oWidth, oHeight, "P6");
+        free(oImg);
+    }
+    free(img);
     free(tpp);
 
     return 0;
 }
 
 
-int blurSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, int radius)
+unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, int radius, uint *oWidth, uint *oHeight)
 {
     uint totalPixels = height * width;
 
@@ -53,7 +63,7 @@ int blurSerial(const unsigned char *imgIn, char *pathOut, uint width, uint heigh
     if (blurImage == nullptr)
     {
         fprintf(stderr, RED "FUNX Error: " RESET "Errore nell'allocare memoria\n");
-        return 1;
+        return nullptr;
     }
 
     for (int i = 0; i < width; i++)
@@ -93,14 +103,12 @@ int blurSerial(const unsigned char *imgIn, char *pathOut, uint width, uint heigh
             blurImage[3 * (i + j * width) + 2] = blue;
         }
     }
+    *oWidth = width;
+    *oHeight = height;
 
-
-    writePPM(pathOut, blurImage, width, height, "P6");
-    free(blurImage);
-
-    return 0;
+    return blurImage;
 }
-int blurOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, int radius)
+unsigned char *blurOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, int radius, uint *oWidth, uint *oHeight)
 {
     uint totalPixels = height * width;
 
@@ -110,7 +118,7 @@ int blurOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, 
     if (blurImage == nullptr)
     {
         fprintf(stderr, RED "FUNX Error: " RESET "Errore nell'allocare memoria\n");
-        return 1;
+        return nullptr;
     }
 //TODO: collapse
 //TODO: schedule
@@ -156,12 +164,12 @@ int blurOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, 
         }
     }
 
+    *oWidth = width;
+    *oHeight = height;
 
-    writePPM(pathOut, blurImage, width, height, "P6");
-    free(blurImage);
-    return 0;
+    return blurImage;
 }
-int blurCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius)
+unsigned char *blurCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius, uint *oWidth, uint *oHeight)
 {
-    return 0;
+    return nullptr;
 }

@@ -26,32 +26,45 @@ int parseUpscaleArgs(char *args)
     char *tpp = getStrFromKey((char *) "TPP");
     uint width;
     uint height;
+    unsigned char *img;
+
+    uint oWidth;
+    uint oHeight;
+    unsigned char *imgOut;
 
     if (strcmp(tpp, "Serial") == 0)
     {
-        unsigned char *img = loadPPM(img1, &width, &height);
-        upscaleSerial(img, pathOut, width, height, factor);
-        free(img);
+        img = loadPPM(img1, &width, &height);
+        //TODO: vedere se Bicubica o bilineare
+        imgOut = upscaleSerialBilinear(img, width, height, factor, &oWidth, &oHeight);
     } else if (strcmp(tpp, "OMP") == 0)
     {
-        unsigned char *img = loadPPM(img1, &width, &height);
-        upscaleOmp(img, pathOut, width, height, factor);
-        free(img);
+        img = loadPPM(img1, &width, &height);
+        //TODO: vedere se Bicubica o bilineare
+        imgOut = upscaleOmpBilinear(img, width, height, factor, &oWidth, &oHeight);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
-        unsigned char *img = loadPPM(img1, &width, &height);
-        upscaleCuda(img, pathOut, width, height, factor);
-        free(img);
+        img = loadPPM(img1, &width, &height);
+        //TODO: vedere se Bicubica o bilineare
+        imgOut = upscaleCudaBilinear(img, width, height, factor, &oWidth, &oHeight);
     } else
     {
         free(tpp);
         handle_error("Invalid TPP\n");
     }
+
+    if (imgOut != nullptr)
+    {
+        //TODO: salvare nel formato giusto
+        writePPM(pathOut, imgOut, width, height, "P6");
+        free(imgOut);
+    }
+    free(img);
     free(tpp);
     return 0;
 }
 
-int upscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, int factor)
+unsigned char *upscaleSerialBilinear(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
 {
 
     uint widthO = width * factor;
@@ -90,16 +103,16 @@ int upscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint he
         }
     }
 
+    *oWidth = widthO;
+    *oHeight = heightO;
 
-    writePPM(pathOut, imgOut, widthO, heightO, "P6");
-    free(imgOut);
-    return 0;
+    return imgOut;
 }
-int upscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor)
+unsigned char *upscaleOmpBilinear(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
 {
-    return 0;
+    return nullptr;
 }
-int upscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor)
+unsigned char *upscaleCudaBilinear(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
 {
-    return 0;
+    return nullptr;
 }
