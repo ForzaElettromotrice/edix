@@ -33,33 +33,41 @@ int parseCompositionArgs(char *args);
 
 
 //funx
-int blurSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
-int blurOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
-int blurCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius);
 
-int grayscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height);
-int grayscaleOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height);
-int grayscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height);
+unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, int radius, uint *oWidth, uint *oHeight);
+unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, int radius, uint *oWidth, uint *oHeight);
+unsigned char *blurCuda(const unsigned char *imgIn, uint width, uint height, int radius, uint *oWidth, uint *oHeight);
 
-int colorFilterSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b, uint tolerance);
-int colorFilterOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b, uint tolerance);
-int colorFilterCuda(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b, uint tolerance);
 
-int overlapSerial(unsigned char *img1, const unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x, uint y);
-int overlapOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x, uint y);
-int overlapCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, uint x, uint y);
+unsigned char *grayscaleSerial(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight);
+unsigned char *grayscaleOmp(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight);
+unsigned char *grayscaleCuda(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight);
 
-int compositionSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side);
-int compositionOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side);
-int compositionCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side);
 
-int upscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
-int upscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
-int upscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
+unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight);
+unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight);
+unsigned char *colorFilterCuda(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight);
 
-int downscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
-int downscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
-int downscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor);
+
+unsigned char *overlapSerial(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, uint x, uint y, uint *oWidth, uint *oHeight);
+unsigned char *overlapOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, uint x, uint y, uint *oWidth, uint *oHeight);
+unsigned char *overlapCuda(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, uint x, uint y, uint *oWidth, uint *oHeight);
+
+unsigned char *compositionSerial(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, int side, uint *oWidth, uint *oHeight);
+unsigned char *compositionOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, int side, uint *oWidth, uint *oHeight);
+unsigned char *compositionCuda(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, int side, uint *oWidth, uint *oHeight);
+
+unsigned char *upscaleSerialBilinear(const unsigned char *imgIn, uint width, uint height, int factor, uint *hWidth, uint *oHeight);
+unsigned char *upscaleOmpBilinear(const unsigned char *imgIn, uint width, uint height, int factor, uint *hWidth, uint *oHeight);
+unsigned char *upscaleCudaBilinear(const unsigned char *imgIn, uint width, uint height, int factor, uint *hWidth, uint *oHeight);
+
+unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint height, int factor, uint *hWidth, uint *oHeight);
+unsigned char *upscaleOmpBicubic(const unsigned char *imgIn, uint width, uint height, int factor, uint *hWidth, uint *oHeight);
+unsigned char *upscaleCudaBicubic(const unsigned char *imgIn, uint width, uint height, int factor, uint *hWidth, uint *oHeight);
+
+unsigned char *downscaleSerial(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight);
+unsigned char *downscaleOmp(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight);
+unsigned char *downscaleCuda(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight);
 
 
 #endif  //EDIX_GRAYSCALE_HU

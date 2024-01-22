@@ -19,32 +19,45 @@ int parseDownscaleArgs(char *args)
     char *tpp = getStrFromKey((char *) "TPP");
     uint width;
     uint height;
+    unsigned char *img;
+
+    uint oWidth;
+    uint oHeight;
+    unsigned char *oImg;
+
     if (strcmp(tpp, "Serial") == 0)
     {
-        unsigned char *img = loadPPM(imgIn, &width, &height);
-        downscaleSerial(img, pathOut, width, height, factor);
-        free(img);
+        img = loadPPM(imgIn, &width, &height);
+        //TODO: vedere se bicubiva o bilineare
+        oImg = downscaleSerial(img, width, height, factor, &oWidth, &oHeight);
     } else if (strcmp(tpp, "OMP") == 0)
     {
-        unsigned char *img = loadPPM(imgIn, &width, &height);
-        downscaleOmp(img, pathOut, width, height, factor);
-        free(img);
+        img = loadPPM(imgIn, &width, &height);
+        //TODO: vedere se bicubiva o bilineare
+        oImg = downscaleOmp(img, width, height, factor, &oWidth, &oHeight);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
-        unsigned char *img = loadPPM(imgIn, &width, &height);
-        downscaleCuda(img, pathOut, width, height, factor);
-        free(img);
+        img = loadPPM(imgIn, &width, &height);
+        //TODO: vedere se bicubiva o bilineare
+        oImg = downscaleCuda(img, width, height, factor, &oWidth, &oHeight);
     } else
     {
         free(tpp);
         handle_error("Invalid arguments for downscale function.\n");
     }
 
+    if (oImg != nullptr)
+    {
+        writePPM(pathOut, oImg, oWidth, oHeight, "P6");
+        free(oImg);
+    }
+
+    free(img);
     free(tpp);
     return 0;
 }
 
-int downscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, int factor)
+unsigned char *downscaleSerial(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
 {
 
     uint widthO = width / factor;
@@ -86,17 +99,16 @@ int downscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint 
     }
 
 
-    writePPM(pathOut, imgOut, widthO, heightO, "P6");
-    free(imgOut);
+    *oWidth = widthO;
+    *oHeight = heightO;
 
-
-    return 0;
+    return imgOut;
 }
-int downscaleOmp(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor)
+unsigned char *downscaleOmp(unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
 {
-    return 0;
+    return nullptr;
 }
-int downscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int factor)
+unsigned char *downscaleCuda(unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
 {
-    return 0;
+    return nullptr;
 }

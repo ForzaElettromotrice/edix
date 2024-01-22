@@ -51,40 +51,47 @@ int parseCompositionArgs(char *args)
     uint height1;
     uint width2;
     uint height2;
+    unsigned char *img1_1;
+    unsigned char *img2_1;
 
+    uint oWidth;
+    uint oHeight;
+    unsigned char *oImg;
 
     if (strcmp(tpp, "Serial") == 0)
     {
-        unsigned char *img1_1 = loadPPM(img1, &width1, &height1);
-        unsigned char *img2_1 = loadPPM(img2, &width2, &height2);
-        compositionSerial(img1_1, img2_1, pathOut, width1, height1, width2, height2, side);
-        free(img1_1);
-        free(img2_1);
+        img1_1 = loadPPM(img1, &width1, &height1);
+        img2_1 = loadPPM(img2, &width2, &height2);
+        oImg = compositionSerial(img1_1, img2_1, width1, height1, width2, height2, side, &oWidth, &oHeight);
     } else if (strcmp(tpp, "OMP") == 0)
     {
-        unsigned char *img1_1 = loadPPM(img1, &width1, &height1);
-        unsigned char *img2_1 = loadPPM(img2, &width2, &height2);
-        compositionOmp(img1_1, img2_1, pathOut, width1, height1, width2, height2, side);
-        free(img1_1);
-        free(img2_1);
+        img1_1 = loadPPM(img1, &width1, &height1);
+        img2_1 = loadPPM(img2, &width2, &height2);
+        oImg = compositionOmp(img1_1, img2_1, width1, height1, width2, height2, side, &oWidth, &oHeight);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
-        unsigned char *img1_1 = loadPPM(img1, &width1, &height1);
-        unsigned char *img2_1 = loadPPM(img2, &width2, &height2);
-        compositionCuda(img1_1, img2_1, pathOut, width1, height1, width2, height2, side);
-        free(img1_1);
-        free(img2_1);
+        img1_1 = loadPPM(img1, &width1, &height1);
+        img2_1 = loadPPM(img2, &width2, &height2);
+        oImg = compositionCuda(img1_1, img2_1, width1, height1, width2, height2, side, &oWidth, &oHeight);
     } else
     {
         free(tpp);
         handle_error("Invalid arguments for composition function.\n");
     }
+
+    if (oImg != nullptr)
+    {
+        writePPM(pathOut, oImg, oWidth, oHeight, "P6");
+        free(oImg);
+    }
+    free(img1_1);
+    free(img2_1);
     free(tpp);
     return 0;
 }
 
 
-int compositionSerial(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side)
+unsigned char *compositionSerial(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, int side, uint *oWidth, uint *oHeight)
 {
     uint widthOut = width1;
     uint heightOut = height1;
@@ -100,7 +107,8 @@ int compositionSerial(unsigned char *img1, unsigned char *img2, char *pathOut, u
             break;
         default:
         {
-            handle_error("Parametro side non valido!\n");
+            fprintf(stderr, RED "Error: " RESET "Parametro side non valido!\n");
+            return nullptr;
         }
     }
 
@@ -126,16 +134,17 @@ int compositionSerial(unsigned char *img1, unsigned char *img2, char *pathOut, u
             copyMatrix(img1, imgOut, width1, height1, widthOut, width2, 0);
             break;
     }
-    writePPM(pathOut, imgOut, widthOut, heightOut, "P6");
 
-    free(imgOut);
-    return 0;
+    *oWidth = widthOut;
+    *oHeight = heightOut;
+
+    return imgOut;
 }
-int compositionOmp(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side)
+unsigned char *compositionOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, uint x, uint y, uint *oWidth, uint *oHeight)
 {
-    return 0;
+    return nullptr;
 }
-int compositionCuda(unsigned char *img1, unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side)
+unsigned char *compositionCuda(const unsigned char *img1, const unsigned char *img2, char *pathOut, uint width1, uint height1, uint width2, uint height2, int side, uint *oWidth, uint *oHeight)
 {
-    return 0;
+    return nullptr;
 }

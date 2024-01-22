@@ -14,38 +14,48 @@ int parseGrayscaleArgs(char *args)
     char *tpp = getStrFromKey((char *) "TPP");
     uint width;
     uint height;
+    unsigned char *img;
+
+    uint oWidth;
+    uint oHeight;
+    unsigned char *oImg;
 
     if (strcmp(tpp, "Serial") == 0)
     {
-        unsigned char *img = loadPPM(imgIn, &width, &height);
-        grayscaleSerial(img, pathOut, width, height);
-        free(img);
+        img = loadPPM(imgIn, &width, &height);
+        oImg = grayscaleSerial(img, width, height, &oWidth, &oHeight);
     } else if (strcmp(tpp, "OMP") == 0)
     {
-        unsigned char *img = loadPPM(imgIn, &width, &height);
-        grayscaleOmp(img, pathOut, width, height);
-        free(img);
+        img = loadPPM(imgIn, &width, &height);
+        oImg = grayscaleOmp(img, width, height, &oWidth, &oHeight);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
-        unsigned char *img = loadPPM(imgIn, &width, &height);
-        grayscaleCuda(img, pathOut, width, height);
-        free(img);
+        img = loadPPM(imgIn, &width, &height);
+        oImg = grayscaleCuda(img, width, height, &oWidth, &oHeight);
     } else
     {
         free(tpp);
         handle_error("Errore nel parsing degli argomenti\n");
     }
+    if (oImg != nullptr)
+    {
+        //TODO: scrivere le immagini in base all'estenzione
+        writePPM(pathOut, oImg, oWidth, oHeight, "P5");
+        free(oImg);
+    }
+    free(img);
     free(tpp);
     return 0;
 }
 
-int grayscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height)
+unsigned char *grayscaleSerial(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight)
 {
     auto *img_out = (unsigned char *) malloc((width * height) * sizeof(unsigned char));
 
     if (img_out == nullptr)
     {
-        handle_error("Errore nell'allocazione della memoria\n");
+        fprintf(stderr, RED "Error: " RESET "Errore nell'allocazione della memoria\n");
+        return nullptr;
     }
 
     int r;
@@ -53,8 +63,6 @@ int grayscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint 
     int b;
     int i = 0;
     int grayValue;
-
-    
 
 
     for (int y = 0; y < height; y += 1)
@@ -72,24 +80,29 @@ int grayscaleSerial(const unsigned char *imgIn, char *pathOut, uint width, uint 
         }
     }
 
-    writePPM(pathOut, img_out, width, height, "P5");
+    *oWidth = width;
+    *oHeight = height;
 
-    return 0;
+    return img_out;
 }
-int grayscaleOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height)
+unsigned char *grayscaleOmp(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight)
 {
     auto *img_out = (unsigned char *) malloc((width * height) * sizeof(unsigned char));
 
-    if (img_out == nullptr) {
-        handle_error("Errore nell'allocazione della memoria");
+    if (img_out == nullptr)
+    {
+        fprintf(stderr, RED "Error: " RESET "Errore nell'allocazione della memoria");
+        return nullptr;
     }
-    
+
     int r, g, b, grayValue;
 
-    #pragma omp parallel for num_threads(omp_get_max_threads()) private(r, g, b, grayValue) shared(img_out, imgIn, width, height)
+    //TODO: schedule e controllo su num_threads
+#pragma omp parallel for num_threads(omp_get_max_threads()) default(none) private(r, g, b, grayValue) shared(img_out, imgIn, width, height)
     for (int y = 0; y < height; y++)
     {
-        for (int x = 0; x < width; x++) {
+        for (int x = 0; x < width; x++)
+        {
             r = imgIn[((y * width) + x) * 3];
             g = imgIn[((y * width) + x) * 3 + 1];
             b = imgIn[((y * width) + x) * 3 + 2];
@@ -98,13 +111,14 @@ int grayscaleOmp(const unsigned char *imgIn, char *pathOut, uint width, uint hei
             img_out[y * width + x] = grayValue;
         }
     }
-    
-    writePPM(pathOut, img_out, width, height, "P5");
-    
-    return 0;
+
+    *oWidth = width;
+    *oHeight = height;
+
+    return img_out;
 }
-int grayscaleCuda(unsigned char *imgIn, char *pathOut, uint width, uint height)
+unsigned char *grayscaleCuda(unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight)
 {
-    return 0;
+    return nullptr;
 }
 

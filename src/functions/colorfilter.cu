@@ -23,34 +23,43 @@ int parseColorFilterArgs(char *args)
     char *tpp = getStrFromKey((char *) "TPP");
     uint width;
     uint height;
+    unsigned char *img;
+
+    uint oWidth;
+    uint oHeight;
+    unsigned char *oImg;
 
     if (strcmp(tpp, "Serial") == 0)
     {
-        unsigned char *img = loadPPM(imgIn, &width, &height);
-        colorFilterSerial(img, pathOut, width, height, r, g, b, tollerance);
-        free(img);
+        img = loadPPM(imgIn, &width, &height);
+        oImg = colorFilterSerial(img, width, height, r, g, b, tollerance, &oWidth, &oHeight);
     } else if (strcmp(tpp, "OMP") == 0)
     {
-        unsigned char *img = loadPPM(imgIn, &width, &height);
-        colorFilterOmp(img, pathOut, width, height, r, g, b, tollerance);
-        free(img);
+        img = loadPPM(imgIn, &width, &height);
+        oImg = colorFilterOmp(img, width, height, r, g, b, tollerance, &oWidth, &oHeight);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
-        unsigned char *img = loadPPM(imgIn, &width, &height);
-        colorFilterCuda(img, pathOut, width, height, r, g, b, tollerance);
-        free(img);
+        img = loadPPM(imgIn, &width, &height);
+        oImg = colorFilterCuda(img, width, height, r, g, b, tollerance, &oWidth, &oHeight);
     } else
     {
         free(tpp);
         handle_error("Invalid arguments for color filter function.\n");
     }
 
+    if (oImg != nullptr)
+    {
+        writePPM(pathOut, oImg, oWidth, oHeight, "P6");
+        free(oImg);
+    }
+
+    free(img);
     free(tpp);
 
     return 0;
 }
 
-int colorFilterSerial(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b, uint tolerance)
+unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
 {
     unsigned char *filteredImage;
 
@@ -60,7 +69,7 @@ int colorFilterSerial(const unsigned char *imgIn, char *pathOut, uint width, uin
     if (filteredImage == nullptr)
     {
         fprintf(stderr, RED "FUNX Error: " RESET "Errore durante l'allocazione di memoria");
-        return 1;
+        return nullptr;
     }
 
     for (int i = 0; i < 3 * width * height; i += 3)
@@ -88,16 +97,16 @@ int colorFilterSerial(const unsigned char *imgIn, char *pathOut, uint width, uin
         }
     }
 
-    writePPM(pathOut, filteredImage, width, height, "P6");
-    free(filteredImage);
+    *oWidth = width;
+    *oHeight = height;
 
-    return 0;
+    return filteredImage;
 }
-int colorFilterOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b, uint tolerance)
+unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
 {
-    return 0;
+    return nullptr;
 }
-int colorFilterCuda(const unsigned char *imgIn, char *pathOut, uint width, uint height, uint r, uint g, uint b, uint tolerance)
+unsigned char *colorFilterCuda(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
 {
-    return 0;
+    return nullptr;
 }
