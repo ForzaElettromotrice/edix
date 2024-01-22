@@ -9,6 +9,16 @@ int bilinearInterpolation(int p00, int p01, int p10, int p11, double alpha, doub
     return (int) ((1 - alpha) * (1 - beta) * p00 + (1 - alpha) * beta * p01 + alpha * (1 - beta) * p10 +
                   alpha * beta * p11);
 }
+double cubicInterpolate(double A, double B, double C, double D, double t)
+{
+
+    double a = -A / 2.0f + (3.0f * B) / 2.0f - (3.0f * C) / 2.0f + D / 2.0f;
+    double b = A - (5.0f * B) / 2.0f + 2.0f * C - D / 2.0f;
+    double c = -A / 2.0f + C / 2.0f;
+    double d = B;
+
+    return a * t * t * t + b * t * t + c * t + d;
+}
 
 
 int parseUpscaleArgs(char *args)
