@@ -11,13 +11,12 @@ int bilinearInterpolation(int p00, int p01, int p10, int p11, double alpha, doub
 }
 double cubicInterpolate(double A, double B, double C, double D, double t)
 {
-    //TODO: testa
-    //    double a = -A / 2.0f + (3.0f * B) / 2.0f - (3.0f * C) / 2.0f + D / 2.0f;
-    //    double b = A - (5.0f * B) / 2.0f + 2.0f * C - D / 2.0f;
-    //    double c = -A / 2.0f + C / 2.0f;
-    //    double d = B;
-    //    return a * t * t * t + b * t * t + c * t + d;
-    return A + 0.5 * t * (C - A + t * (2.0 * A - 5.0 * B + 4.0 * C - D + t * (3.0 * (B - C) + D - A)));
+    double a = -A / 2.0f + (3.0f * B) / 2.0f - (3.0f * C) / 2.0f + D / 2.0f;
+    double b = A - (5.0f * B) / 2.0f + 2.0f * C - D / 2.0f;
+    double c = -A / 2.0f + C / 2.0f;
+    double d = B;
+    return a * t * t * t + b * t * t + c * t + d;
+//    return A + 0.5 * t * (C - A + t * (2.0 * A - 5.0 * B + 4.0 * C - D + t * (3.0 * (B - C) + D - A)));
 }
 void createSquare(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height)
 {
@@ -25,11 +24,14 @@ void createSquare(unsigned char square[16][3], const unsigned char *img, int x, 
     {
         for (int j = -1; j < 3; ++j)
         {
-            if (x - i < 0 || y - j < 0 || x + i > width || y + j > height)
+            if (x - i < 0 || y - j < 0 || x + i >= width || y + j >= height)
                 continue;
-            square[i + j * 3][0] = img[3 * (x + i + (y + j) * width)];
-            square[i + j * 3][1] = img[3 * (x + i + (y + j) * width) + 1];
-            square[i + j * 3][2] = img[3 * (x + i + (y + j) * width) + 2];
+            int r = img[3 * (x + i + (y + j) * width)];
+            int g = img[3 * (x + i + (y + j) * width) + 1];
+            int b = img[3 * (x + i + (y + j) * width) + 2];
+            square[(i + 1) + (j + 1) * 3][0] = r;
+            square[(i + 1) + (j + 1) * 3][1] = g;
+            square[(i + 1) + (j + 1) * 3][2] = b;
         }
     }
 }
@@ -87,7 +89,7 @@ int parseUpscaleArgs(char *args)
     if (imgOut != nullptr)
     {
         //TODO: salvare nel formato giusto
-        writePPM(pathOut, imgOut, width, height, "P6");
+        writePPM(pathOut, imgOut, oWidth, oHeight, "P6");
         free(imgOut);
     }
     free(img);
@@ -191,9 +193,17 @@ unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint
                 double p3 = cubicInterpolate(square[8][0 + k], square[9][0 + k], square[10][0 + k], square[11][0 + k], alpha);
                 double p4 = cubicInterpolate(square[12][0 + k], square[13][0 + k], square[14 + k][0 + k], square[15][0 + k], alpha);
                 double p = cubicInterpolate(p1, p2, p3, p4, beta);
+
+                if (p > 255)
+                    p = 255;
+                else if (p < 0)
+                    p = 0;
+
                 pixel[k] = (int) p;
+
             }
 
+//            printf("%d %d %d\n", pixel[0], pixel[1], pixel[2]);
             imgOut[(i + j * widthO) * 3] = pixel[0];
             imgOut[(i + j * widthO) * 3 + 1] = pixel[1];
             imgOut[(i + j * widthO) * 3 + 2] = pixel[2];
