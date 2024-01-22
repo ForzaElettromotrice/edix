@@ -64,6 +64,8 @@ unsigned char *grayscaleSerial(const unsigned char *imgIn, uint width, uint heig
     int i = 0;
     int grayValue;
 
+    
+
 
     for (int y = 0; y < height; y += 1)
     {
@@ -117,7 +119,7 @@ unsigned char *grayscaleOmp(const unsigned char *imgIn, uint width, uint height,
 
     return img_out;
 }
-unsigned char *grayscaleCuda(unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight)
+unsigned char *grayscaleCuda(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight)
 {
     return nullptr;
 }

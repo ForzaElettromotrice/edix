@@ -91,11 +91,11 @@ unsigned char *overlapSerial(const unsigned char *img1, const unsigned char *img
 
     return oImg;
 }
-unsigned char *overlapOmp(const unsigned char *img1, unsigned char *img2, uint width1, uint height1, uint width2, uint height2, uint x, uint y, uint *oWidth, uint *oHeight)
+unsigned char *overlapOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, uint x, uint y, uint *oWidth, uint *oHeight)
 {
     return nullptr;
 }
-unsigned char *overlapCuda(const unsigned char *img1, unsigned char *img2, uint width1, uint height1, uint width2, uint height2, uint x, uint y, uint *oWidth, uint *oHeight)
+unsigned char *overlapCuda(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, uint x, uint y, uint *oWidth, uint *oHeight)
 {
     return nullptr;
 }

@@ -108,7 +108,7 @@ unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, i
 
     return blurImage;
 }
-unsigned char *blurOmp(const unsigned char *imgIn, char *pathOut, uint width, uint height, int radius, uint *oWidth, uint *oHeight)
+unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, int radius, uint *oWidth, uint *oHeight)
 {
     uint totalPixels = height * width;
 
@@ -169,7 +169,7 @@ unsigned char *blurOmp(const unsigned char *imgIn, char *pathOut, uint width, ui
 
     return blurImage;
 }
-unsigned char *blurCuda(unsigned char *imgIn, char *pathOut, uint width, uint height, int radius, uint *oWidth, uint *oHeight)
+unsigned char *blurCuda(const unsigned char *imgIn, uint width, uint height, int radius, uint *oWidth, uint *oHeight)
 {
     return nullptr;
 }
