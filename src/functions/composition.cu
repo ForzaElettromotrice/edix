@@ -31,6 +31,32 @@ int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint 
     return 0;
 }
 
+int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y) {
+    unsigned char r, g, b;
+
+    #pragma omp parallel for num_threads(omp_get_max_threads()) \
+            default(none) private(r, g, b) shared(mIn, mOut, widthI, widthO, heightI, x, y)\
+            schedule(static, 3)
+    for (int i = 0; i < widthI; ++i)
+    {
+        for (int j = 0; j < heightI; ++j)
+        {
+            r = mIn[(i + j * widthI) * 3];
+            g = mIn[(i + j * widthI) * 3 + 1];
+            b = mIn[(i + j * widthI) * 3 + 2];
+
+            uint xO = x + i;
+            uint yO = y + j;
+
+            mOut[(xO + yO * widthO) * 3] = r;
+            mOut[(xO + yO * widthO) * 3 + 1] = g;
+            mOut[(xO + yO * widthO) * 3 + 2] = b;
+        }
+    }
+
+    return 0;
+}
+
 int parseCompositionArgs(char *args)
 {
     char *img1 = strtok(args, " ");
@@ -142,7 +168,50 @@ unsigned char *compositionSerial(const unsigned char *img1, const unsigned char 
 }
 unsigned char *compositionOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, int side, uint *oWidth, uint *oHeight)
 {
-    return nullptr;
+    uint widthOut = width1;
+    uint heightOut = height1;
+    switch (side)
+    {
+        case UP:
+        case DOWN:
+            heightOut += height2;
+            break;
+        case LEFT:
+        case RIGHT:
+            widthOut += width2;
+            break;
+        default:
+        {
+            fprintf(stderr, RED "Error: " RESET "Parametro side non valido!\n");
+            return nullptr;
+        }
+    }
+    auto *imgOut = (unsigned char *) calloc(sizeof(unsigned char), widthOut * heightOut * 3);
+    switch (side)
+    {
+
+        case UP:
+            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, 0, 0);
+            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, 0, height2);
+            break;
+        case DOWN:
+            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, 0, 0);
+            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, 0, height1);
+            break;
+        case LEFT:
+            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, 0, 0);
+            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, width1, 0);
+            break;
+        case RIGHT:
+            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, 0, 0);
+            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, width2, 0);
+            break;
+    }
+
+    *oWidth = widthOut;
+    *oHeight = heightOut;
+
+    return imgOut;
 }
 unsigned char *compositionCuda(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, int side, uint *oWidth, uint *oHeight)
 {

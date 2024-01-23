@@ -121,23 +121,7 @@ unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint heigh
     #pragma omp parallel for num_threads(4) \
     default(none) private(diffR, diffG, diffB, distance) shared(filteredImage, imgIn, width, height, r, g, b, tolerance) \
     collapse(2) 
-    // for (int i = 0; i < (width * height) * 3; i++) {
-    //     diffR = imgIn[i] - r;
-    //     diffG = imgIn[i + 1] - g;
-    //     diffB = imgIn[i + 2] - b;
-
-    //     distance = (diffR * diffR) + (diffG * diffG) + (diffB * diffB); 
-
-    //     if (distance > tolerance * tolerance) {
-    //         filteredImage[i] = (imgIn[i] + r) / 2;
-    //         filteredImage[i + 1] = (imgIn[i + 1] + g) / 2;
-    //         filteredImage[i + 2] = (imgIn[i + 2] + b) / 2;
-    //     } else {
-    //         filteredImage[i] = imgIn[i];
-    //         filteredImage[i + 1] = imgIn[i + 1];
-    //         filteredImage[i + 2] = imgIn[i + 2];
-    //     }
-    // }
+    // TODO: prova a vedere se si puo' incrementare l'efficienza
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             uint rPix = ((y * width) + x) * 3,
