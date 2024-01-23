@@ -31,10 +31,10 @@ int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint 
     return 0;
 }
 
-int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y) {
+int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y, int nThread) {
     unsigned char r, g, b;
 
-    #pragma omp parallel for num_threads(omp_get_max_threads()) \
+    #pragma omp parallel for num_threads(nThread) \
             default(none) private(r, g, b) shared(mIn, mOut, widthI, widthO, heightI, x, y)\
             schedule(static, 3)
     for (int i = 0; i < widthI; ++i)
@@ -93,7 +93,7 @@ int parseCompositionArgs(char *args)
     {
         img1_1 = loadPPM(img1, &width1, &height1);
         img2_1 = loadPPM(img2, &width2, &height2);
-        oImg = compositionOmp(img1_1, img2_1, width1, height1, width2, height2, side, &oWidth, &oHeight);
+        oImg = compositionOmp(img1_1, img2_1, width1, height1, width2, height2, side, &oWidth, &oHeight, 3);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
         img1_1 = loadPPM(img1, &width1, &height1);
@@ -166,7 +166,7 @@ unsigned char *compositionSerial(const unsigned char *img1, const unsigned char 
 
     return imgOut;
 }
-unsigned char *compositionOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, int side, uint *oWidth, uint *oHeight)
+unsigned char *compositionOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, int side, uint *oWidth, uint *oHeight, int nThread)
 {
     uint widthOut = width1;
     uint heightOut = height1;
@@ -191,20 +191,20 @@ unsigned char *compositionOmp(const unsigned char *img1, const unsigned char *im
     {
 
         case UP:
-            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, 0, 0);
-            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, 0, height2);
+            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, 0, 0, nThread);
+            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, 0, height2, nThread);
             break;
         case DOWN:
-            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, 0, 0);
-            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, 0, height1);
+            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, 0, 0, nThread);
+            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, 0, height1, nThread);
             break;
         case LEFT:
-            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, 0, 0);
-            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, width1, 0);
+            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, 0, 0, nThread);
+            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, width1, 0, nThread);
             break;
         case RIGHT:
-            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, 0, 0);
-            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, width2, 0);
+            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, 0, 0, nThread);
+            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, width2, 0, nThread);
             break;
     }
 

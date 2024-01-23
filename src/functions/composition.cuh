@@ -8,5 +8,6 @@
 #include "functions.cuh"
 
 int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y);
+int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y, int nThread);
 
 #endif //EDIX_COMPOSITION_CUH

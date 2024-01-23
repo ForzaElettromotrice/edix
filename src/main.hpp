@@ -9,6 +9,7 @@
 #include "env/settings.hpp"
 #include "dbutils/pgutils.hpp"
 #include "functions/compression.cuh"
+#include "../test/testFunc.hpp"
 
 
 //MAIN
