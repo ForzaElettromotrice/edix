@@ -34,7 +34,7 @@ int parseDownscaleArgs(char *args)
     {
         img = loadPPM(imgIn, &width, &height);
         //TODO: vedere se bicubiva o bilineare
-        oImg = downscaleOmp(img, width, height, factor, &oWidth, &oHeight);
+        oImg = downscaleOmp(img, width, height, factor, &oWidth, &oHeight, 4);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
         img = loadPPM(imgIn, &width, &height);
@@ -104,7 +104,7 @@ unsigned char *downscaleSerial(const unsigned char *imgIn, uint width, uint heig
 
     return imgOut;
 }
-unsigned char *downscaleOmp(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
+unsigned char *downscaleOmp(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight, int nThread)
 {
     return nullptr;
 }

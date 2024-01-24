@@ -27,7 +27,7 @@ int parseGrayscaleArgs(char *args)
     } else if (strcmp(tpp, "OMP") == 0)
     {
         img = loadPPM(imgIn, &width, &height);
-        oImg = grayscaleOmp(img, width, height, &oWidth, &oHeight);
+        oImg = grayscaleOmp(img, width, height, &oWidth, &oHeight, 4);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
         img = loadPPM(imgIn, &width, &height);
@@ -87,7 +87,7 @@ unsigned char *grayscaleSerial(const unsigned char *imgIn, uint width, uint heig
 
     return img_out;
 }
-unsigned char *grayscaleOmp(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight)
+unsigned char *grayscaleOmp(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight, int nThread)
 {
     auto *img_out = (unsigned char *) malloc((width * height) * sizeof(unsigned char));
 
@@ -100,7 +100,7 @@ unsigned char *grayscaleOmp(const unsigned char *imgIn, uint width, uint height,
     int r, g, b, grayValue;
 
     //TODO: schedule e controllo su num_threads
-#pragma omp parallel for num_threads(omp_get_max_threads()) default(none) private(r, g, b, grayValue) shared(img_out, imgIn, width, height)
+#pragma omp parallel for num_threads(nThread) default(none) private(r, g, b, grayValue) shared(img_out, imgIn, width, height)
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)

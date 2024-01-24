@@ -41,7 +41,7 @@ int parseOverlapArgs(char *args)
     {
         img1_1 = loadPPM(img1, &width1, &height1);
         img2_1 = loadPPM(img2, &width2, &height2);
-        oImg = overlapOmp(img1_1, img2_1, width1, height1, width2, height2, x, y, &oWidth, &oHeight);
+        oImg = overlapOmp(img1_1, img2_1, width1, height1, width2, height2, x, y, &oWidth, &oHeight, 4);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
         img1_1 = loadPPM(img1, &width1, &height1);
@@ -91,7 +91,7 @@ unsigned char *overlapSerial(const unsigned char *img1, const unsigned char *img
 
     return oImg;
 }
-unsigned char *overlapOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, uint x, uint y, uint *oWidth, uint *oHeight)
+unsigned char *overlapOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint width2, uint height2, uint x, uint y, uint *oWidth, uint *oHeight, int nThread)
 {
     return nullptr;
 }

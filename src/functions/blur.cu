@@ -29,7 +29,7 @@ int parseBlurArgs(char *args)
     } else if (strcmp(tpp, "OMP") == 0)
     {
         img = loadPPM(imgIn, &width, &height);
-        oImg = blurOmp(img, width, height, radius, &oWidth, &oHeight);
+        oImg = blurOmp(img, width, height, radius, &oWidth, &oHeight, 4);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
         img = loadPPM(imgIn, &width, &height);
@@ -108,7 +108,7 @@ unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, i
 
     return blurImage;
 }
-unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, int radius, uint *oWidth, uint *oHeight)
+unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, int radius, uint *oWidth, uint *oHeight, int nThread)
 {
     uint totalPixels = height * width;
 
@@ -123,7 +123,7 @@ unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, int 
 //TODO: collapse
 //TODO: schedule
 //TODO: numero di thread ottimale
-#pragma omp parallel for num_threads(omp_get_max_threads()) default(none) shared(width, height, radius, imgIn, blurImage)
+#pragma omp parallel for num_threads(nThread) default(none) shared(width, height, radius, imgIn, blurImage)
     for (int j = 0; j < height; ++j)
     {
         for (int i = 0; i < width; i++)

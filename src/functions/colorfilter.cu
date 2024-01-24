@@ -36,7 +36,7 @@ int parseColorFilterArgs(char *args)
     } else if (strcmp(tpp, "OMP") == 0)
     {
         img = loadPPM(imgIn, &width, &height);
-        oImg = colorFilterOmp(img, width, height, r, g, b, tollerance, &oWidth, &oHeight);
+        oImg = colorFilterOmp(img, width, height, r, g, b, tollerance, &oWidth, &oHeight, 4);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
         img = loadPPM(imgIn, &width, &height);
@@ -102,7 +102,7 @@ unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint he
 
     return filteredImage;
 }
-unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
+unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight, int nThread)
 {
     uint diffR,
          diffG,
@@ -118,7 +118,7 @@ unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint heigh
         return nullptr;
     }   
 
-    #pragma omp parallel for num_threads(4) \
+    #pragma omp parallel for num_threads(nThread) \
     default(none) private(diffR, diffG, diffB, distance) shared(filteredImage, imgIn, width, height, r, g, b, tolerance) \
     collapse(2) 
     // TODO: prova a vedere se si puo' incrementare l'efficienza
