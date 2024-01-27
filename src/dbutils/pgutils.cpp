@@ -216,7 +216,7 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
     //                "END $$;\n"
     //                "COMMIT;\n", name, path, TUP, modEx, comp, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name);
     sprintf(query, "BEGIN;\n"
-                    "INSERT INTO Settings (TUP, Mod_ex, Comp, TTS, TPP, Vcs, Project) VALUES ('%s', '%s', '%s', '%d', '%s', '%s', '%s') RETURNING Id;\n"
+                    "INSERT INTO Settings (TUP, Mode, Comp, TTS, TPP, Vcs, Project) VALUES ('%s', '%s', '%s', '%d', '%s', '%s', '%s') RETURNING Id;\n"
                     "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), '%s', (SELECT Id FROM Settings ORDER BY Id DESC LIMIT 1));\n"
                     "COMMIT;\n", TUP, modEx, comp, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name, path);
     D_PRINT("Adding project to Postgres...\n");
