@@ -205,16 +205,20 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
     }
 
     char query[1024];
+    // sprintf(query, "BEGIN;\n"
+    //                "DO $$\n"
+    //                "DECLARE\n"
+    //                "settingsId INT;\n"
+    //                "BEGIN\n"
+    //                "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), '%s', -1);\n"
+    //                "INSERT INTO Settings (TUP, Mode, Comp, TTS, TPP, Backup, Project) VALUES ('%s', '%s', '%s', %d, '%s', %s, '%s') RETURNING Id INTO settingsId;\n"
+    //                "UPDATE Project SET Settings = settingsId WHERE Name = '%s';\n"
+    //                "END $$;\n"
+    //                "COMMIT;\n", name, path, TUP, modEx, comp, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name);
     sprintf(query, "BEGIN;\n"
-                   "DO $$\n"
-                   "DECLARE\n"
-                   "settingsId INT;\n"
-                   "BEGIN\n"
-                   "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), '%s', -1);\n"
-                   "INSERT INTO Settings (TUP, Mode, Comp, TTS, TPP, Backup, Project) VALUES ('%s', '%s', '%s', %d, '%s', %s, '%s') RETURNING Id INTO settingsId;\n"
-                   "UPDATE Project SET Settings = settingsId WHERE Name = '%s';\n"
-                   "END $$;\n"
-                   "COMMIT;\n", name, path, TUP, modEx, comp, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name);
+                    "INSERT INTO Settings (TUP, Mod_ex, Comp, TTS, TPP, Vcs, Project) VALUES ('%s', '%s', '%s', '%d', '%s', '%s', '%s') RETURNING Id;\n"
+                    "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), '%s', (SELECT Id FROM Settings ORDER BY Id DESC LIMIT 1));\n"
+                    "COMMIT;\n", TUP, modEx, comp, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name, path);
     D_PRINT("Adding project to Postgres...\n");
     PGresult *res = PQexec(conn, query);
 
