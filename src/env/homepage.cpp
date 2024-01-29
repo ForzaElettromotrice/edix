@@ -20,7 +20,7 @@ int banner()
            BOLD YELLOW "help\t\t\t" RESET
            ITALIC "Se hai bisogno di maggiori informazioni sui comandi\n" RESET
            BOLD YELLOW "exit" RESET " /" BOLD YELLOW " Ctrl + D\t\t" RESET
-           ITALIC "Per uscire\n" RESET);
+           ITALIC "Per uscire\n\n" RESET);
     return 0;
 }
 int checkDefaultFolder()

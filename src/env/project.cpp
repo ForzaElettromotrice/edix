@@ -757,22 +757,29 @@ int force()
 }
 int helpP()
 {
+    // TODO: aggiungere help dei dix o backup (?)
     printf("Ecco la lista dei comandi che puoi utilizzare all'interno del tuo progetto:\n\n"
-           YELLOW BOLD "  ls"    RESET " [path ...]\t\t\tStampa il contenuto della directory path. Se non viene inserito path, stampa il contenuto della directory corrente\n"
-           YELLOW BOLD "  funx"  RESET " nameFroc\t\t\tEsegui la froceria nameFroc\n"
-           YELLOW BOLD "  cd"    RESET " nameDir\t\t\tCambia la directory corrente a nameDir\n"
-           YELLOW BOLD "  loadI" RESET " pathToFile\t\tCarica l'immagine pathToFile\n"
-           YELLOW BOLD "  rm"    RESET " filename ...\t\tRimuovi file filename\n"
-           YELLOW BOLD "  mkdir" RESET " nameDir ...\t\tCrea la directory nameDir\n"
-           YELLOW BOLD "  rmdir" RESET " nameDir ...\t\tRimuovi la directory nameDir\n"
-           YELLOW BOLD "  mv"    RESET " source target\t\tRinomina il file source in target \n"
-           YELLOW BOLD "  mv"    RESET " source ... nameDir\t\tSposta il file source alla directory nameDir\n"
-           YELLOW BOLD "  sett"  RESET "\t\t\t\tAccedi ai settings\n"
-           YELLOW BOLD "  exit"  RESET "\t\t\t\tEsci dal progetto\n");
+           YELLOW BOLD "  ls"           RESET " [" UNDERLINE "OPTION" RESET "] ... [" UNDERLINE "FILE" RESET "] ...\t\t\tStampa il contenuto di FILE. Se non viene inserito FILE, stampa il contenuto della directory corrente\n"
+           YELLOW BOLD "  funx"         RESET " " UNDERLINE "nameFroc" RESET "\t\t\t\t\tEsegui la froceria nameFroc\n"
+           YELLOW BOLD "  cd"           RESET " [" UNDERLINE "DIRECTORY" RESET "]\t\t\t\tCambia la directory corrente a DIRECTORY\n"
+           YELLOW BOLD "  load"         RESET " " UNDERLINE "FILE" RESET " ...\t\t\t\t\tCarica l'immagine FILE\n"
+           YELLOW BOLD "  rm"           RESET " [" UNDERLINE "OPTION" RESET "] ... [" UNDERLINE "FILE" RESET "] ...\t\t\tRimuovi FILE\n"
+           YELLOW BOLD "  mkdir"        RESET " [" UNDERLINE "OPTION" RESET "] ... [" UNDERLINE "FILE" RESET "] ...\t\t\tCrea la directory DIRECTORY\n"
+           YELLOW BOLD "  rmdir"        RESET " [" UNDERLINE "OPTION" RESET "] ... [" UNDERLINE "FILE" RESET "] ...\t\t\tRimuovi la directory DIRECTORY\n"
+           YELLOW BOLD "  mv"           RESET " [" UNDERLINE "OPTION" RESET "] ... " UNDERLINE "SOURCE" RESET " " UNDERLINE "DEST" RESET "\t\t\tRinomina SOURCE in DEST \n"
+           YELLOW BOLD "  mv"           RESET " [" UNDERLINE "OPTION" RESET "] ... " UNDERLINE "SOURCE" RESET " ... " UNDERLINE "DIRECTORY" RESET "\t\tSposta SOURCE in DIRECTORY\n"
+           YELLOW BOLD "  force"        RESET "\t\t\t\t\t\tForza il caricamento delle modifiche su DB\n"
+           YELLOW BOLD "  settings"     RESET "\t\t\t\t\tAccedi ai settings\n"
+           YELLOW BOLD "  dix commmit"  RESET "\t\t\t\t\tEsegue il commit del dix\n"
+           YELLOW BOLD "  dix reload"   RESET "\t\t\t\t\tRicarica un dix commitato precedentemente\n"
+           YELLOW BOLD "  dix list"     RESET "\t\t\t\t\tElenca tutti i dix commitati finora\n"
+           YELLOW BOLD "  help"         RESET "\t\t\t\t\t\tElenca la lista dei comandi da poter eseguire\n"
+           YELLOW BOLD "  exit"         RESET "\t\t\t\t\t\tEsci dal progetto\n\n");
     return 0;
 }
 int exitP(Env *env)
 {
+    // TODO: Chiediamo all'utente se vuole fare il forcing o meno ?
     force();
     deallocateFromRedis();
 
