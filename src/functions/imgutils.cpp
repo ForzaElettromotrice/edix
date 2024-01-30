@@ -128,6 +128,51 @@ unsigned char *jpegDecode(const char *path, int *width, int *height)
 
     return img;
 }
+void jpegEncoder(const char *path, unsigned char* img, int width, int height, int quality) 
+{
+    struct jpeg_compress_struct cinfo;
+    struct jpeg_error_mgr jerr;
+    FILE* outfile = fopen(path, "wb");
+    if (!outfile) {
+        std::cerr << "Errore nell'apertura del file di output." << std::endl;
+        return;
+    }
+    // Inizializzazione della struttura jpeg_compress_struct
+    cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_compress(&cinfo);
+
+    // Impostazione dei parametri dell'immagine
+    cinfo.image_width = width;
+    cinfo.image_height = height;
+    cinfo.input_components = 3;  // RGB
+    cinfo.in_color_space = JCS_RGB;
+
+    // Impostazione del file di output
+    jpeg_stdio_dest(&cinfo, outfile); // Passa direttamente il puntatore al file di output
+
+    // Impostazione dei parametri di compressione
+    jpeg_set_defaults(&cinfo);
+    jpeg_set_quality(&cinfo, quality, TRUE);
+
+    // Avvio della compressione
+    jpeg_start_compress(&cinfo, TRUE);
+
+    // Allocazione della memoria per una riga di dati RGB
+    JSAMPROW row_pointer[1];
+    int row_stride = width * 3;
+
+    // Scrittura delle righe dell'immagine
+    while (cinfo.next_scanline < cinfo.image_height) {
+        row_pointer[0] = &img[cinfo.next_scanline * row_stride];
+        jpeg_write_scanlines(&cinfo, row_pointer, 1);
+    }
+
+    // Finalizzazione della compressione
+    jpeg_finish_compress(&cinfo);
+
+    // Pulizia delle risorse
+    jpeg_destroy_compress(&cinfo);
+}
 
 unsigned char *pngDecode(const char *path, int *width, int *height)
 {

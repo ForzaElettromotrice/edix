@@ -33,6 +33,7 @@ set(SOURCE_FILES
         src/functions/downscale.cuh
         src/functions/compression.cu
         src/functions/compression.cuh
+        src/functions/blur.cuh
 )
 
 # Aggiungi tutte le sorgenti del progetto

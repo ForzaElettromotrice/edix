@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <cstdint>
-#include <../src/functions/functions.cuh>
+#include "../src/functions/functions.cuh"
 #include <chrono>
 
 double percentage(long time1, long time2);
