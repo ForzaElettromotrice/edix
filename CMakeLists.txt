@@ -36,6 +36,7 @@ set(SOURCE_FILES
         src/functions/blur.cuh
         test/testFunc.cpp
         test/testFunc.hpp
+        src/functions/overlap.cuh
 )
 
 # Aggiungi tutte le sorgenti del progetto

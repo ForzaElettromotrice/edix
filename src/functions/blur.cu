@@ -204,7 +204,6 @@ unsigned char *blurCuda(const unsigned char *imgIn, uint width, uint height, int
     *oHeight = height;
     return h_blur_img;
 }
-
 __global__ void blurShared(const unsigned char *img, unsigned char *blur_img, uint width, uint height, int radius)
 {
     int absX = (int) (threadIdx.x + blockIdx.x * blockDim.x);
