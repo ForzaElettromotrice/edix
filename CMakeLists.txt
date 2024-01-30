@@ -34,6 +34,8 @@ set(SOURCE_FILES
         src/functions/compression.cu
         src/functions/compression.cuh
         src/functions/blur.cuh
+        test/testFunc.cpp
+        test/testFunc.hpp
 )
 
 # Aggiungi tutte le sorgenti del progetto
