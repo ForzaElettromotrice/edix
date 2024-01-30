@@ -1,4 +1,5 @@
-#include "functions.cuh"
+#include "blur.cuh"
+
 
 int parseBlurArgs(char *args)
 {
@@ -171,5 +172,103 @@ unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, int 
 }
 unsigned char *blurCuda(const unsigned char *imgIn, uint width, uint height, int radius, uint *oWidth, uint *oHeight)
 {
-    return nullptr;
+    //host
+    uint iSize = width * height * 3;
+    auto h_blur_img = (unsigned char *) malloc(iSize * sizeof(unsigned char));
+    mlock(imgIn, iSize * sizeof(unsigned char));
+
+    //device
+    unsigned char *d_img;
+    unsigned char *d_blur_img;
+    cudaMalloc(&d_img, iSize * sizeof(unsigned char));
+    cudaMalloc(&d_blur_img, iSize * sizeof(unsigned char));
+
+    //copy
+    cudaMemcpy(d_img, imgIn, iSize * sizeof(unsigned char), cudaMemcpyHostToDevice);
+
+    //blur
+    dim3 gridSize = {(width + 7) / 8, (height + 7) / 8, 1};
+    dim3 blockSize = {8, 8, 1};
+    size_t sharedDim = (size_t) pow(8 + 2 * radius, 2) * 3;
+    blurShared<<<gridSize, blockSize, sharedDim>>>(d_img, d_blur_img, width, height, radius);
+
+    //copy back
+    cudaMemcpy(h_blur_img, d_blur_img, iSize * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+
+    //free
+    munlock(imgIn, iSize * sizeof(unsigned char));
+    cudaFree(d_img);
+    cudaFree(d_blur_img);
+
+    *oWidth = width;
+    *oHeight = height;
+    return h_blur_img;
+}
+
+__global__ void blurShared(const unsigned char *img, unsigned char *blur_img, uint width, uint height, int radius)
+{
+    int absX = (int) (threadIdx.x + blockIdx.x * blockDim.x);
+    int absY = (int) (threadIdx.y + blockIdx.y * blockDim.y);
+
+    if (absX >= width || absY >= height)
+        return;
+
+    int relX = (int) threadIdx.x;
+    int relY = (int) threadIdx.y;
+
+    uint sDim = blockDim.x + 2 * radius;
+    extern __shared__ unsigned char shared[];
+
+    int x;
+    int y;
+
+    int r = 0;
+    int g = 0;
+    int b = 0;
+    int pixels = 0;
+
+    if (relX == 0 && relY == 0)
+    {
+
+        for (int i = 0; i < sDim; ++i)
+        {
+            for (int j = 0; j < sDim; ++j)
+            {
+                x = absX - radius + i;
+                y = absY - radius + j;
+                if (x < 0 || x >= width || y < 0 || y >= height)
+                    continue;
+                shared[(i + j * sDim) * 3] = img[(x + y * width) * 3];
+                shared[(i + j * sDim) * 3 + 1] = img[(x + y * width) * 3 + 1];
+                shared[(i + j * sDim) * 3 + 2] = img[(x + y * width) * 3 + 2];
+            }
+        }
+    }
+
+    __syncthreads();
+
+    for (int i = -radius; i <= radius; ++i)
+    {
+        for (int j = -radius; j <= radius; ++j)
+        {
+            x = relX + radius + i;
+            y = relY + radius + j;
+
+            if (absX + i < 0 || absX + i >= width || absY + j < 0 || absY + j >= height)
+                continue;
+
+            r += shared[(x + y * sDim) * 3];
+            g += shared[(x + y * sDim) * 3 + 1];
+            b += shared[(x + y * sDim) * 3 + 2];
+            pixels++;
+        }
+    }
+
+    r /= pixels;
+    g /= pixels;
+    b /= pixels;
+
+    blur_img[(absX + absY * width) * 3] = r;
+    blur_img[(absX + absY * width) * 3 + 1] = g;
+    blur_img[(absX + absY * width) * 3 + 2] = b;
 }

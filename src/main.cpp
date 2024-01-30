@@ -3,36 +3,39 @@
 
 int main(int argc, char *argv[])
 {
-    // uint width,
-    //      height,
-    //      width2,
-    //      height2;
-        
-         
-    // unsigned char *img1 = loadPPM("/home/parallels/Desktop/edixImages/4emp.ppm", &width, &height), 
-    //               *img2 = loadPPM("/home/parallels/Desktop/edixImages/immagine.ppm", &width2, &height2);
-    
-    // test(img1, img2, &width, &height, &width2, &height2);
+    uint width;
+    uint height;
+    unsigned char *img = loadPPM("/home/f3m/EdixProjects/simone/immagine.ppm", &width, &height);
 
-    if (checkPostgresService() || checkRedisService())
-        exit(EXIT_FAILURE);
-    checkDb();
-    banner();
-    // TODO: magari puoi aprire direttamente un progetto passandolo come argomento
-    // TODO: ovunque si usi il path, mettere PATH_MAX oppure (meglio) far si che l'allocazione sia dinamica
-    // TODO: stiamo usando ovunque path assoluti, dovremmo usare dei path relativi
-    switch (argc)
-    {
-        case 1:
-            inputLoop();
-            break;
-        default:
-            fprintf(stderr, RED
-            "usage:"
-            RESET
-            " ./edix\n");
-            exit(EXIT_FAILURE);
-    }
+    uint oWidth;
+    uint oHeight;
+    unsigned char *oImg;
+
+    oImg = blurCuda(img, width, height, 30, &oWidth, &oHeight);
+
+    writePPM("/home/f3m/Scrivania/out.ppm", oImg, oWidth, oHeight, "P6");
+
+    free(img);
+    free(oImg);
+//    if (checkPostgresService() || checkRedisService())
+//        exit(EXIT_FAILURE);
+//    checkDb();
+//    banner();
+//    // TODO: magari puoi aprire direttamente un progetto passandolo come argomento
+//    // TODO: ovunque si usi il path, mettere PATH_MAX oppure (meglio) far si che l'allocazione sia dinamica
+//    // TODO: stiamo usando ovunque path assoluti, dovremmo usare dei path relativi
+//    switch (argc)
+//    {
+//        case 1:
+//            inputLoop();
+//            break;
+//        default:
+//            fprintf(stderr, RED
+//            "usage:"
+//            RESET
+//            " ./edix\n");
+//            exit(EXIT_FAILURE);
+//    }
 
     //TODO: fare tutte le cose da fare prima di chiudere
 
