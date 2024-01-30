@@ -102,17 +102,25 @@ unsigned char *overlapOmp(const unsigned char *img1, const unsigned char *img2, 
 
     memcpy(oImg, img1, width1 * height1 * 3 * sizeof(unsigned char));
 
+    //TODO: da migliorare (Fa schifo [Pero' sembra che con due thread])
     #pragma omp parallel for num_threads(nThread) \
-            default(none) shared(img1, img2, width1, height1, width2, height2, x, y, oImg) \
-            schedule(static)
-    for (int i = 0; i < width2; i++) {
+    default(none) shared(img2, width2, height2, oImg, width1, x, y) \
+    schedule(static)
+    for (int i = 0; i < width2; i++) 
+    {
         for (int j = 0; j < height2; j++)
         {
-            oImg[3 * (x + i + (y + j) * width1)] = img2[3 * (i + j * width2)];
-            oImg[3 * (x + i + (y + j) * width1) + 1] = img2[3 * (i + j * width2) + 1];
-            oImg[3 * (x + i + (y + j) * width1) + 2] = img2[3 * (i + j * width2) + 2];
+            
+            int img2_i = 3 * (i + j * width2);
+            int oimg_i = 3 * (x + i + (y + j) * width1);
+
+            oImg[oimg_i] = img2[img2_i];
+            oImg[oimg_i + 1] = img2[img2_i + 1];
+            oImg[oimg_i + 2] = img2[img2_i + 2];
+            
         }
     }
+
 
     *oWidth = width1;
     *oHeight = height1;
