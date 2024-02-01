@@ -6,10 +6,9 @@
 #include <cstdlib>
 #include <omp.h>
 #include <chrono>
+#include "imgutils.hpp"
 #include "../dbutils/rdutils.hpp"
 #include "../utils.hpp"
-
-#define CHANNELS 3
 
 #define UP 0
 #define DOWN 1
@@ -17,10 +16,7 @@
 #define RIGHT 3
 
 // utils
-unsigned char *loadPPM(const char *path, uint *width, uint *height);
-void writePPM(const char *path, unsigned char *img, uint width, uint height, const char *format);
-unsigned char *jpegDecode(const char *path, int *width, int *height);
-unsigned char *pngDecode(const char *path, int *width, int *height);
+
 
 //parsers
 int parseBlurArgs(char *args);

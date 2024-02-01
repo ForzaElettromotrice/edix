@@ -54,6 +54,7 @@ int parseUpscaleArgs(char *args)
     uint width;
     uint height;
     unsigned char *img;
+    char format[3];
 
     uint oWidth;
     uint oHeight;
@@ -61,21 +62,21 @@ int parseUpscaleArgs(char *args)
 
     if (strcmp(tpp, "Serial") == 0)
     {
-        img = loadPPM(img1, &width, &height);
+        img = loadPPM(img1, &width, &height, format);
         if (strcmp(tup, "Bilinear") == 0)
             imgOut = upscaleSerialBilinear(img, width, height, factor, &oWidth, &oHeight);
         else if (strcmp(tup, "Bicubic") == 0)
             imgOut = upscaleSerialBicubic(img, width, height, factor, &oWidth, &oHeight);
     } else if (strcmp(tpp, "OMP") == 0)
     {
-        img = loadPPM(img1, &width, &height);
+        img = loadPPM(img1, &width, &height, format);
         if (strcmp(tup, "Bilinear") == 0)
             imgOut = upscaleOmpBilinear(img, width, height, factor, &oWidth, &oHeight, 4);
         else if (strcmp(tup, "Bicubic") == 0)
             imgOut = upscaleOmpBicubic(img, width, height, factor, &oWidth, &oHeight, 4);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
-        img = loadPPM(img1, &width, &height);
+        img = loadPPM(img1, &width, &height, format);
         if (strcmp(tup, "Bilinear") == 0)
             imgOut = upscaleCudaBilinear(img, width, height, factor, &oWidth, &oHeight);
         else if (strcmp(tup, "Bicubic") == 0)

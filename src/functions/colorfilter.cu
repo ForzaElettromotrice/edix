@@ -24,6 +24,7 @@ int parseColorFilterArgs(char *args)
     uint width;
     uint height;
     unsigned char *img;
+    char format[3];
 
     uint oWidth;
     uint oHeight;
@@ -31,15 +32,15 @@ int parseColorFilterArgs(char *args)
 
     if (strcmp(tpp, "Serial") == 0)
     {
-        img = loadPPM(imgIn, &width, &height);
+        img = loadPPM(imgIn, &width, &height, format);
         oImg = colorFilterSerial(img, width, height, r, g, b, tollerance, &oWidth, &oHeight);
     } else if (strcmp(tpp, "OMP") == 0)
     {
-        img = loadPPM(imgIn, &width, &height);
+        img = loadPPM(imgIn, &width, &height, format);
         oImg = colorFilterOmp(img, width, height, r, g, b, tollerance, &oWidth, &oHeight, 4);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
-        img = loadPPM(imgIn, &width, &height);
+        img = loadPPM(imgIn, &width, &height, format);
         oImg = colorFilterCuda(img, width, height, r, g, b, tollerance, &oWidth, &oHeight);
     } else
     {
@@ -65,7 +66,7 @@ unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint he
 
     uint totalPixels = width * height;
 
-    filteredImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * CHANNELS);
+    filteredImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * 3);
     if (filteredImage == nullptr)
     {
         fprintf(stderr, RED "FUNX Error: " RESET "Errore durante l'allocazione di memoria");
@@ -105,39 +106,43 @@ unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint he
 unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight, int nThread)
 {
     uint diffR,
-         diffG,
-         diffB,
-         distance,
-         totalPixels = width * height; 
+            diffG,
+            diffB,
+            distance,
+            totalPixels = width * height;
 
-    unsigned char *filteredImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * CHANNELS);
+    unsigned char *filteredImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * 3);
 
     if (filteredImage == nullptr)
     {
         fprintf(stderr, RED "FUNX Error: " RESET "Errore durante l'allocazione di memoria");
         return nullptr;
-    }   
+    }
 
-    #pragma omp parallel for num_threads(nThread) \
+#pragma omp parallel for num_threads(nThread) \
     default(none) private(diffR, diffG, diffB, distance) shared(filteredImage, imgIn, width, height, r, g, b, tolerance) \
-    collapse(2) 
+    collapse(2)
     // TODO: prova a vedere se si puo' incrementare l'efficienza
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
             uint rPix = ((y * width) + x) * 3,
-                 gPix = ((y * width) + x) * 3 + 1, 
-                 bPix = ((y * width) + x) * 3 + 2;
+                    gPix = ((y * width) + x) * 3 + 1,
+                    bPix = ((y * width) + x) * 3 + 2;
             diffR = imgIn[rPix] - r;
             diffG = imgIn[gPix] - g;
             diffB = imgIn[bPix] - b;
 
-            distance = (diffR * diffR) + (diffG * diffG) + (diffB * diffB); 
+            distance = (diffR * diffR) + (diffG * diffG) + (diffB * diffB);
 
-            if (distance > tolerance * tolerance) {
+            if (distance > tolerance * tolerance)
+            {
                 filteredImage[rPix] = (imgIn[rPix] + r) / 2;
                 filteredImage[gPix] = (imgIn[gPix] + g) / 2;
                 filteredImage[bPix] = (imgIn[bPix] + b) / 2;
-            } else {
+            } else
+            {
                 filteredImage[rPix] = imgIn[rPix];
                 filteredImage[gPix] = imgIn[gPix];
                 filteredImage[bPix] = imgIn[bPix];

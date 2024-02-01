@@ -20,6 +20,7 @@ int parseDownscaleArgs(char *args)
     uint width;
     uint height;
     unsigned char *img;
+    char format[3];
 
     uint oWidth;
     uint oHeight;
@@ -27,17 +28,17 @@ int parseDownscaleArgs(char *args)
 
     if (strcmp(tpp, "Serial") == 0)
     {
-        img = loadPPM(imgIn, &width, &height);
+        img = loadPPM(imgIn, &width, &height, format);
         //TODO: vedere se bicubiva o bilineare
         oImg = downscaleSerial(img, width, height, factor, &oWidth, &oHeight);
     } else if (strcmp(tpp, "OMP") == 0)
     {
-        img = loadPPM(imgIn, &width, &height);
+        img = loadPPM(imgIn, &width, &height, format);
         //TODO: vedere se bicubiva o bilineare
         oImg = downscaleOmp(img, width, height, factor, &oWidth, &oHeight, 4);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
-        img = loadPPM(imgIn, &width, &height);
+        img = loadPPM(imgIn, &width, &height, format);
         //TODO: vedere se bicubiva o bilineare
         oImg = downscaleCuda(img, width, height, factor, &oWidth, &oHeight);
     } else

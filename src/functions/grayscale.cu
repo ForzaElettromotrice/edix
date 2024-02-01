@@ -15,6 +15,7 @@ int parseGrayscaleArgs(char *args)
     uint width;
     uint height;
     unsigned char *img;
+    char format[3];
 
     uint oWidth;
     uint oHeight;
@@ -22,15 +23,15 @@ int parseGrayscaleArgs(char *args)
 
     if (strcmp(tpp, "Serial") == 0)
     {
-        img = loadPPM(imgIn, &width, &height);
+        img = loadPPM(imgIn, &width, &height, format);
         oImg = grayscaleSerial(img, width, height, &oWidth, &oHeight);
     } else if (strcmp(tpp, "OMP") == 0)
     {
-        img = loadPPM(imgIn, &width, &height);
+        img = loadPPM(imgIn, &width, &height, format);
         oImg = grayscaleOmp(img, width, height, &oWidth, &oHeight, 4);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
-        img = loadPPM(imgIn, &width, &height);
+        img = loadPPM(imgIn, &width, &height, format);
         oImg = grayscaleCuda(img, width, height, &oWidth, &oHeight);
     } else
     {
@@ -64,8 +65,6 @@ unsigned char *grayscaleSerial(const unsigned char *imgIn, uint width, uint heig
     int i = 0;
     int grayValue;
 
-    
-
 
     for (int y = 0; y < height; y += 1)
     {
@@ -76,7 +75,7 @@ unsigned char *grayscaleSerial(const unsigned char *imgIn, uint width, uint heig
             g = imgIn[((y * width) + x) * 3 + 1];
             b = imgIn[((y * width) + x) * 3 + 2];
             // Fai la media per prendere il grigio
-            grayValue = (r + g + b) / CHANNELS;
+            grayValue = (r + g + b) / 3;
             // Inseriscilo come primo pixel di img_out
             img_out[i++] = grayValue;
         }
@@ -108,7 +107,7 @@ unsigned char *grayscaleOmp(const unsigned char *imgIn, uint width, uint height,
             r = imgIn[((y * width) + x) * 3];
             g = imgIn[((y * width) + x) * 3 + 1];
             b = imgIn[((y * width) + x) * 3 + 2];
-            grayValue = (r + g + b) / CHANNELS;
+            grayValue = (r + g + b) / 3;
 
             img_out[y * width + x] = grayValue;
         }

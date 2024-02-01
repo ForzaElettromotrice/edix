@@ -21,19 +21,20 @@ int parseBlurArgs(char *args)
     uint oWidth;
     uint oHeight;
     unsigned char *oImg;
+    char format[3];
 
     if (strcmp(tpp, "Serial") == 0)
     {
-        img = loadPPM(imgIn, &width, &height);
+        img = loadPPM(imgIn, &width, &height, format);
         oImg = blurSerial(img, width, height, radius, &oWidth, &oHeight);
 
     } else if (strcmp(tpp, "OMP") == 0)
     {
-        img = loadPPM(imgIn, &width, &height);
+        img = loadPPM(imgIn, &width, &height, format);
         oImg = blurOmp(img, width, height, radius, &oWidth, &oHeight, 4);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
-        img = loadPPM(imgIn, &width, &height);
+        img = loadPPM(imgIn, &width, &height, format);
         oImg = blurCuda(img, width, height, radius, &oWidth, &oHeight);
     } else
     {

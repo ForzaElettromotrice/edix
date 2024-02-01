@@ -2,71 +2,135 @@
 // Created by f3m on 19/01/24.
 //
 
-#include "functions.cuh"
 
-unsigned char *loadPPM(const char *path, uint *width, uint *height)
+#include "imgutils.hpp"
+
+unsigned char *loadImage(char *path, uint *width, uint *height, char format[3])
+{
+    char *copy = strdup(path);
+    char *extension = strtok(copy, ".");
+    char *lastToken;
+
+    while ((lastToken = strtok(nullptr, ".")) != nullptr)
+        extension = lastToken;
+
+    unsigned char *img;
+
+    if (strcmp(extension, "ppm") == 0)
+    {
+        img = loadPPM(path, width, height, format);
+    } else if (strcmp(extension, "png") == 0)
+    {
+        img = loadPng(path, width, height, format);
+    } else if (strcmp(extension, "jpeg") == 0 || strcmp(extension, "jpg") == 0)
+    {
+        img = loadJpeg(path, width, height, format);
+    } else
+    {
+        free(copy);
+        fprintf(stderr, RED "Error: " RESET "Formato immagine non valido!\n");
+        return nullptr;
+    }
+
+
+    free(copy);
+    return img;
+}
+int writeImage(char *path, unsigned char *png, uint width, uint height, const char format[3])
+{
+    char *copy = strdup(path);
+    char *extension = strtok(copy, ".");
+    char *lastToken;
+
+    while ((lastToken = strtok(nullptr, ".")) != nullptr)
+        extension = lastToken;
+
+    unsigned char *img;
+
+    if (strcmp(extension, "ppm") == 0)
+        writePPM(path, img, width, height, format);
+    else if (strcmp(extension, "jpeg") == 0 || strcmp(extension, "jpg") == 0)
+        writeJpeg(path, img, width, height, 75, format);
+    else
+    {
+        free(copy);
+        fprintf(stderr, RED "Error: " RESET "Formato immagine non valido!\n");
+        return 1;
+    }
+
+
+    free(copy);
+    return 0;
+}
+
+
+unsigned char *loadPPM(const char *path, uint *width, uint *height, char format[3])
 {
     FILE *file = fopen(path, "rb");
 
     if (!file)
     {
-        fprintf(stderr, "Failed to open file %s\n", path);
+        fprintf(stderr, RED "Error: " RESET "Failed to open file %s\n", path);
         return nullptr;
     }
 
     char header[3];
     fscanf(file, "%2s", header);
-    if (header[0] != 'P' || header[1] != '6')
+    if (header[0] == 'P' && header[1] == '5')
     {
-        fprintf(stderr, "Invalid PPM file\n");
+        sprintf(format, "P5");
+        //TODO: farla diventare P6
+    } else if (header[0] == 'P' && header[1] == '6')
+    {
+        sprintf(format, "P6");
+    } else
+    {
+        fclose(file);
+        fprintf(stderr, RED "Error: " RESET "Invalid PPM file\n");
         return nullptr;
     }
 
-    fscanf(file, "%d %d", width, height);
 
-    int maxColor;
-    fscanf(file, "%d", &maxColor);
+    char sWidth[10];
+    char sHeight[10];
+    fscanf(file, "%s %s", sWidth, sHeight);
 
+    *width = strtol(sWidth, nullptr, 10);
+    *height = strtol(sHeight, nullptr, 10);
+    if (*width <= 0 || *height <= 0)
+    {
+        fclose(file);
+        fprintf(stderr, RED "Error: " RESET "Invalid PPM file\n");
+        return nullptr;
+    }
+
+
+    char ignored[4];
+    fscanf(file, "%s", ignored);
     fgetc(file);  // Skip single whitespace character
 
-    auto *img = (unsigned char *) malloc((*width) * (*height) * CHANNELS);
+    size_t iSize = (*width) * (*height) * (strcmp(format, "P6") == 0 ? 3 : 1);
+
+    auto *img = (unsigned char *) malloc(iSize * sizeof(unsigned char));
     if (!img)
     {
-        fprintf(stderr, "Failed to allocate memory\n");
+        fclose(file);
+        fprintf(stderr, RED "Error: " RESET "Failed to allocate memory\n");
         return nullptr;
     }
 
-    fread(img, CHANNELS, *width * *height, file);
-
+    fread(img, sizeof(unsigned char), iSize, file);
     fclose(file);
 
     return img;
 }
-
-void writePPM(const char *path, unsigned char *img, uint width, uint height, const char *format)
-{
-    FILE *file = fopen(path, "wb");
-
-    if (!file)
-    {
-        fprintf(stderr, "Failed to open file %s\n", path);
-        return;
-    }
-
-    fprintf(file, "%s\n%d %d\n255\n", format, width, height);
-
-    fwrite(img, 3, width * height, file);
-
-    fclose(file);
-}
-
-unsigned char *jpegDecode(const char *path, int *width, int *height)
+unsigned char *loadJpeg(const char *path, uint *width, uint *height, char format[3])
 {
     FILE *jpeg_file = fopen(path, "rb");
     if (!jpeg_file)
     {
-        fprintf(stderr, "Errore nell'apertura del file JPEG.\n");
-        exit(EXIT_FAILURE);
+        fprintf(stderr, RED "Error: " RESET "Errore nell'apertura del file JPEG.\n");
+        return nullptr;
     }
 
     // Inizializzazione della struttura JPEG
@@ -81,22 +145,30 @@ unsigned char *jpegDecode(const char *path, int *width, int *height)
     jpeg_start_decompress(&cinfo);
 
     // Informazioni sull'immagine
-    *width = (int) cinfo.output_width;
-    *height = (int) cinfo.output_height;
+    *width = (uint) cinfo.output_width;
+    *height = (uint) cinfo.output_height;
     int num_components = cinfo.output_components;
+    if (num_components == 1)
+        sprintf(format, "P5");
+    else if (num_components == 3)
+        sprintf(format, "P6");
+    else
+    {
+        jpeg_finish_decompress(&cinfo);
+        jpeg_destroy_decompress(&cinfo);
+        fclose(jpeg_file);
+        fprintf(stderr, RED "Error: " RESET "Immagine con canali non validi!\n");
+        return nullptr;
+    }
 
     // Allocazione di buffer per i dati dell'immagine
     auto buffer = (JSAMPARRAY) malloc(sizeof(JSAMPROW) * *height);
     for (int i = 0; i < *height; ++i)
-    {
         buffer[i] = (JSAMPROW) malloc(sizeof(JSAMPLE) * *width * num_components);
-    }
 
     // Lettura dei dati dell'immagine
     while (cinfo.output_scanline < cinfo.output_height)
-    {
         jpeg_read_scanlines(&cinfo, buffer + cinfo.output_scanline, cinfo.output_height - cinfo.output_scanline);
-    }
 
     // Chiusura della struttura JPEG
     jpeg_finish_decompress(&cinfo);
@@ -104,110 +176,56 @@ unsigned char *jpegDecode(const char *path, int *width, int *height)
     fclose(jpeg_file);
 
     // Allocazione di un array per i dati dell'immagine PPM
-    auto *img = (unsigned char *) malloc(*width * *height * 3);
+    auto *img = (unsigned char *) malloc(*width * *height * num_components * sizeof(unsigned char));
 
     // Copia i dati dell'immagine nel nuovo array PPM
     for (int i = 0; i < *height; ++i)
-    {
         for (int j = 0; j < *width; ++j)
-        {
             for (int k = 0; k < num_components; ++k)
-            {
                 img[i * *width * 3 + j * 3 + k] = buffer[i][j * num_components + k];
-            }
-        }
-    }
 
     // Libera la memoria allocata per il buffer temporaneo
     for (int i = 0; i < *height; ++i)
-    {
         free(buffer[i]);
-    }
     free(buffer);
 
 
     return img;
 }
-void jpegEncoder(const char *path, unsigned char* img, int width, int height, int quality) 
-{
-    struct jpeg_compress_struct cinfo;
-    struct jpeg_error_mgr jerr;
-    FILE* outfile = fopen(path, "wb");
-    if (!outfile) {
-        std::cerr << "Errore nell'apertura del file di output." << std::endl;
-        return;
-    }
-    // Inizializzazione della struttura jpeg_compress_struct
-    cinfo.err = jpeg_std_error(&jerr);
-    jpeg_create_compress(&cinfo);
-
-    // Impostazione dei parametri dell'immagine
-    cinfo.image_width = width;
-    cinfo.image_height = height;
-    cinfo.input_components = 3;  // RGB
-    cinfo.in_color_space = JCS_RGB;
-
-    // Impostazione del file di output
-    jpeg_stdio_dest(&cinfo, outfile); // Passa direttamente il puntatore al file di output
-
-    // Impostazione dei parametri di compressione
-    jpeg_set_defaults(&cinfo);
-    jpeg_set_quality(&cinfo, quality, TRUE);
-
-    // Avvio della compressione
-    jpeg_start_compress(&cinfo, TRUE);
-
-    // Allocazione della memoria per una riga di dati RGB
-    JSAMPROW row_pointer[1];
-    int row_stride = width * 3;
-
-    // Scrittura delle righe dell'immagine
-    while (cinfo.next_scanline < cinfo.image_height) {
-        row_pointer[0] = &img[cinfo.next_scanline * row_stride];
-        jpeg_write_scanlines(&cinfo, row_pointer, 1);
-    }
-
-    // Finalizzazione della compressione
-    jpeg_finish_compress(&cinfo);
-
-    // Pulizia delle risorse
-    jpeg_destroy_compress(&cinfo);
-}
-
-unsigned char *pngDecode(const char *path, int *width, int *height)
+unsigned char *loadPng(const char *path, uint *width, uint *height, char format[3])
 {
     FILE *png_file = fopen(path, "rb");
     if (!png_file)
     {
-        fprintf(stderr, "Errore nell'apertura del file PNG.\n");
-        exit(EXIT_FAILURE);
+        fprintf(stderr, RED "Error: " RESET "Errore nell'apertura del file PNG.\n");
+        return nullptr;
     }
 
     // Inizializzazione della struttura PNG
     png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
     if (!png_ptr)
     {
-        fprintf(stderr, "Errore nell'inizializzazione della struttura PNG.\n");
         fclose(png_file);
-        exit(EXIT_FAILURE);
+        fprintf(stderr, RED "Error: " RESET "Errore nell'inizializzazione della struttura PNG.\n");
+        return nullptr;
     }
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr)
     {
-        fprintf(stderr, "Errore nell'inizializzazione della struttura di informazioni PNG.\n");
         png_destroy_read_struct(&png_ptr, (png_infopp) nullptr, (png_infopp) nullptr);
         fclose(png_file);
-        exit(EXIT_FAILURE);
+        fprintf(stderr, RED "Error: " RESET "Errore nell'inizializzazione della struttura di informazioni PNG.\n");
+        return nullptr;
     }
 
     // Impostazione della gestione degli errori durante la lettura del PNG
     if (setjmp(png_jmpbuf(png_ptr)))
     {
-        fprintf(stderr, "Errore durante la lettura del file PNG.\n");
+        fprintf(stderr, RED "Error: " RESET "Errore durante la lettura del file PNG.\n");
         png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp) nullptr);
         fclose(png_file);
-        exit(EXIT_FAILURE);
+        return nullptr;
     }
 
     // Inizializzazione della lettura del PNG da file
@@ -219,8 +237,23 @@ unsigned char *pngDecode(const char *path, int *width, int *height)
     // Recupera le informazioni sull'immagine
     *width = png_get_image_width(png_ptr, info_ptr);
     *height = png_get_image_height(png_ptr, info_ptr);
+    int channels = png_get_channels(png_ptr, info_ptr);
     png_byte color_type = png_get_color_type(png_ptr, info_ptr);
     png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+
+    if (channels == 1)
+        sprintf(format, "P5");
+    else if (channels == 3)
+        sprintf(format, "P6");
+    else
+    {
+        fprintf(stderr, RED "Error: " RESET "Errore durante la lettura del file PNG.\n");
+        png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp) nullptr);
+        fclose(png_file);
+        return nullptr;
+    }
+
+
 
     // Imposta la lettura RGBA automatica
     if (color_type == PNG_COLOR_TYPE_PALETTE)
@@ -243,21 +276,15 @@ unsigned char *pngDecode(const char *path, int *width, int *height)
     png_read_image(png_ptr, row_pointers);
 
     // Chiusura della struttura PNG
-    png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp) NULL);
+    png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp) nullptr);
     fclose(png_file);
 
     // Copia i dati dell'immagine in un array di unsigned char
-    auto *image_data = (unsigned char *) malloc(*width * *height * 4);
+    auto *image_data = (unsigned char *) malloc(*width * *height * channels);
     for (int y = 0; y < *height; y++)
-    {
         for (int x = 0; x < *width; x++)
-        {
-            image_data[(y * *width + x) * 4 + 0] = row_pointers[y][x * 4 + 0];
-            image_data[(y * *width + x) * 4 + 1] = row_pointers[y][x * 4 + 1];
-            image_data[(y * *width + x) * 4 + 2] = row_pointers[y][x * 4 + 2];
-            image_data[(y * *width + x) * 4 + 3] = row_pointers[y][x * 4 + 3];
-        }
-    }
+            for (int k = 0; k < channels; ++k)
+                image_data[(y * *width + x) * channels + k] = row_pointers[y][x * channels + k];
 
     // Libera la memoria allocata per le righe
     for (int y = 0; y < *height; y++)
@@ -265,4 +292,68 @@ unsigned char *pngDecode(const char *path, int *width, int *height)
     free(row_pointers);
 
     return image_data;
+}
+
+void writePPM(const char *path, unsigned char *img, uint width, uint height, const char *format)
+{
+    FILE *file = fopen(path, "wb");
+
+    if (!file)
+    {
+        fprintf(stderr, "Failed to open file %s\n", path);
+        return;
+    }
+
+    fprintf(file, "%s\n%d %d\n255\n", format, width, height);
+
+    fwrite(img, format[1] == '5' ? 1 : 3, width * height, file);
+
+    fclose(file);
+}
+void writeJpeg(const char *path, unsigned char *img, uint width, uint height, int quality, const char format[3])
+{
+    struct jpeg_compress_struct cinfo{};
+    struct jpeg_error_mgr jerr{};
+    FILE *outfile = fopen(path, "wb");
+    if (!outfile)
+    {
+        fprintf(stderr, RED "Error: " RESET "Errore nell'apertura del file di output.");
+        return;
+    }
+    // Inizializzazione della struttura jpeg_compress_struct
+    cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_compress(&cinfo);
+
+    // Impostazione dei parametri dell'immagine
+    cinfo.image_width = width;
+    cinfo.image_height = height;
+    cinfo.input_components = format[1] == '5' ? 1 : 3;  // Scala di grigi o RGB
+    cinfo.in_color_space = JCS_RGB;
+
+    // Impostazione del file di output
+    jpeg_stdio_dest(&cinfo, outfile); // Passa direttamente il puntatore al file di output
+
+    // Impostazione dei parametri di compressione
+    jpeg_set_defaults(&cinfo);
+    jpeg_set_quality(&cinfo, quality, TRUE);
+
+    // Avvio della compressione
+    jpeg_start_compress(&cinfo, TRUE);
+
+    // Allocazione della memoria per una riga di dati RGB
+    JSAMPROW row_pointer[1];
+    int row_stride = width * format[1] == '5' ? 1 : 3;
+
+    // Scrittura delle righe dell'immagine
+    while (cinfo.next_scanline < cinfo.image_height)
+    {
+        row_pointer[0] = &img[cinfo.next_scanline * row_stride];
+        jpeg_write_scanlines(&cinfo, row_pointer, 1);
+    }
+
+    // Finalizzazione della compressione
+    jpeg_finish_compress(&cinfo);
+
+    // Pulizia delle risorse
+    jpeg_destroy_compress(&cinfo);
 }
