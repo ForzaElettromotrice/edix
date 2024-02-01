@@ -104,8 +104,8 @@ unsigned char *overlapOmp(const unsigned char *img1, const unsigned char *img2, 
 
     //TODO: da migliorare (Fa schifo [Pero' sembra che con due thread])
 #pragma omp parallel for num_threads(nThread) \
-    default(none) shared(img2, width2, height2, oImg, width1, x, y) \
-    schedule(static)
+    default(none) shared(img2, width2, height2, oImg, width1, x, y, nThread) \
+    schedule(static, height2/nThread)
     for (int i = 0; i < width2; i++)
     {
         for (int j = 0; j < height2; j++)

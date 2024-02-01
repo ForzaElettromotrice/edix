@@ -34,8 +34,8 @@ void test(unsigned char *img1, unsigned char *img2, uint *width1, uint *height1,
     //outSer = blurSerial(img1, *width1, *height1, 5, &outW, &outH);
     //outSer = grayscaleSerial(img1, *width1, *height1, &outW, &outH);
     //outSer = colorFilterSerial(img1, *width1, *height1, 0, 0, 255, 0, &outW, &outH);
-    outSer = overlapOmp(img1, img2, *width1, *height1, *width2, *height2, 100, 200, &outW, &outH, 2);
-    //outSer = compositionSerial(img1, img2, *width1, *height1, *width2, *height2, UP, &outW, &outH);
+    //outSer = overlapSerial(img1, img2, *width1, *height1, *width2, *height2, 100, 200, &outW, &outH);
+    outSer = compositionSerial(img1, img2, *width1, *height1, *width2, *height2, UP, &outW, &outH);
     //outSer = upscaleSerialBilinear(img1, *width1, *height1, 1, &outW, &outH);
     //outSer = upscaleSerialBicubic(img1, *width1, *height1, 1, &outW, &outH);
     //outSer = downscaleSerial(img1, *width1, *height1, 1, &outW, &outH);
@@ -54,8 +54,8 @@ void test(unsigned char *img1, unsigned char *img2, uint *width1, uint *height1,
             //outParall = blurOmp(img1, *width1, *height1, 5, &outW, &outH, i);
             //outParall = grayscaleOmp(img1, *width1, *height1, &outW, &outH, i);
             //outParall = colorFilterOmp(img1, *width1, *height1, 0, 0, 255, 0, &outW, &outH, i);
-            outParall = overlapOmp(img1, img2, *width1, *height1, *width2, *height2, 20, 20, &outW, &outH, i);
-            //outParall = compositionOmp(img1, img2, *width1, *height1, *width2, *height2, UP, &outW, &outH, i);
+            //outParall = overlapOmp(img1, img2, *width1, *height1, *width2, *height2, 20, 20, &outW, &outH, i);
+            outParall = compositionOmp(img1, img2, *width1, *height1, *width2, *height2, UP, &outW, &outH, i);
             //outParall = upscaleOmpBilinear(img1, *width1, *height1, 1, &outW, &outH, i);
             //outParall = upscaleOmpBicubic(img1, *width1, *height1, 1, &outW, &outH, i);
             //outParall = downscaleOmp(img1, *width1, *height1, 1, &outW, &outH, i); 
