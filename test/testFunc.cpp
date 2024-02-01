@@ -29,14 +29,14 @@ void test(unsigned char *img1, unsigned char *img2, const uint *width1, const ui
     auto startSer = std::chrono::high_resolution_clock::now();
     /* Scegli la funzione da chiamare Serial */
 
-    //outSer = blurSerial(img1, *width1, *height1, 5, &outW, &outH);
-    //outSer = grayscaleSerial(img1, *width1, *height1, &outW, &outH);
-    //outSer = colorFilterSerial(img1, *width1, *height1, 0, 0, 255, 0, &outW, &outH);
-    //outSer = overlapSerial(img1, img2, *width1, *height1, *width2, *height2, 100, 200, &outW, &outH);
+    //free(blurSerial(img1, *width1, *height1, 5, &outW, &outH)); 
+    //free(grayscaleSerial(img1, *width1, *height1, &outW, &outH));
+    //free(colorFilterSerial(img1, *width1, *height1, 0, 0, 255, 0, &outW, &outH));
+    //free(overlapSerial(img1, img2, *width1, *height1, *width2, *height2, 100, 200, &outW, &outH));
     free(compositionSerial(img1, img2, *width1, *height1, *width2, *height2, UP, &outW, &outH));
-    //outSer = upscaleSerialBilinear(img1, *width1, *height1, 1, &outW, &outH);
-    //outSer = upscaleSerialBicubic(img1, *width1, *height1, 1, &outW, &outH);
-    //outSer = downscaleSerial(img1, *width1, *height1, 1, &outW, &outH);
+    //free(upscaleSerialBilinear(img1, *width1, *height1, 1, &outW, &outH));
+    //free(upscaleSerialBicubic(img1, *width1, *height1, 1, &outW, &outH));
+    //free(downscaleSerial(img1, *width1, *height1, 1, &outW, &outH));
 
     auto endSer = std::chrono::high_resolution_clock::now();
     timeSer = print_times(startSer, endSer);
@@ -49,14 +49,14 @@ void test(unsigned char *img1, unsigned char *img2, const uint *width1, const ui
             auto start = std::chrono::high_resolution_clock::now();
             /* Scegli la funzione parallela (OMP, CUDA) */
 
-            //outParall = blurOmp(img1, *width1, *height1, 5, &outW, &outH, i);
-            //outParall = grayscaleOmp(img1, *width1, *height1, &outW, &outH, i);
-            //outParall = colorFilterOmp(img1, *width1, *height1, 0, 0, 255, 0, &outW, &outH, i);
-            //outParall = overlapOmp(img1, img2, *width1, *height1, *width2, *height2, 20, 20, &outW, &outH, i);
+            //free(blurOmp(img1, *width1, *height1, 5, &outW, &outH, i));
+            //free(grayscaleOmp(img1, *width1, *height1, &outW, &outH, i));
+            //free(colorFilterOmp(img1, *width1, *height1, 0, 0, 255, 0, &outW, &outH, i));
+            //free(overlapOmp(img1, img2, *width1, *height1, *width2, *height2, 20, 20, &outW, &outH, i));
             free(compositionOmp(img1, img2, *width1, *height1, *width2, *height2, UP, &outW, &outH, i));
-            //outParall = upscaleOmpBilinear(img1, *width1, *height1, 1, &outW, &outH, i);
-            //outParall = upscaleOmpBicubic(img1, *width1, *height1, 1, &outW, &outH, i);
-            //outParall = downscaleOmp(img1, *width1, *height1, 1, &outW, &outH, i); 
+            //free(upscaleOmpBilinear(img1, *width1, *height1, 1, &outW, &outH, i));
+            //free(upscaleOmpBicubic(img1, *width1, *height1, 1, &outW, &outH, i));
+            //free(downscaleOmp(img1, *width1, *height1, 1, &outW, &outH, i)); 
 
             auto end = std::chrono::high_resolution_clock::now();
             timePar += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
