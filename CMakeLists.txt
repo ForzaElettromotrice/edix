@@ -4,10 +4,6 @@ project(edix CUDA CXX)
 set(CMAKE_CUDA_STANDARD 23)
 set(CMAKE_CXX_STANDARD 20)
 
-# Abilita il supporto a ThreadSanitizer
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -fsanitize=thread")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread")
-
 
 find_package(OpenMP REQUIRED)
 
@@ -40,6 +36,7 @@ set(SOURCE_FILES
         src/functions/compression.cuh
         src/functions/blur.cuh
         src/functions/overlap.cuh
+        src/functions/imgutils.hpp
 )
 
 set(SOURCE_FILES_TEST
@@ -72,6 +69,7 @@ set(SOURCE_FILES_TEST
         src/env/settings.hpp
         src/dbutils/rdutils.cpp
         src/dbutils/rdutils.hpp
+        src/functions/imgutils.hpp
 )
 
 # Aggiungi tutte le sorgenti del progetto

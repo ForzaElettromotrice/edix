@@ -20,12 +20,10 @@ long print_times(auto time1, auto time2)
 }
 
 
-void test(unsigned char *img1, unsigned char *img2, uint *width1, uint *height1, uint *width2, uint *height2)
+void test(unsigned char *img1, unsigned char *img2, const uint *width1, const uint *height1, const uint *width2, const uint *height2)
 {
     uint outW, outH;
-    unsigned char *outSer, *outParall;
-    long timeSer = 0L,
-            timePar = 0L;
+    long timeSer, timePar;
 
     printf(BOLD YELLOW "Esecuzione seriale\n" RESET);
     auto startSer = std::chrono::high_resolution_clock::now();
@@ -35,14 +33,14 @@ void test(unsigned char *img1, unsigned char *img2, uint *width1, uint *height1,
     //outSer = grayscaleSerial(img1, *width1, *height1, &outW, &outH);
     //outSer = colorFilterSerial(img1, *width1, *height1, 0, 0, 255, 0, &outW, &outH);
     //outSer = overlapSerial(img1, img2, *width1, *height1, *width2, *height2, 100, 200, &outW, &outH);
-    outSer = compositionSerial(img1, img2, *width1, *height1, *width2, *height2, UP, &outW, &outH);
+    free(compositionSerial(img1, img2, *width1, *height1, *width2, *height2, UP, &outW, &outH));
     //outSer = upscaleSerialBilinear(img1, *width1, *height1, 1, &outW, &outH);
     //outSer = upscaleSerialBicubic(img1, *width1, *height1, 1, &outW, &outH);
     //outSer = downscaleSerial(img1, *width1, *height1, 1, &outW, &outH);
 
     auto endSer = std::chrono::high_resolution_clock::now();
     timeSer = print_times(startSer, endSer);
-    printf(BOLD YELLOW "%s" RESET, "\nEsecuzioni parallele\n\n");
+    printf(BOLD YELLOW "%s" RESET, "\nEsecuzioni parallele\n");
     for (int i = 2; i <= 20; i++)
     {
         timePar = 0L;
@@ -55,7 +53,7 @@ void test(unsigned char *img1, unsigned char *img2, uint *width1, uint *height1,
             //outParall = grayscaleOmp(img1, *width1, *height1, &outW, &outH, i);
             //outParall = colorFilterOmp(img1, *width1, *height1, 0, 0, 255, 0, &outW, &outH, i);
             //outParall = overlapOmp(img1, img2, *width1, *height1, *width2, *height2, 20, 20, &outW, &outH, i);
-            outParall = compositionOmp(img1, img2, *width1, *height1, *width2, *height2, UP, &outW, &outH, i);
+            free(compositionOmp(img1, img2, *width1, *height1, *width2, *height2, UP, &outW, &outH, i));
             //outParall = upscaleOmpBilinear(img1, *width1, *height1, 1, &outW, &outH, i);
             //outParall = upscaleOmpBicubic(img1, *width1, *height1, 1, &outW, &outH, i);
             //outParall = downscaleOmp(img1, *width1, *height1, 1, &outW, &outH, i); 

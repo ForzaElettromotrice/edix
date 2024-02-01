@@ -9,7 +9,7 @@
 double percentage(long time1, long time2);
 long print_times(auto time1, auto time2);
 void print_perc(double perc);
-void test(unsigned char *img1, unsigned char *img2, uint *width1, uint *height1, uint *width2, uint *height2);
+void test(unsigned char *img1, unsigned char *img2, const uint *width1, const uint *height1, const uint *width2, const uint *height2);
 
 #endif
 

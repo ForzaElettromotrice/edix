@@ -31,36 +31,32 @@ int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint 
     return 0;
 }
 
-int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y, int nThread) {
-
-    #pragma omp forparallel num_threads(nThread) \
-    default(none) shared(mIn, mOut, widthI, heightI, widthO, x, y) \
-    schedule(static)
+int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y, int nThread)
+{
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+    uint xO, yO, index;
+#pragma omp parallel for num_threads(nThread) collapse(2) default(none) shared(mIn, mOut, widthI, heightI, widthO, x, y) private(r, g, b, xO, yO, index)
+    for (int i = 0; i < widthI; ++i)
     {
-        unsigned char r;
-        unsigned char g;
-        unsigned char b;
-        uint xO, yO, index;
-        for (int i = 0; i < widthI; ++i)
+        for (int j = 0; j < heightI; ++j)
         {
-            for (int j = 0; j < heightI; ++j)
-            {
-                r = mIn[(i + j * widthI) * 3];
-                g = mIn[(i + j * widthI) * 3 + 1];
-                b = mIn[(i + j * widthI) * 3 + 2];
+            r = mIn[(i + j * widthI) * 3];
+            g = mIn[(i + j * widthI) * 3 + 1];
+            b = mIn[(i + j * widthI) * 3 + 2];
 
-                xO = x + i;
-                yO = y + j;
+            xO = x + i;
+            yO = y + j;
 
-                index = (xO + yO * widthO) * 3;                 
+            index = (xO + yO * widthO) * 3;
 
-                mOut[index] = r;
-                mOut[index + 1] = g;
-                mOut[index + 2] = b;
-            }
+            mOut[index] = r;
+            mOut[index + 1] = g;
+            mOut[index + 2] = b;
         }
     }
-    
+
     return 0;
 }
 

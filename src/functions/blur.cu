@@ -7,9 +7,9 @@ int parseBlurArgs(char *args)
     char *pathOut = strtok(nullptr, " ");
     int radius = (int) strtol(strtok(nullptr, " "), nullptr, 10);
 
-    if (imgIn == nullptr || pathOut == nullptr || radius == 0)
+    if (imgIn == nullptr || pathOut == nullptr || radius <= 0)
     {
-        handle_error("Invalid arguments for blur function.\n");
+        handle_error("usage " BOLD "funx blur imgIn imgOut radius(>0)\n" RESET);
     }
 
     //TODO: leggere le immagini in base alla loro estensione
@@ -60,7 +60,7 @@ unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, i
 
     unsigned char *blurImage;
 
-    blurImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * CHANNELS);
+    blurImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * 3);
     if (blurImage == nullptr)
     {
         fprintf(stderr, RED "FUNX Error: " RESET "Errore nell'allocare memoria\n");
@@ -115,7 +115,7 @@ unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, int 
 
     unsigned char *blurImage;
 
-    blurImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * CHANNELS);
+    blurImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * 3);
     if (blurImage == nullptr)
     {
         fprintf(stderr, RED "FUNX Error: " RESET "Errore nell'allocare memoria\n");
