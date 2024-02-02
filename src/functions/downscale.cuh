@@ -8,6 +8,7 @@
 #include "functions.cuh"
 #include "upscale.cuh"
 
-__global__ void bilinearDownscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut,uint width, uint height, int factor);
+void createSquareD(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels);
+__global__ void bilinearDownscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor);
 
 #endif //EDIX_DOWNSCALE_CUH

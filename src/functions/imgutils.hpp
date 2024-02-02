@@ -12,7 +12,7 @@
 #include "../utils.hpp"
 
 unsigned char *loadImage(char *path, uint *width, uint *height, uint *channels);
-int writeImage(char *path, unsigned char *png, uint width, uint height, uint channels);
+int writeImage(char *path, unsigned char *img, uint width, uint height, uint channels);
 
 
 unsigned char *loadPPM(const char *path, uint *width, uint *height, uint *channels);

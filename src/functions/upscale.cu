@@ -18,7 +18,7 @@ double cubicInterpolate(double A, double B, double C, double D, double t)
     return a * t * t * t + b * t * t + c * t + d;
 //    return A + 0.5 * t * (C - A + t * (2.0 * A - 5.0 * B + 4.0 * C - D + t * (3.0 * (B - C) + D - A)));
 }
-void createSquare(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height)
+void createSquare(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels)
 {
     for (int i = -1; i < 3; ++i)
     {
@@ -26,12 +26,8 @@ void createSquare(unsigned char square[16][3], const unsigned char *img, int x, 
         {
             if (x - i < 0 || y - j < 0 || x + i >= width || y + j >= height)
                 continue;
-            int r = img[3 * (x + i + (y + j) * width)];
-            int g = img[3 * (x + i + (y + j) * width) + 1];
-            int b = img[3 * (x + i + (y + j) * width) + 2];
-            square[(i + 1) + (j + 1) * 3][0] = r;
-            square[(i + 1) + (j + 1) * 3][1] = g;
-            square[(i + 1) + (j + 1) * 3][2] = b;
+            for (int k = 0; k < channels; ++k)
+                square[(i + 1) + (j + 1) * 4][k] = img[channels * (x + i + (y + j) * width) + k];
         }
     }
 }
@@ -258,14 +254,13 @@ unsigned char *upscaleSerialBilinear(const unsigned char *imgIn, uint width, uin
 
             for (int k = 0; k < channels; ++k)
             {
-                //TODO: se sbordi, usa lo stesso pixel
-                p00 = imgIn[(x + y * width) * 3 + k];
-                p01 = imgIn[(x + 1 + y * width) * 3 + k];
-                p10 = imgIn[(x + (y + 1) * width) * 3 + k];
-                p11 = imgIn[(x + 1 + (y + 1) * width) * 3 + k];
+                p00 = imgIn[(x + y * width) * channels + k];
+                p01 = x + 1 >= width ? p00 : imgIn[(x + 1 + y * width) * channels + k];
+                p10 = y + 1 >= height ? p00 : imgIn[(x + (y + 1) * width) * channels + k];
+                p11 = x + 1 >= width || y + 1 >= height ? p00 : imgIn[(x + 1 + (y + 1) * width) * channels + k];
 
 
-                imgOut[(i + j * widthO) * 3 + k] = bilinearInterpolation(p00, p01, p10, p11, alpha, beta);
+                imgOut[(i + j * widthO) * channels + k] = bilinearInterpolation(p00, p01, p10, p11, alpha, beta);
             }
         }
     }
@@ -329,10 +324,9 @@ unsigned char *upscaleCudaBilinear(const unsigned char *imgIn, uint width, uint 
 
 unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
 {
-
     uint widthO = width * factor;
     uint heightO = height * factor;
-    auto *imgOut = (unsigned char *) calloc(widthO * heightO * 3, sizeof(unsigned char));
+    auto *imgOut = (unsigned char *) calloc(widthO * heightO * channels, sizeof(unsigned char));
     if (imgOut == nullptr)
     {
         fprintf(stderr, RED "Error: " RESET "Error while malloc!\n");
@@ -355,14 +349,15 @@ unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint
             alpha = ((double) i / factor) - x;
             beta = ((double) j / factor) - y;
 
-            createSquare(square, imgIn, x, y, width, height);
+            //TODO: i pixel mancanti devono essere la copia dell'originale
+            createSquare(square, imgIn, x, y, width, height, channels);
 
             for (int k = 0; k < channels; k++)
             {
-                double p1 = cubicInterpolate(square[0][0 + k], square[1][0 + k], square[2][0 + k], square[3][0 + k], alpha);
-                double p2 = cubicInterpolate(square[4][0 + k], square[5][0 + k], square[6][0 + k], square[7][0 + k], alpha);
-                double p3 = cubicInterpolate(square[8][0 + k], square[9][0 + k], square[10][0 + k], square[11][0 + k], alpha);
-                double p4 = cubicInterpolate(square[12][0 + k], square[13][0 + k], square[14 + k][0 + k], square[15][0 + k], alpha);
+                double p1 = cubicInterpolate(square[0][k], square[1][k], square[2][k], square[3][k], alpha);
+                double p2 = cubicInterpolate(square[4][k], square[5][k], square[6][k], square[7][k], alpha);
+                double p3 = cubicInterpolate(square[8][k], square[9][k], square[10][k], square[11][k], alpha);
+                double p4 = cubicInterpolate(square[12][k], square[13][k], square[14 + k][k], square[15][k], alpha);
                 double p = cubicInterpolate(p1, p2, p3, p4, beta);
 
                 if (p > 255)
@@ -370,8 +365,7 @@ unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint
                 else if (p < 0)
                     p = 0;
 
-                imgOut[(i + j * widthO) * 3 + k] = (int) p;
-
+                imgOut[(i + j * widthO) * channels + k] = (int) p;
             }
         }
     }
