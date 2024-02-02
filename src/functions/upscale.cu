@@ -36,11 +36,11 @@ void createSquare(unsigned char square[16][3], const unsigned char *img, int x, 
     }
 }
 
-__global__ void bilinearUpscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut,uint width, uint height, int factor)
+__global__ void bilinearUpscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor)
 {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;
-    
+
     uint widthO = width * factor;
     uint heightO = height * factor;
 
@@ -55,25 +55,27 @@ __global__ void bilinearUpscaleCUDA(const unsigned char *imgIn, unsigned char *i
     double alpha;
     double beta;
 
-    if (idx < widthO * heightO * 3){
-        i = x/factor;
-        j = y/factor;
-        alpha = ((double) x/factor)-i;
-        beta = ((double) y/factor)-j;
-        
-        for(int k = 0; k < 3 ; k++){
-            p00 = imgIn[(i + j * width)*3 + k];
-            p01 = imgIn[(i + 1 + j * width)*3 + k];
-            p10 = imgIn[(i + (j + 1) * width)*3 + k];
-            p11 = imgIn[(i + 1 + (j + 1) * width)*3 + k];
+    if (idx < widthO * heightO * 3)
+    {
+        i = x / factor;
+        j = y / factor;
+        alpha = ((double) x / factor) - i;
+        beta = ((double) y / factor) - j;
 
-            imgOut[(idx * 3) +k] = (int) ((1 - alpha) * (1 - beta) * p00 + (1 - alpha) *
-                                                 beta * p01 + alpha * (1 - beta) * p10 +
-                                                  alpha * beta * p11);
+        for (int k = 0; k < 3; k++)
+        {
+            p00 = imgIn[(i + j * width) * 3 + k];
+            p01 = imgIn[(i + 1 + j * width) * 3 + k];
+            p10 = imgIn[(i + (j + 1) * width) * 3 + k];
+            p11 = imgIn[(i + 1 + (j + 1) * width) * 3 + k];
+
+            imgOut[(idx * 3) + k] = (int) ((1 - alpha) * (1 - beta) * p00 + (1 - alpha) *
+                                                                            beta * p01 + alpha * (1 - beta) * p10 +
+                                           alpha * beta * p11);
         }
-    } 
+    }
 }
-__global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut,uint width, uint height, int factor,dim3 gridSize, dim3 blockSize)
+__global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor, dim3 gridSize, dim3 blockSize)
 {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -90,79 +92,80 @@ __global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *im
     unsigned char square[16][3];
     int pixel[3];
 
-        if(idx < widthO * heightO * 3){
-            i = x / factor;
-            j = y / factor;
+    if (idx < widthO * heightO * 3)
+    {
+        i = x / factor;
+        j = y / factor;
 
-            alpha = ((double) x / factor) - i;
-            beta = ((double) y / factor) - j;
+        alpha = ((double) x / factor) - i;
+        beta = ((double) y / factor) - j;
 
-            
-            for (int k = -1; k < 3; ++k)
+
+        for (int k = -1; k < 3; ++k)
+        {
+            for (int z = -1; z < 3; ++z)
             {
-                for (int z = -1; z < 3; ++z)
-                {
-                    if (i - k < 0 || y - z < 0 || i + k >= width || j + z >= height)
-                        continue;
-                    int r = imgIn[3 * (i + k + (j + z) * width)];
-                    int g = imgIn[3 * (i + k + (j + z) * width) + 1];
-                    int b = imgIn[3 * (i + k + (j + z) * width) + 2];
-                    square[(k + 1) + (z + 1) * 3][0] = r;
-                    square[(k + 1) + (z + 1) * 3][1] = g;
-                    square[(k + 1) + (z + 1) * 3][2] = b;
-        }
-    }
-
-            for (int k = 0; k < 3; k++)
-            {
-                
-                double a = -square[0][0 + k] / 2.0f + (3.0f * square[1][0 + k]) / 2.0f - (3.0f * square[2][0 + k]) / 2.0f + square[3][0 + k] / 2.0f;
-                double b = square[0][0 + k] - (5.0f * square[1][0 + k]) / 2.0f + 2.0f * square[2][0 + k] - square[3][0 + k] / 2.0f;
-                double c = -square[0][0 + k]/ 2.0f + square[2][0 + k] / 2.0f;
-                double d = square[1][0 + k];
-                double p1 = a * alpha * alpha * alpha + b * alpha * alpha + c * alpha + d;
-
-                
-                a = -square[4][0 + k] / 2.0f + (3.0f * square[5][0 + k]) / 2.0f - (3.0f * square[6][0 + k]) / 2.0f + square[7][0 + k] / 2.0f;
-                b = square[4][0 + k] - (5.0f * square[5][0 + k]) / 2.0f + 2.0f * square[6][0 + k] - square[7][0 + k] / 2.0f;
-                c = -square[4][0 + k] / 2.0f + square[6][0 + k] / 2.0f;
-                d = square[5][0 + k];
-                double p2 = a * alpha * alpha * alpha + b * alpha * alpha + c * alpha + d;
-
-                
-                a = -square[8][0 + k] / 2.0f + (3.0f * square[9][0 + k]) / 2.0f - (3.0f * square[10][0 + k]) / 2.0f + square[11][0 + k] / 2.0f;
-                b = square[8][0 + k] - (5.0f * square[9][0 + k]) / 2.0f + 2.0f * square[10][0 + k] - square[11][0 + k] / 2.0f;
-                c = -square[8][0 + k] / 2.0f + square[10][0 + k] / 2.0f;
-                d = square[9][0 + k];
-                double p3 = a * alpha * alpha * alpha + b * alpha * alpha + c * alpha + d;
-
-                
-                a = -square[12][0 + k] / 2.0f + (3.0f * square[13][0 + k]) / 2.0f - (3.0f * square[14 + k][0 + k]) / 2.0f + square[15][0 + k] / 2.0f;
-                b = square[12][0 + k] - (5.0f * square[13][0 + k]) / 2.0f + 2.0f * square[14 + k][0 + k] - square[15][0 + k] / 2.0f;
-                c = -square[12][0 + k] / 2.0f + square[14 + k][0 + k] / 2.0f;
-                d = square[13][0 + k];
-                double p4 = a * alpha * alpha * alpha + b * alpha * alpha + c * alpha + d;
-
-                
-                a = -p1 / 2.0f + (3.0f * p2) / 2.0f - (3.0f * p3) / 2.0f + p4 / 2.0f;
-                b = p1 - (5.0f * p2) / 2.0f + 2.0f * p3 - p4 / 2.0f;
-                c = -p1 / 2.0f + p3 / 2.0f;
-                d = p2;
-                double p = a * beta * beta * beta + b * beta * beta + c * beta + d;
-                
-                if (p > 255)
-                    p = 255;
-                else if (p < 0)
-                    p = 0;
-
-                pixel[k] = (int) p;
-
+                if (i - k < 0 || y - z < 0 || i + k >= width || j + z >= height)
+                    continue;
+                int r = imgIn[3 * (i + k + (j + z) * width)];
+                int g = imgIn[3 * (i + k + (j + z) * width) + 1];
+                int b = imgIn[3 * (i + k + (j + z) * width) + 2];
+                square[(k + 1) + (z + 1) * 3][0] = r;
+                square[(k + 1) + (z + 1) * 3][1] = g;
+                square[(k + 1) + (z + 1) * 3][2] = b;
             }
-
-            imgOut[idx * 3] = pixel[0];
-            imgOut[(idx * 3) + 1] = pixel[1];
-            imgOut[(idx * 3) + 2] = pixel[2];
         }
+
+        for (int k = 0; k < 3; k++)
+        {
+
+            double a = -square[0][0 + k] / 2.0f + (3.0f * square[1][0 + k]) / 2.0f - (3.0f * square[2][0 + k]) / 2.0f + square[3][0 + k] / 2.0f;
+            double b = square[0][0 + k] - (5.0f * square[1][0 + k]) / 2.0f + 2.0f * square[2][0 + k] - square[3][0 + k] / 2.0f;
+            double c = -square[0][0 + k] / 2.0f + square[2][0 + k] / 2.0f;
+            double d = square[1][0 + k];
+            double p1 = a * alpha * alpha * alpha + b * alpha * alpha + c * alpha + d;
+
+
+            a = -square[4][0 + k] / 2.0f + (3.0f * square[5][0 + k]) / 2.0f - (3.0f * square[6][0 + k]) / 2.0f + square[7][0 + k] / 2.0f;
+            b = square[4][0 + k] - (5.0f * square[5][0 + k]) / 2.0f + 2.0f * square[6][0 + k] - square[7][0 + k] / 2.0f;
+            c = -square[4][0 + k] / 2.0f + square[6][0 + k] / 2.0f;
+            d = square[5][0 + k];
+            double p2 = a * alpha * alpha * alpha + b * alpha * alpha + c * alpha + d;
+
+
+            a = -square[8][0 + k] / 2.0f + (3.0f * square[9][0 + k]) / 2.0f - (3.0f * square[10][0 + k]) / 2.0f + square[11][0 + k] / 2.0f;
+            b = square[8][0 + k] - (5.0f * square[9][0 + k]) / 2.0f + 2.0f * square[10][0 + k] - square[11][0 + k] / 2.0f;
+            c = -square[8][0 + k] / 2.0f + square[10][0 + k] / 2.0f;
+            d = square[9][0 + k];
+            double p3 = a * alpha * alpha * alpha + b * alpha * alpha + c * alpha + d;
+
+
+            a = -square[12][0 + k] / 2.0f + (3.0f * square[13][0 + k]) / 2.0f - (3.0f * square[14 + k][0 + k]) / 2.0f + square[15][0 + k] / 2.0f;
+            b = square[12][0 + k] - (5.0f * square[13][0 + k]) / 2.0f + 2.0f * square[14 + k][0 + k] - square[15][0 + k] / 2.0f;
+            c = -square[12][0 + k] / 2.0f + square[14 + k][0 + k] / 2.0f;
+            d = square[13][0 + k];
+            double p4 = a * alpha * alpha * alpha + b * alpha * alpha + c * alpha + d;
+
+
+            a = -p1 / 2.0f + (3.0f * p2) / 2.0f - (3.0f * p3) / 2.0f + p4 / 2.0f;
+            b = p1 - (5.0f * p2) / 2.0f + 2.0f * p3 - p4 / 2.0f;
+            c = -p1 / 2.0f + p3 / 2.0f;
+            d = p2;
+            double p = a * beta * beta * beta + b * beta * beta + c * beta + d;
+
+            if (p > 255)
+                p = 255;
+            else if (p < 0)
+                p = 0;
+
+            pixel[k] = (int) p;
+
+        }
+
+        imgOut[idx * 3] = pixel[0];
+        imgOut[(idx * 3) + 1] = pixel[1];
+        imgOut[(idx * 3) + 2] = pixel[2];
+    }
 }
 
 
@@ -278,8 +281,8 @@ unsigned char *upscaleOmpBilinear(const unsigned char *imgIn, uint width, uint h
 }
 unsigned char *upscaleCudaBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
 {
-    uint wf,hf;
-    
+    uint wf, hf;
+
     //host   
     wf = width * factor;
     hf = height * factor;
@@ -288,7 +291,8 @@ unsigned char *upscaleCudaBilinear(const unsigned char *imgIn, uint width, uint 
     uint iSizeO = wf * hf * 3;
 
     auto h_imgOut = (unsigned char *) malloc(iSizeO * sizeof(unsigned char));
-    if (h_imgOut == nullptr){
+    if (h_imgOut == nullptr)
+    {
         fprintf(stderr, RED "Error: " RESET "Errore nell'allocazione della memoria\n");
         munlock(imgIn, width * height * 3 * sizeof(unsigned char));
         return nullptr;
@@ -323,7 +327,7 @@ unsigned char *upscaleCudaBilinear(const unsigned char *imgIn, uint width, uint 
     return h_imgOut;
 }
 
-unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
+unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
 {
 
     uint widthO = width * factor;
@@ -382,10 +386,10 @@ unsigned char *upscaleOmpBicubic(const unsigned char *imgIn, uint width, uint he
 {
     return nullptr;
 }
-unsigned char *upscaleCudaBicubic(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
+unsigned char *upscaleCudaBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
 {
     //init
-    uint wf,hf;
+    uint wf, hf;
 
     //host
     wf = width * factor;
@@ -394,12 +398,13 @@ unsigned char *upscaleCudaBicubic(const unsigned char *imgIn, uint width, uint h
     mlock(imgIn, iSize * sizeof(unsigned char));
     uint iSizeO = wf * hf * 3;
     auto h_imgOut = (unsigned char *) malloc(iSizeO * sizeof(unsigned char));
-    if (h_imgOut == nullptr){
+    if (h_imgOut == nullptr)
+    {
         fprintf(stderr, RED "Error: " RESET "Errore nell'allocazione della memoria\n");
-        munlock(imgIn,iSize * sizeof(unsigned char));
+        munlock(imgIn, iSize * sizeof(unsigned char));
         return nullptr;
     }
- 
+
     //device
     unsigned char *d_imgIn;
     unsigned char *d_imgOut;
@@ -412,7 +417,7 @@ unsigned char *upscaleCudaBicubic(const unsigned char *imgIn, uint width, uint h
     //upscale
     dim3 gridSize = {(wf + 7) / 8, (hf + 7) / 8, 1};
     dim3 blockSize = {8, 8, 1};
-    bicubicUpscaleCUDA<<<gridSize,blockSize>>>(d_imgIn, d_imgOut, width, height, factor, gridSize, blockSize);
+    bicubicUpscaleCUDA<<<gridSize, blockSize>>>(d_imgIn, d_imgOut, width, height, factor, gridSize, blockSize);
 
 
     //copy back
