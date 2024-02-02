@@ -4,6 +4,44 @@
 
 #include "downscale.cuh"
 
+__global__ void bilinearDownscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut,uint width, uint height, int factor)
+{
+    int x = threadIdx.x + blockIdx.x * blockDim.x;
+    int y = threadIdx.y + blockIdx.y * blockDim.y;
+    
+    uint widthO = width / factor;
+    uint heightO = height / factor;
+
+    uint idx = x + y * widthO;
+
+    int i;
+    int j;
+    int p00;
+    int p01;
+    int p10;
+    int p11;
+    double alpha;
+    double beta;
+
+    if (idx < widthO * heightO * 3){
+        i = x * factor;
+        j = y * factor;
+        alpha = ((double) x * factor)-i;
+        beta = ((double) y * factor)-j;
+        
+        for(int k = 0; k < 3 ; k++){
+            p00 = imgIn[(i + j * width)*3 + k];
+            p01 = imgIn[(i + 1 + j * width)*3 + k];
+            p10 = imgIn[(i + (j + 1) * width)*3 + k];
+            p11 = imgIn[(i + 1 + (j + 1) * width)*3 + k];
+
+            imgOut[(idx * 3) +k] = (int) ((1 - alpha) * (1 - beta) * p00 + (1 - alpha) *
+                                                 beta * p01 + alpha * (1 - beta) * p10 +
+                                                  alpha * beta * p11);
+        }
+    } 
+}
+
 int parseDownscaleArgs(char *args)
 {
     char *pathIn = strtok(args, " ");
@@ -126,5 +164,46 @@ unsigned char *downscaleOmpBicubic(const unsigned char *imgIn, uint width, uint 
 }
 unsigned char *downscaleCudaBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
 {
-    return nullptr;
+    //init
+    uint wf,hf;
+
+    //host
+    wf = width / factor;
+    hf = height / factor;
+    uint iSize = width * height * 3;
+    uint iSizeO = wf * hf * 3;
+    auto h_imgOut = (unsigned char *) malloc(iSizeO * sizeof(unsigned char));
+    if (h_imgOut == nullptr){
+        fprintf(stderr, RED "Error: " RESET "Errore nell'allocazione della memoria\n");
+        munlock(imgIn,iSize * sizeof(unsigned char));
+        return nullptr;
+    }
+    mlock(imgIn, iSize * sizeof(unsigned char));
+
+    //device
+    unsigned char *d_imgIn;
+    unsigned char *d_imgOut;
+    cudaMalloc(&d_imgIn, iSize * sizeof(unsigned char));
+    cudaMalloc(&d_imgOut, iSizeO * sizeof(unsigned char));
+
+    //copy
+    cudaMemcpy(d_imgIn, imgIn, iSize * sizeof(unsigned char), cudaMemcpyHostToDevice);
+
+    //upscale
+    dim3 gridSize = {(wf + 7) / 8, (hf + 7) / 8, 1};
+    dim3 blockSize = {8, 8, 1};
+    bilinearDownscaleCUDA<<<gridSize, blockSize>>>(d_imgIn, d_imgOut, width, height, factor);
+
+    //copy back
+    cudaMemcpy(h_imgOut, d_imgOut, iSizeO * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+
+    //free
+    munlock(imgIn, iSize * sizeof(unsigned char));
+    cudaFree(d_imgIn);
+    cudaFree(d_imgOut);
+
+    *oWidth = wf;
+    *oHeight = hf;
+
+    return h_imgOut;
 }
