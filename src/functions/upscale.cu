@@ -1,7 +1,6 @@
 //
 // Created by f3m on 19/01/24.
 //
-
 #include "upscale.cuh"
 
 int bilinearInterpolation(int p00, int p01, int p10, int p11, double alpha, double beta)
@@ -16,7 +15,6 @@ double cubicInterpolate(double A, double B, double C, double D, double t)
     double c = -A / 2.0f + C / 2.0f;
     double d = B;
     return a * t * t * t + b * t * t + c * t + d;
-//    return A + 0.5 * t * (C - A + t * (2.0 * A - 5.0 * B + 4.0 * C - D + t * (3.0 * (B - C) + D - A)));
 }
 void createSquare(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height)
 {
@@ -323,7 +321,7 @@ unsigned char *upscaleCudaBilinear(const unsigned char *imgIn, uint width, uint 
     return h_imgOut;
 }
 
-unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
+unsigned char *upscaleCudaBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
 {
 
     uint widthO = width * factor;
