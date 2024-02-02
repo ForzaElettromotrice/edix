@@ -9,39 +9,37 @@ int parseGrayscaleArgs(char *args)
     {
         handle_error("Errore nel parsing degli argomenti\n");
     }
-    // TODO: leggere le immagini in base all'estenzione
 
     char *tpp = getStrFromKey((char *) "TPP");
     uint width;
     uint height;
-    unsigned char *img;
-    char format[3];
+    uint channels;
+    unsigned char *img = loadImage(imgIn, &width, &height, &channels);
+    if (channels != 3)
+    {
+        free(img);
+        handle_error("Canali non validi per una scala di grigi!\n");
+    }
 
     uint oWidth;
     uint oHeight;
     unsigned char *oImg;
 
     if (strcmp(tpp, "Serial") == 0)
-    {
-        img = loadPPM(imgIn, &width, &height, format);
         oImg = grayscaleSerial(img, width, height, &oWidth, &oHeight);
-    } else if (strcmp(tpp, "OMP") == 0)
-    {
-        img = loadPPM(imgIn, &width, &height, format);
+    else if (strcmp(tpp, "OMP") == 0)
         oImg = grayscaleOmp(img, width, height, &oWidth, &oHeight, 4);
-    } else if (strcmp(tpp, "CUDA") == 0)
-    {
-        img = loadPPM(imgIn, &width, &height, format);
+    else if (strcmp(tpp, "CUDA") == 0)
         oImg = grayscaleCuda(img, width, height, &oWidth, &oHeight);
-    } else
+    else
     {
+        free(img);
         free(tpp);
         handle_error("Errore nel parsing degli argomenti\n");
     }
     if (oImg != nullptr)
     {
-        //TODO: scrivere le immagini in base all'estenzione
-        writePPM(pathOut, oImg, oWidth, oHeight, "P5");
+        writeImage(pathOut, oImg, oWidth, oHeight, 1);
         free(oImg);
     }
     free(img);
@@ -55,9 +53,13 @@ unsigned char *grayscaleSerial(const unsigned char *imgIn, uint width, uint heig
 
     if (img_out == nullptr)
     {
-        fprintf(stderr, RED "Error: " RESET "Errore nell'allocazione della memoria\n");
+        fprintf(stderr, RED
+        "Error: "
+        RESET
+        "Errore nell'allocazione della memoria\n");
         return nullptr;
     }
+
 
     int r;
     int g;
@@ -70,13 +72,12 @@ unsigned char *grayscaleSerial(const unsigned char *imgIn, uint width, uint heig
     {
         for (int x = 0; x < width; x += 1)
         {
-            // prendi i valori di tre pixel contigui
             r = imgIn[((y * width) + x) * 3];
             g = imgIn[((y * width) + x) * 3 + 1];
             b = imgIn[((y * width) + x) * 3 + 2];
-            // Fai la media per prendere il grigio
+
             grayValue = (r + g + b) / 3;
-            // Inseriscilo come primo pixel di img_out
+
             img_out[i++] = grayValue;
         }
     }

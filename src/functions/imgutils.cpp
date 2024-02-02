@@ -5,7 +5,7 @@
 
 #include "imgutils.hpp"
 
-unsigned char *loadImage(char *path, uint *width, uint *height, char format[3])
+unsigned char *loadImage(char *path, uint *width, uint *height, uint *channels)
 {
     char *copy = strdup(path);
     char *extension = strtok(copy, ".");
@@ -18,13 +18,13 @@ unsigned char *loadImage(char *path, uint *width, uint *height, char format[3])
 
     if (strcmp(extension, "ppm") == 0)
     {
-        img = loadPPM(path, width, height, format);
+        img = loadPPM(path, width, height, channels);
     } else if (strcmp(extension, "png") == 0)
     {
-        img = loadPng(path, width, height, format);
+        img = loadPng(path, width, height, channels);
     } else if (strcmp(extension, "jpeg") == 0 || strcmp(extension, "jpg") == 0)
     {
-        img = loadJpeg(path, width, height, format);
+        img = loadJpeg(path, width, height, channels);
     } else
     {
         free(copy);
@@ -36,7 +36,7 @@ unsigned char *loadImage(char *path, uint *width, uint *height, char format[3])
     free(copy);
     return img;
 }
-int writeImage(char *path, unsigned char *png, uint width, uint height, const char format[3])
+int writeImage(char *path, unsigned char *png, uint width, uint height, uint channels)
 {
     char *copy = strdup(path);
     char *extension = strtok(copy, ".");
@@ -48,9 +48,9 @@ int writeImage(char *path, unsigned char *png, uint width, uint height, const ch
     unsigned char *img;
 
     if (strcmp(extension, "ppm") == 0)
-        writePPM(path, img, width, height, format);
+        writePPM(path, img, width, height, channels);
     else if (strcmp(extension, "jpeg") == 0 || strcmp(extension, "jpg") == 0)
-        writeJpeg(path, img, width, height, 75, format);
+        writeJpeg(path, img, width, height, 75, channels);
     else
     {
         free(copy);
@@ -64,7 +64,7 @@ int writeImage(char *path, unsigned char *png, uint width, uint height, const ch
 }
 
 
-unsigned char *loadPPM(const char *path, uint *width, uint *height, char format[3])
+unsigned char *loadPPM(const char *path, uint *width, uint *height, uint *channels)
 {
     FILE *file = fopen(path, "rb");
 
@@ -78,11 +78,10 @@ unsigned char *loadPPM(const char *path, uint *width, uint *height, char format[
     fscanf(file, "%2s", header);
     if (header[0] == 'P' && header[1] == '5')
     {
-        sprintf(format, "P5");
-        //TODO: farla diventare P6
+        *channels = 1;
     } else if (header[0] == 'P' && header[1] == '6')
     {
-        sprintf(format, "P6");
+        *channels = 3;
     } else
     {
         fclose(file);
@@ -109,7 +108,7 @@ unsigned char *loadPPM(const char *path, uint *width, uint *height, char format[
     fscanf(file, "%s", ignored);
     fgetc(file);  // Skip single whitespace character
 
-    size_t iSize = (*width) * (*height) * (strcmp(format, "P6") == 0 ? 3 : 1);
+    size_t iSize = *width * *height * *channels;
 
     auto *img = (unsigned char *) malloc(iSize * sizeof(unsigned char));
     if (!img)
@@ -124,7 +123,7 @@ unsigned char *loadPPM(const char *path, uint *width, uint *height, char format[
 
     return img;
 }
-unsigned char *loadJpeg(const char *path, uint *width, uint *height, char format[3])
+unsigned char *loadJpeg(const char *path, uint *width, uint *height, uint *channels)
 {
     FILE *jpeg_file = fopen(path, "rb");
     if (!jpeg_file)
@@ -148,18 +147,7 @@ unsigned char *loadJpeg(const char *path, uint *width, uint *height, char format
     *width = (uint) cinfo.output_width;
     *height = (uint) cinfo.output_height;
     int num_components = cinfo.output_components;
-    if (num_components == 1)
-        sprintf(format, "P5");
-    else if (num_components == 3)
-        sprintf(format, "P6");
-    else
-    {
-        jpeg_finish_decompress(&cinfo);
-        jpeg_destroy_decompress(&cinfo);
-        fclose(jpeg_file);
-        fprintf(stderr, RED "Error: " RESET "Immagine con canali non validi!\n");
-        return nullptr;
-    }
+    *channels = num_components;
 
     // Allocazione di buffer per i dati dell'immagine
     auto buffer = (JSAMPARRAY) malloc(sizeof(JSAMPROW) * *height);
@@ -192,7 +180,7 @@ unsigned char *loadJpeg(const char *path, uint *width, uint *height, char format
 
     return img;
 }
-unsigned char *loadPng(const char *path, uint *width, uint *height, char format[3])
+unsigned char *loadPng(const char *path, uint *width, uint *height, uint *channels)
 {
     FILE *png_file = fopen(path, "rb");
     if (!png_file)
@@ -237,21 +225,9 @@ unsigned char *loadPng(const char *path, uint *width, uint *height, char format[
     // Recupera le informazioni sull'immagine
     *width = png_get_image_width(png_ptr, info_ptr);
     *height = png_get_image_height(png_ptr, info_ptr);
-    int channels = png_get_channels(png_ptr, info_ptr);
+    *channels = png_get_channels(png_ptr, info_ptr);
     png_byte color_type = png_get_color_type(png_ptr, info_ptr);
     png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
-
-    if (channels == 1)
-        sprintf(format, "P5");
-    else if (channels == 3)
-        sprintf(format, "P6");
-    else
-    {
-        fprintf(stderr, RED "Error: " RESET "Errore durante la lettura del file PNG.\n");
-        png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp) nullptr);
-        fclose(png_file);
-        return nullptr;
-    }
 
 
 
@@ -280,11 +256,11 @@ unsigned char *loadPng(const char *path, uint *width, uint *height, char format[
     fclose(png_file);
 
     // Copia i dati dell'immagine in un array di unsigned char
-    auto *image_data = (unsigned char *) malloc(*width * *height * channels);
+    auto *image_data = (unsigned char *) malloc(*width * *height * *channels);
     for (int y = 0; y < *height; y++)
         for (int x = 0; x < *width; x++)
-            for (int k = 0; k < channels; ++k)
-                image_data[(y * *width + x) * channels + k] = row_pointers[y][x * channels + k];
+            for (int k = 0; k < *channels; ++k)
+                image_data[(y * *width + x) * *channels + k] = row_pointers[y][x * *channels + k];
 
     // Libera la memoria allocata per le righe
     for (int y = 0; y < *height; y++)
@@ -294,8 +270,13 @@ unsigned char *loadPng(const char *path, uint *width, uint *height, char format[
     return image_data;
 }
 
-void writePPM(const char *path, unsigned char *img, uint width, uint height, const char *format)
+void writePPM(const char *path, unsigned char *img, uint width, uint height, uint channels)
 {
+    if (channels != 3 && channels != 1)
+    {
+        fprintf(stderr, RED "Error: " RESET "Canali non validi!\n");
+        return;
+    }
     FILE *file = fopen(path, "wb");
 
     if (!file)
@@ -304,14 +285,21 @@ void writePPM(const char *path, unsigned char *img, uint width, uint height, con
         return;
     }
 
-    fprintf(file, "%s\n%d %d\n255\n", format, width, height);
 
-    fwrite(img, format[1] == '5' ? 1 : 3, width * height, file);
+    fprintf(file, "%s\n%d %d\n255\n", channels == 1 ? "P5" : "P6", width, height);
+
+    fwrite(img, channels, width * height, file);
 
     fclose(file);
 }
-void writeJpeg(const char *path, unsigned char *img, uint width, uint height, int quality, const char format[3])
+void writeJpeg(const char *path, unsigned char *img, uint width, uint height, int quality, uint channels)
 {
+    if (channels != 3 && channels != 1)
+    {
+        fprintf(stderr, RED "Error: " RESET "Canali non validi!\n");
+        return;
+    }
+
     struct jpeg_compress_struct cinfo{};
     struct jpeg_error_mgr jerr{};
     FILE *outfile = fopen(path, "wb");
@@ -327,7 +315,7 @@ void writeJpeg(const char *path, unsigned char *img, uint width, uint height, in
     // Impostazione dei parametri dell'immagine
     cinfo.image_width = width;
     cinfo.image_height = height;
-    cinfo.input_components = format[1] == '5' ? 1 : 3;  // Scala di grigi o RGB
+    cinfo.input_components = (int) channels;  // Scala di grigi o RGB
     cinfo.in_color_space = JCS_RGB;
 
     // Impostazione del file di output
@@ -342,7 +330,7 @@ void writeJpeg(const char *path, unsigned char *img, uint width, uint height, in
 
     // Allocazione della memoria per una riga di dati RGB
     JSAMPROW row_pointer[1];
-    int row_stride = width * format[1] == '5' ? 1 : 3;
+    int row_stride = (int) channels;
 
     // Scrittura delle righe dell'immagine
     while (cinfo.next_scanline < cinfo.image_height)

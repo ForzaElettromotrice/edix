@@ -16,36 +16,30 @@ int parseBlurArgs(char *args)
     char *tpp = getStrFromKey((char *) "TPP");
     uint width;
     uint height;
-    unsigned char *img;
+    uint channels;
+    unsigned char *img = loadImage(imgIn, &width, &height, &channels);
 
     uint oWidth;
     uint oHeight;
     unsigned char *oImg;
-    char format[3];
+
 
     if (strcmp(tpp, "Serial") == 0)
+        oImg = blurSerial(img, width, height, channels, radius, &oWidth, &oHeight);
+    else if (strcmp(tpp, "OMP") == 0)
+        oImg = blurOmp(img, width, height, channels, radius, &oWidth, &oHeight, 4);
+    else if (strcmp(tpp, "CUDA") == 0)
+        oImg = blurCuda(img, width, height, channels, radius, &oWidth, &oHeight);
+    else
     {
-        img = loadPPM(imgIn, &width, &height, format);
-        oImg = blurSerial(img, width, height, radius, &oWidth, &oHeight);
-
-    } else if (strcmp(tpp, "OMP") == 0)
-    {
-        img = loadPPM(imgIn, &width, &height, format);
-        oImg = blurOmp(img, width, height, radius, &oWidth, &oHeight, 4);
-    } else if (strcmp(tpp, "CUDA") == 0)
-    {
-        img = loadPPM(imgIn, &width, &height, format);
-        oImg = blurCuda(img, width, height, radius, &oWidth, &oHeight);
-    } else
-    {
+        free(img);
         free(tpp);
         handle_error("Invalid arguments for blur function.\n");
     }
 
     if (oImg != nullptr)
     {
-        //TODO: scrivere le immagini in base alla loro estensione
-        writePPM(pathOut, oImg, oWidth, oHeight, "P6");
+        writeImage(pathOut, oImg, oWidth, oHeight, channels);
         free(oImg);
     }
     free(img);
@@ -55,7 +49,7 @@ int parseBlurArgs(char *args)
 }
 
 
-unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, int radius, uint *oWidth, uint *oHeight)
+unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight)
 {
     uint totalPixels = height * width;
 
@@ -72,9 +66,8 @@ unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, i
     {
         for (int j = 0; j < height; j++)
         {
-            uint red = 0;
-            uint green = 0;
-            uint blue = 0;
+            uint c[channels];
+            memset(c, 0, channels * sizeof(uint));
 
             int num = 0;
             int curr_i;
@@ -84,25 +77,20 @@ unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, i
             {
                 for (int n = -radius; n <= radius; n++)
                 {
-
                     curr_i = i + m;
                     curr_j = j + n;
                     if ((curr_i < 0) || (curr_i > width - 1) || (curr_j < 0) || (curr_j > height - 1)) continue;
 
-                    red += imgIn[(3 * (curr_i + curr_j * width))];
-                    green += imgIn[(3 * (curr_i + curr_j * width)) + 1];
-                    blue += imgIn[(3 * (curr_i + curr_j * width)) + 2];
-
+                    for (int k = 0; k < channels; ++k)
+                        c[k] += imgIn[(3 * (curr_i + curr_j * width)) + k];
                     num++;
                 }
             }
-            red /= num;
-            green /= num;
-            blue /= num;
-
-            blurImage[3 * (i + j * width)] = red;
-            blurImage[3 * (i + j * width) + 1] = green;
-            blurImage[3 * (i + j * width) + 2] = blue;
+            for (int k = 0; k < channels; ++k)
+            {
+                c[k] /= num;
+                blurImage[3 * (i + j * width) + k] = c[k];
+            }
         }
     }
     *oWidth = width;
@@ -110,13 +98,11 @@ unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, i
 
     return blurImage;
 }
-unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, int radius, uint *oWidth, uint *oHeight, int nThread)
+unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight, int nThread)
 {
     uint totalPixels = height * width;
 
-    unsigned char *blurImage;
-
-    blurImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * 3);
+    auto *blurImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * 3);
     if (blurImage == nullptr)
     {
         fprintf(stderr, RED "FUNX Error: " RESET "Errore nell'allocare memoria\n");
@@ -125,17 +111,15 @@ unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, int 
 //TODO: collapse
 //TODO: schedule
 //TODO: numero di thread ottimale
-#pragma omp parallel for num_threads(nThread) default(none) shared(width, height, radius, imgIn, blurImage)
+#pragma omp parallel for num_threads(nThread) default(none) shared(width, height, channels, radius, imgIn, blurImage)
     for (int j = 0; j < height; ++j)
     {
         for (int i = 0; i < width; i++)
         {
             if (j > height)
                 continue;
-            uint red = 0;
-            uint green = 0;
-            uint blue = 0;
-
+            uint c[channels];
+            memset(c, 0, channels * sizeof(uint));
             int num = 0;
             int curr_i;
             int curr_j;
@@ -149,20 +133,17 @@ unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, int 
                     curr_j = j + n;
                     if ((curr_i < 0) || (curr_i > width - 1) || (curr_j < 0) || (curr_j > height - 1)) continue;
 
-                    red += imgIn[(3 * (curr_i + curr_j * width))];
-                    green += imgIn[(3 * (curr_i + curr_j * width)) + 1];
-                    blue += imgIn[(3 * (curr_i + curr_j * width)) + 2];
+                    for (int k = 0; k < channels; ++k)
+                        c[k] += imgIn[(3 * (curr_i + curr_j * width)) + k];
 
                     num++;
                 }
             }
-            red /= num;
-            green /= num;
-            blue /= num;
-
-            blurImage[3 * (i + j * width)] = red;
-            blurImage[3 * (i + j * width) + 1] = green;
-            blurImage[3 * (i + j * width) + 2] = blue;
+            for (int k = 0; k < channels; ++k)
+            {
+                c[k] /= num;
+                blurImage[3 * (i + j * width) + k] = c[k];
+            }
         }
     }
 
@@ -171,7 +152,7 @@ unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, int 
 
     return blurImage;
 }
-unsigned char *blurCuda(const unsigned char *imgIn, uint width, uint height, int radius, uint *oWidth, uint *oHeight)
+unsigned char *blurCuda(const unsigned char *imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight)
 {
     //host
     uint iSize = width * height * 3;
@@ -191,7 +172,7 @@ unsigned char *blurCuda(const unsigned char *imgIn, uint width, uint height, int
     dim3 gridSize = {(width + 7) / 8, (height + 7) / 8, 1};
     dim3 blockSize = {8, 8, 1};
     size_t sharedDim = (size_t) pow(8 + 2 * radius, 2) * 3;
-    blurShared<<<gridSize, blockSize, sharedDim>>>(d_img, d_blur_img, width, height, radius);
+    blurShared<<<gridSize, blockSize, sharedDim>>>(d_img, d_blur_img, width, height, channels, radius);
 
     //copy back
     cudaMemcpy(h_blur_img, d_blur_img, iSize * sizeof(unsigned char), cudaMemcpyDeviceToHost);
@@ -205,7 +186,7 @@ unsigned char *blurCuda(const unsigned char *imgIn, uint width, uint height, int
     *oHeight = height;
     return h_blur_img;
 }
-__global__ void blurShared(const unsigned char *img, unsigned char *blur_img, uint width, uint height, int radius)
+__global__ void blurShared(const unsigned char *img, unsigned char *blur_img, uint width, uint height, uint channels, int radius)
 {
     int absX = (int) (threadIdx.x + blockIdx.x * blockDim.x);
     int absY = (int) (threadIdx.y + blockIdx.y * blockDim.y);
@@ -222,9 +203,11 @@ __global__ void blurShared(const unsigned char *img, unsigned char *blur_img, ui
     int x;
     int y;
 
-    int r = 0;
-    int g = 0;
-    int b = 0;
+    //Fa schifo, ma devo per forza allocare 3 e poi in caso uso solo 1
+    int c[3];
+    for (int k = 0; k < channels; ++k)
+        c[k] = 0;
+
     int pixels = 0;
 
     if (relX == 0 && relY == 0)
@@ -238,9 +221,9 @@ __global__ void blurShared(const unsigned char *img, unsigned char *blur_img, ui
                 y = absY - radius + j;
                 if (x < 0 || x >= width || y < 0 || y >= height)
                     continue;
-                shared[(i + j * sDim) * 3] = img[(x + y * width) * 3];
-                shared[(i + j * sDim) * 3 + 1] = img[(x + y * width) * 3 + 1];
-                shared[(i + j * sDim) * 3 + 2] = img[(x + y * width) * 3 + 2];
+
+                for (int k = 0; k < channels; ++k)
+                    shared[(i + j * sDim) * 3 + k] = img[(x + y * width) * 3 + k];
             }
         }
     }
@@ -257,18 +240,15 @@ __global__ void blurShared(const unsigned char *img, unsigned char *blur_img, ui
             if (absX + i < 0 || absX + i >= width || absY + j < 0 || absY + j >= height)
                 continue;
 
-            r += shared[(x + y * sDim) * 3];
-            g += shared[(x + y * sDim) * 3 + 1];
-            b += shared[(x + y * sDim) * 3 + 2];
+            for (int k = 0; k < channels; ++k)
+                c[k] += shared[(x + y * sDim) * 3 + k];
             pixels++;
         }
     }
 
-    r /= pixels;
-    g /= pixels;
-    b /= pixels;
-
-    blur_img[(absX + absY * width) * 3] = r;
-    blur_img[(absX + absY * width) * 3 + 1] = g;
-    blur_img[(absX + absY * width) * 3 + 2] = b;
+    for (int k = 0; k < channels; ++k)
+    {
+        c[k] /= pixels;
+        blur_img[(absX + absY * width) * 3 + k] = c[k];
+    }
 }

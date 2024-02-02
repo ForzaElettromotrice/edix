@@ -39,22 +39,21 @@ void createSquare(unsigned char square[16][3], const unsigned char *img, int x, 
 
 int parseUpscaleArgs(char *args)
 {
-    char *img1 = strtok(args, " ");
+    char *pathIn = strtok(args, " ");
     char *pathOut = strtok(nullptr, " ");
     int factor = (int) strtol(strtok(nullptr, " "), nullptr, 10);
 
-    if (img1 == nullptr || pathOut == nullptr || factor == 0)
+    if (pathIn == nullptr || pathOut == nullptr || factor == 0)
     {
         handle_error("Invalid arguments for upscale\n");
     }
 
-    // TODO: leggere le immagini in base all'estensione
     char *tpp = getStrFromKey((char *) "TPP");
     char *tup = getStrFromKey((char *) "TUP");
     uint width;
     uint height;
-    unsigned char *img;
-    char format[3];
+    uint channels;
+    unsigned char *img = loadImage(pathIn, &width, &height, &channels);
 
     uint oWidth;
     uint oHeight;
@@ -62,35 +61,32 @@ int parseUpscaleArgs(char *args)
 
     if (strcmp(tpp, "Serial") == 0)
     {
-        img = loadPPM(img1, &width, &height, format);
         if (strcmp(tup, "Bilinear") == 0)
-            imgOut = upscaleSerialBilinear(img, width, height, factor, &oWidth, &oHeight);
+            imgOut = upscaleSerialBilinear(img, width, height, channels, factor, &oWidth, &oHeight);
         else if (strcmp(tup, "Bicubic") == 0)
-            imgOut = upscaleSerialBicubic(img, width, height, factor, &oWidth, &oHeight);
+            imgOut = upscaleSerialBicubic(img, width, height, channels, factor, &oWidth, &oHeight);
     } else if (strcmp(tpp, "OMP") == 0)
     {
-        img = loadPPM(img1, &width, &height, format);
         if (strcmp(tup, "Bilinear") == 0)
-            imgOut = upscaleOmpBilinear(img, width, height, factor, &oWidth, &oHeight, 4);
+            imgOut = upscaleOmpBilinear(img, width, height, channels, factor, &oWidth, &oHeight, 4);
         else if (strcmp(tup, "Bicubic") == 0)
-            imgOut = upscaleOmpBicubic(img, width, height, factor, &oWidth, &oHeight, 4);
+            imgOut = upscaleOmpBicubic(img, width, height, channels, factor, &oWidth, &oHeight, 4);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
-        img = loadPPM(img1, &width, &height, format);
         if (strcmp(tup, "Bilinear") == 0)
-            imgOut = upscaleCudaBilinear(img, width, height, factor, &oWidth, &oHeight);
+            imgOut = upscaleCudaBilinear(img, width, height, channels, factor, &oWidth, &oHeight);
         else if (strcmp(tup, "Bicubic") == 0)
-            imgOut = upscaleCudaBicubic(img, width, height, factor, &oWidth, &oHeight);
+            imgOut = upscaleCudaBicubic(img, width, height, channels, factor, &oWidth, &oHeight);
     } else
     {
+        free(img);
         free(tpp);
         handle_error("Invalid TPP\n");
     }
 
     if (imgOut != nullptr)
     {
-        //TODO: salvare nel formato giusto
-        writePPM(pathOut, imgOut, oWidth, oHeight, "P6");
+        writeImage(pathOut, imgOut, oWidth, oHeight, channels);
         free(imgOut);
     }
     free(img);
@@ -98,7 +94,7 @@ int parseUpscaleArgs(char *args)
     return 0;
 }
 
-unsigned char *upscaleSerialBilinear(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
+unsigned char *upscaleSerialBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
 {
 
     uint widthO = width * factor;
@@ -128,7 +124,7 @@ unsigned char *upscaleSerialBilinear(const unsigned char *imgIn, uint width, uin
             alpha = ((double) i / factor) - x;
             beta = ((double) j / factor) - y;
 
-            for (int k = 0; k < 3; ++k)
+            for (int k = 0; k < channels; ++k)
             {
                 //TODO: se sbordi, usa lo stesso pixel
                 p00 = imgIn[(x + y * width) * 3 + k];
@@ -147,16 +143,16 @@ unsigned char *upscaleSerialBilinear(const unsigned char *imgIn, uint width, uin
 
     return imgOut;
 }
-unsigned char *upscaleOmpBilinear(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight, int nThread)
+unsigned char *upscaleOmpBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight, int nThread)
 {
     return nullptr;
 }
-unsigned char *upscaleCudaBilinear(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
+unsigned char *upscaleCudaBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
 {
     return nullptr;
 }
 
-unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
+unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
 {
 
     uint widthO = width * factor;
@@ -173,7 +169,6 @@ unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint
     double alpha;
     double beta;
     unsigned char square[16][3];
-    int pixel[3];
 
     for (int i = 0; i < widthO; i++)
     {
@@ -187,7 +182,7 @@ unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint
 
             createSquare(square, imgIn, x, y, width, height);
 
-            for (int k = 0; k < 3; k++)
+            for (int k = 0; k < channels; k++)
             {
                 double p1 = cubicInterpolate(square[0][0 + k], square[1][0 + k], square[2][0 + k], square[3][0 + k], alpha);
                 double p2 = cubicInterpolate(square[4][0 + k], square[5][0 + k], square[6][0 + k], square[7][0 + k], alpha);
@@ -200,14 +195,9 @@ unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint
                 else if (p < 0)
                     p = 0;
 
-                pixel[k] = (int) p;
+                imgOut[(i + j * widthO) * 3 + k] = (int) p;
 
             }
-
-//            printf("%d %d %d\n", pixel[0], pixel[1], pixel[2]);
-            imgOut[(i + j * widthO) * 3] = pixel[0];
-            imgOut[(i + j * widthO) * 3 + 1] = pixel[1];
-            imgOut[(i + j * widthO) * 3 + 2] = pixel[2];
         }
     }
 
@@ -217,11 +207,11 @@ unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint
 
     return imgOut;
 }
-unsigned char *upscaleOmpBicubic(const unsigned char *imgIn, uint width, uint height, int factor, uint *hWidth, uint *oHeight, int nThread)
+unsigned char *upscaleOmpBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *hWidth, uint *oHeight, int nThread)
 {
     return nullptr;
 }
-unsigned char *upscaleCudaBicubic(const unsigned char *imgIn, uint width, uint height, int factor, uint *hWidth, uint *oHeight)
+unsigned char *upscaleCudaBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *hWidth, uint *oHeight)
 {
     return nullptr;
 }

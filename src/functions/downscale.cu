@@ -6,21 +6,21 @@
 
 int parseDownscaleArgs(char *args)
 {
-    char *imgIn = strtok(args, " ");
+    char *pathIn = strtok(args, " ");
     char *pathOut = strtok(nullptr, " ");
     int factor = (int) strtol(strtok(nullptr, " "), nullptr, 10);
 
-    if (imgIn == nullptr || pathOut == nullptr || factor == 0)
+    if (pathIn == nullptr || pathOut == nullptr || factor == 0)
     {
-        handle_error("Invalid arguments for downscale function.\n");
+        handle_error("Invalid arguments for upscale\n");
     }
-    // TODO: leggere le immagini in base all'estenzione
 
     char *tpp = getStrFromKey((char *) "TPP");
+    char *tup = getStrFromKey((char *) "TUP");
     uint width;
     uint height;
-    unsigned char *img;
-    char format[3];
+    uint channels;
+    unsigned char *img = loadImage(pathIn, &width, &height, &channels);
 
     uint oWidth;
     uint oHeight;
@@ -28,28 +28,31 @@ int parseDownscaleArgs(char *args)
 
     if (strcmp(tpp, "Serial") == 0)
     {
-        img = loadPPM(imgIn, &width, &height, format);
-        //TODO: vedere se bicubiva o bilineare
-        oImg = downscaleSerial(img, width, height, factor, &oWidth, &oHeight);
+        if (strcmp(tup, "Bilinear") == 0)
+            oImg = downscaleSerialBilinear(img, width, height, channels, factor, &oWidth, &oHeight);
+        else if (strcmp(tup, "Bicubic") == 0)
+            oImg = downscaleSerialBicubic(img, width, height, channels, factor, &oWidth, &oHeight);
     } else if (strcmp(tpp, "OMP") == 0)
     {
-        img = loadPPM(imgIn, &width, &height, format);
-        //TODO: vedere se bicubiva o bilineare
-        oImg = downscaleOmp(img, width, height, factor, &oWidth, &oHeight, 4);
+        if (strcmp(tup, "Bilinear") == 0)
+            oImg = downscaleOmpBilinear(img, width, height, channels, factor, &oWidth, &oHeight, 4);
+        else if (strcmp(tup, "Bicubic") == 0)
+            oImg = downscaleOmpBicubic(img, width, height, channels, factor, &oWidth, &oHeight, 4);
     } else if (strcmp(tpp, "CUDA") == 0)
     {
-        img = loadPPM(imgIn, &width, &height, format);
-        //TODO: vedere se bicubiva o bilineare
-        oImg = downscaleCuda(img, width, height, factor, &oWidth, &oHeight);
+        if (strcmp(tup, "Bilinear") == 0)
+            oImg = downscaleCudaBilinear(img, width, height, channels, factor, &oWidth, &oHeight);
+        else if (strcmp(tup, "Bicubic") == 0)
+            oImg = downscaleCudaBicubic(img, width, height, channels, factor, &oWidth, &oHeight);
     } else
     {
         free(tpp);
-        handle_error("Invalid arguments for downscale function.\n");
+        handle_error("Invalid TPP\n");
     }
 
     if (oImg != nullptr)
     {
-        writePPM(pathOut, oImg, oWidth, oHeight, "P6");
+        writeImage(pathOut, oImg, oWidth, oHeight, channels);
         free(oImg);
     }
 
@@ -58,7 +61,7 @@ int parseDownscaleArgs(char *args)
     return 0;
 }
 
-unsigned char *downscaleSerial(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
+unsigned char *downscaleSerialBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
 {
 
     uint widthO = width / factor;
@@ -78,14 +81,13 @@ unsigned char *downscaleSerial(const unsigned char *imgIn, uint width, uint heig
     {
         for (int j = 0; j < heightO; ++j)
         {
-            //TODO: capire bene come calcolare alpha e beta
             x = i * factor;
             y = j * factor;
             alpha = ((double) i * factor) - x + 0.5;
             beta = ((double) j * factor) - y + 0.5;
 
 
-            for (int k = 0; k < 3; ++k)
+            for (int k = 0; k < channels; ++k)
             {
                 //TODO: se sbordi, usa lo stesso pixel
                 p00 = imgIn[(x + y * width) * 3 + k];
@@ -105,11 +107,24 @@ unsigned char *downscaleSerial(const unsigned char *imgIn, uint width, uint heig
 
     return imgOut;
 }
-unsigned char *downscaleOmp(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight, int nThread)
+unsigned char *downscaleOmpBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight, int nThread)
 {
     return nullptr;
 }
-unsigned char *downscaleCuda(const unsigned char *imgIn, uint width, uint height, int factor, uint *oWidth, uint *oHeight)
+unsigned char *downscaleCudaBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
+{
+    return nullptr;
+}
+
+unsigned char *downscaleSerialBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
+{
+    return nullptr;
+}
+unsigned char *downscaleOmpBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight, int nThread)
+{
+    return nullptr;
+}
+unsigned char *downscaleCudaBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
 {
     return nullptr;
 }

@@ -11,13 +11,14 @@
 #include <png.h>
 #include "../utils.hpp"
 
-unsigned char *loadImage(char *path, uint *width, uint *height, char format[3]);
+unsigned char *loadImage(char *path, uint *width, uint *height, uint *channels);
+int writeImage(char *path, unsigned char *png, uint width, uint height, uint channels);
 
 
-unsigned char *loadPPM(const char *path, uint *width, uint *height, char format[3]);
-unsigned char *loadJpeg(const char *path, uint *width, uint *height, char format[3]);
-unsigned char *loadPng(const char *path, uint *width, uint *height, char format[3]);
+unsigned char *loadPPM(const char *path, uint *width, uint *height, uint *channels);
+unsigned char *loadJpeg(const char *path, uint *width, uint *height, uint *channels);
+unsigned char *loadPng(const char *path, uint *width, uint *height, uint *channels);
 
-void writePPM(const char *path, unsigned char *img, uint width, uint height, const char *format);
-void writeJpeg(const char *path, unsigned char *img, uint width, uint height, int quality, const char format[3]);
+void writePPM(const char *path, unsigned char *img, uint width, uint height, uint channels);
+void writeJpeg(const char *path, unsigned char *img, uint width, uint height, int quality, uint channels);
 #endif //EDIX_IMGUTILS_HPP

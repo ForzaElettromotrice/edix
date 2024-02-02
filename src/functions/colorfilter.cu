@@ -19,38 +19,32 @@ int parseColorFilterArgs(char *args)
         handle_error("Invalid arguments for color filter function.\n");
     }
 
-    //TODO: leggere le immagini in base alla loro estensione
     char *tpp = getStrFromKey((char *) "TPP");
     uint width;
     uint height;
-    unsigned char *img;
-    char format[3];
+    uint channels;
+    unsigned char *img = loadImage(imgIn, &width, &height, &channels);
 
     uint oWidth;
     uint oHeight;
     unsigned char *oImg;
 
     if (strcmp(tpp, "Serial") == 0)
+        oImg = colorFilterSerial(img, width, height, channels, r, g, b, tollerance, &oWidth, &oHeight);
+    else if (strcmp(tpp, "OMP") == 0)
+        oImg = colorFilterOmp(img, width, height, channels, r, g, b, tollerance, &oWidth, &oHeight, 4);
+    else if (strcmp(tpp, "CUDA") == 0)
+        oImg = colorFilterCuda(img, width, height, channels, r, g, b, tollerance, &oWidth, &oHeight);
+    else
     {
-        img = loadPPM(imgIn, &width, &height, format);
-        oImg = colorFilterSerial(img, width, height, r, g, b, tollerance, &oWidth, &oHeight);
-    } else if (strcmp(tpp, "OMP") == 0)
-    {
-        img = loadPPM(imgIn, &width, &height, format);
-        oImg = colorFilterOmp(img, width, height, r, g, b, tollerance, &oWidth, &oHeight, 4);
-    } else if (strcmp(tpp, "CUDA") == 0)
-    {
-        img = loadPPM(imgIn, &width, &height, format);
-        oImg = colorFilterCuda(img, width, height, r, g, b, tollerance, &oWidth, &oHeight);
-    } else
-    {
+        free(img);
         free(tpp);
         handle_error("Invalid arguments for color filter function.\n");
     }
 
     if (oImg != nullptr)
     {
-        writePPM(pathOut, oImg, oWidth, oHeight, "P6");
+        writeImage(pathOut, oImg, oWidth, oHeight, channels);
         free(oImg);
     }
 
@@ -60,8 +54,9 @@ int parseColorFilterArgs(char *args)
     return 0;
 }
 
-unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
+unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
 {
+    //TODO: rifare tutta la funzione
     unsigned char *filteredImage;
 
     uint totalPixels = width * height;
@@ -75,26 +70,53 @@ unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint he
 
     for (int i = 0; i < 3 * width * height; i += 3)
     {
-
-        int diffR = imgIn[i] - (int) r;
-        int diffG = imgIn[i + 1] - (int) g;
-        int diffB = imgIn[i + 2] - (int) b;
+        int diffR;
+        int diffG;
+        int diffB;
+        if (channels == 3)
+        {
+            diffR = imgIn[i] - (int) r;
+            diffG = imgIn[i + 1] - (int) g;
+            diffB = imgIn[i + 2] - (int) b;
+        } else
+        {
+            diffR = imgIn[i] - (int) r;
+            diffG = imgIn[i] - (int) g;
+            diffB = imgIn[i] - (int) b;
+        }
 
         // Calcola la distanza euclidea nel cubo RGB
         uint distance = diffR * diffR + diffG * diffG + diffB * diffB;
 
         // Applica la soglia di tolleranza per filtrare il colore desiderato
-        if (distance > tolerance * tolerance)
+        if (channels == 3)
         {
-            // Riduci la saturazione degli altri colori
-            filteredImage[i] = (imgIn[i] + (int) r) / 2;
-            filteredImage[i + 1] = (imgIn[i + 1] + (int) g) / 2;
-            filteredImage[i + 2] = (imgIn[i + 2] + (int) b) / 2;
+            if (distance > tolerance * tolerance)
+            {
+                // Riduci la saturazione degli altri colori
+                filteredImage[i] = (imgIn[i] + (int) r) / 2;
+                filteredImage[i + 1] = (imgIn[i + 1] + (int) g) / 2;
+                filteredImage[i + 2] = (imgIn[i + 2] + (int) b) / 2;
+            } else
+            {
+                filteredImage[i] = imgIn[i];
+                filteredImage[i + 1] = imgIn[i + 1];
+                filteredImage[i + 2] = imgIn[i + 2];
+            }
         } else
         {
-            filteredImage[i] = imgIn[i];
-            filteredImage[i + 1] = imgIn[i + 1];
-            filteredImage[i + 2] = imgIn[i + 2];
+            if (distance > tolerance * tolerance)
+            {
+                // Riduci la saturazione degli altri colori
+                filteredImage[i] = (imgIn[i] + (int) r) / 2;
+                filteredImage[i + 1] = (imgIn[i] + (int) g) / 2;
+                filteredImage[i + 2] = (imgIn[i] + (int) b) / 2;
+            } else
+            {
+                filteredImage[i] = imgIn[i];
+                filteredImage[i + 1] = imgIn[i];
+                filteredImage[i + 2] = imgIn[i];
+            }
         }
     }
 
@@ -103,7 +125,7 @@ unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint he
 
     return filteredImage;
 }
-unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight, int nThread)
+unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight, int nThread)
 {
     uint diffR,
             diffG,
@@ -153,7 +175,7 @@ unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint heigh
     *oHeight = height;
     return filteredImage;
 }
-unsigned char *colorFilterCuda(const unsigned char *imgIn, uint width, uint height, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
+unsigned char *colorFilterCuda(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
 {
     return nullptr;
 }
