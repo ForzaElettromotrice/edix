@@ -11,9 +11,9 @@
 
 int bilinearInterpolation(int p00, int p01, int p10, int p11, double alpha, double beta);
 double cubicInterpolate(double A, double B, double C, double D, double t);
-void createSquare(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width);
-__global__ void bilinearUpscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut,uint width, uint height, int factor);
-__global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut,uint width, uint height, int factor,uint channels);
+void createSquare(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels);
+__global__ void bilinearUpscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor);
+__global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor, uint channels);
 __device__ void createSquareDEVICE(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels);
 __device__ double cubicInterpolateDEVICE(double A, double B, double C, double D, double t);
 

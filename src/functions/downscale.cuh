@@ -11,7 +11,5 @@
 void createSquareD(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels);
 __global__ void bilinearDownscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor);
 __global__ void bicubicDownscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor, uint channels);
-__device__ double cubicInterpolateDEVICE(double A, double B, double C, double D, double t);
-__device__ void createSquareDEVICE(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels);
 
 #endif //EDIX_DOWNSCALE_CUH

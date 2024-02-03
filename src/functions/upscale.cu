@@ -4,42 +4,6 @@
 
 #include "upscale.cuh"
 
-int bilinearInterpolation(int p00, int p01, int p10, int p11, double alpha, double beta)
-{
-    return (int) ((1 - alpha) * (1 - beta) * p00 + (1 - alpha) * beta * p01 + alpha * (1 - beta) * p10 +
-                  alpha * beta * p11);
-}
-double cubicInterpolate(double A, double B, double C, double D, double t)
-{
-    double a = -A / 2.0f + (3.0f * B) / 2.0f - (3.0f * C) / 2.0f + D / 2.0f;
-    double b = A - (5.0f * B) / 2.0f + 2.0f * C - D / 2.0f;
-    double c = -A / 2.0f + C / 2.0f;
-    double d = B;
-    return a * t * t * t + b * t * t + c * t + d;
-//    return A + 0.5 * t * (C - A + t * (2.0 * A - 5.0 * B + 4.0 * C - D + t * (3.0 * (B - C) + D - A)));
-}
-__device__ void createSquareDEVICE(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels){
-    
-    for (int i = -1; i < 3; ++i)
-    {
-        for (int j = -1; j < 3; ++j)
-        {
-            if (x - i < 0 || y - j < 0 || x + i >= width || y + j >= height)
-                continue;
-            for (int k = 0; k < channels; ++k)
-                square[(i + 1) + (j + 1) * 4][k] = img[channels * (x + i + (y + j) * width) + k];
-        }
-    }
-
-}
-__device__ double cubicInterpolateDEVICE(double A, double B, double C, double D, double t)
-{
-    double a = -A / 2.0f + (3.0f * B) / 2.0f - (3.0f * C) / 2.0f + D / 2.0f;
-    double b = A - (5.0f * B) / 2.0f + 2.0f * C - D / 2.0f;
-    double c = -A / 2.0f + C / 2.0f;
-    double d = B;
-    return a * t * t * t + b * t * t + c * t + d;
-}
 
 void createSquare(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels)
 {
@@ -57,8 +21,8 @@ void createSquare(unsigned char square[16][3], const unsigned char *img, int x, 
 
 __global__ void bilinearUpscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor)
 {
-    int x = threadIdx.x + blockIdx.x * blockDim.x;
-    int y = threadIdx.y + blockIdx.y * blockDim.y;
+    int x = (int) (threadIdx.x + blockIdx.x * blockDim.x);
+    int y = (int) (threadIdx.y + blockIdx.y * blockDim.y);
 
     uint widthO = width * factor;
     uint heightO = height * factor;
@@ -96,8 +60,8 @@ __global__ void bilinearUpscaleCUDA(const unsigned char *imgIn, unsigned char *i
 }
 __global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor, uint channels)
 {
-    int x = threadIdx.x + blockIdx.x * blockDim.x;
-    int y = threadIdx.y + blockIdx.y * blockDim.y;
+    int x = (int) (threadIdx.x + blockIdx.x * blockDim.x);
+    int y = (int) (threadIdx.y + blockIdx.y * blockDim.y);
 
     uint widthO = width * factor;
     uint heightO = height * factor;
@@ -120,7 +84,7 @@ __global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *im
         beta = ((double) y / factor) - j;
 
 
-        createSquareDEVICE(square, imgIn, i, j, width,height,channels);
+        createSquareDEVICE(square, imgIn, i, j, width, height, channels);
 
         for (int k = 0; k < channels; k++)
         {
@@ -407,4 +371,42 @@ unsigned char *upscaleCudaBicubic(const unsigned char *imgIn, uint width, uint h
     *oHeight = hf;
 
     return h_imgOut;
+}
+
+int bilinearInterpolation(int p00, int p01, int p10, int p11, double alpha, double beta)
+{
+    return (int) ((1 - alpha) * (1 - beta) * p00 + (1 - alpha) * beta * p01 + alpha * (1 - beta) * p10 +
+                  alpha * beta * p11);
+}
+double cubicInterpolate(double A, double B, double C, double D, double t)
+{
+    double a = -A / 2.0f + (3.0f * B) / 2.0f - (3.0f * C) / 2.0f + D / 2.0f;
+    double b = A - (5.0f * B) / 2.0f + 2.0f * C - D / 2.0f;
+    double c = -A / 2.0f + C / 2.0f;
+    double d = B;
+    return a * t * t * t + b * t * t + c * t + d;
+//    return A + 0.5 * t * (C - A + t * (2.0 * A - 5.0 * B + 4.0 * C - D + t * (3.0 * (B - C) + D - A)));
+}
+__device__ void createSquareDEVICE(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels)
+{
+
+    for (int i = -1; i < 3; ++i)
+    {
+        for (int j = -1; j < 3; ++j)
+        {
+            if (x - i < 0 || y - j < 0 || x + i >= width || y + j >= height)
+                continue;
+            for (int k = 0; k < channels; ++k)
+                square[(i + 1) + (j + 1) * 4][k] = img[channels * (x + i + (y + j) * width) + k];
+        }
+    }
+
+}
+__device__ double cubicInterpolateDEVICE(double A, double B, double C, double D, double t)
+{
+    double a = -A / 2.0f + (3.0f * B) / 2.0f - (3.0f * C) / 2.0f + D / 2.0f;
+    double b = A - (5.0f * B) / 2.0f + 2.0f * C - D / 2.0f;
+    double c = -A / 2.0f + C / 2.0f;
+    double d = B;
+    return a * t * t * t + b * t * t + c * t + d;
 }

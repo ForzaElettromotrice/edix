@@ -5,107 +5,6 @@
 
 #include "downscale.cuh"
 
-void createSquareD(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels)
-{
-    for (int i = -1; i < 3; ++i)
-        for (int j = -1; j < 3; ++j)
-        {
-            if (x - i < 0 || y - j < 0 || x + i >= width || y + j >= height)
-                continue;
-            for (int k = 0; k < channels; ++k)
-                square[(i + 1) + (j + 1) * 4][k] = img[channels * (x + i + (y + j) * width) + k];;
-        }
-}
-
-__global__ void bilinearDownscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor)
-{
-    int x = threadIdx.x + blockIdx.x * blockDim.x;
-    int y = threadIdx.y + blockIdx.y * blockDim.y;
-
-    uint widthO = width / factor;
-    uint heightO = height / factor;
-
-    uint idx = x + y * widthO;
-
-    int i;
-    int j;
-    int p00;
-    int p01;
-    int p10;
-    int p11;
-    double alpha;
-    double beta;
-
-    if (idx < widthO * heightO * 3)
-    {
-        i = x * factor;
-        j = y * factor;
-        alpha = ((double) x * factor) - i;
-        beta = ((double) y * factor) - j;
-
-        for (int k = 0; k < 3; k++)
-        {
-            p00 = imgIn[(i + j * width) * 3 + k];
-            p01 = imgIn[(i + 1 + j * width) * 3 + k];
-            p10 = imgIn[(i + (j + 1) * width) * 3 + k];
-            p11 = imgIn[(i + 1 + (j + 1) * width) * 3 + k];
-
-            imgOut[(idx * 3) + k] = (int) ((1 - alpha) * (1 - beta) * p00 + (1 - alpha) *
-                                                                            beta * p01 + alpha * (1 - beta) * p10 +
-                                           alpha * beta * p11);
-        }
-    }
-}
-__global__ void bicubicDownscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor, uint channels)
-{
-    int x = threadIdx.x + blockIdx.x * blockDim.x;
-    int y = threadIdx.y + blockIdx.y * blockDim.y;
-
-    uint widthO = width / factor;
-    uint heightO = height / factor;
-
-    uint idx = x + y * widthO;
-
-    int i;
-    int j;
-    double alpha;
-    double beta;
-    unsigned char square[16][3];
-    int pixel[3];
-
-    if (idx < widthO * heightO * channels)
-    {
-        i = x * factor;
-        j = y * factor;
-
-        alpha = 0.5;
-        beta = 0.5;
-
-
-        createSquareDEVICE(square, imgIn, i, j, width,height,channels);
-
-        for (int k = 0; k < channels; k++)
-        {
-            double p1 = cubicInterpolateDEVICE(square[0][k], square[1][k], square[2][k], square[3][k], alpha);
-            double p2 = cubicInterpolateDEVICE(square[4][k], square[5][k], square[6][k], square[7][k], alpha);
-            double p3 = cubicInterpolateDEVICE(square[8][k], square[9][k], square[10][k], square[11][k], alpha);
-            double p4 = cubicInterpolateDEVICE(square[12][k], square[13][k], square[14 + k][k], square[15][k], alpha);
-            double p = cubicInterpolateDEVICE(p1, p2, p3, p4, beta);
-
-            if (p > 255)
-                p = 255;
-            else if (p < 0)
-                p = 0;
-
-            pixel[k] = (int) p;
-
-        }
-
-        imgOut[idx * channels] = pixel[0];
-        imgOut[(idx * channels) + 1] = pixel[1];
-        imgOut[(idx * channels) + 2] = pixel[2];
-    }
-}
 int parseDownscaleArgs(char *args)
 {
     char *pathIn = strtok(args, " ");
@@ -309,7 +208,7 @@ unsigned char *downscaleCudaBicubic(const unsigned char *imgIn, uint width, uint
     //upscale
     dim3 gridSize = {(wf + 7) / 8, (hf + 7) / 8, 1};
     dim3 blockSize = {8, 8, 1};
-    bilinearDownscaleCUDA<<<gridSize, blockSize>>>(d_imgIn, d_imgOut, width, height, factor);
+    bicubicDownscaleCUDA<<<gridSize, blockSize>>>(d_imgIn, d_imgOut, width, height, factor, channels);
 
     //copy back
     cudaMemcpy(h_imgOut, d_imgOut, iSizeO * sizeof(unsigned char), cudaMemcpyDeviceToHost);
@@ -323,4 +222,129 @@ unsigned char *downscaleCudaBicubic(const unsigned char *imgIn, uint width, uint
     *oHeight = hf;
 
     return h_imgOut;
+}
+
+void createSquareD(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels)
+{
+    for (int i = -1; i < 3; ++i)
+        for (int j = -1; j < 3; ++j)
+        {
+            if (x - i < 0 || y - j < 0 || x + i >= width || y + j >= height)
+                continue;
+            for (int k = 0; k < channels; ++k)
+                square[(i + 1) + (j + 1) * 4][k] = img[channels * (x + i + (y + j) * width) + k];;
+        }
+}
+
+__device__ void createSquareDEVICED(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels)
+{
+    for (int i = -1; i < 3; ++i)
+    {
+        for (int j = -1; j < 3; ++j)
+        {
+            if (x - i < 0 || y - j < 0 || x + i >= width || y + j >= height)
+                continue;
+            for (int k = 0; k < channels; ++k)
+                square[(i + 1) + (j + 1) * 4][k] = img[channels * (x + i + (y + j) * width) + k];
+        }
+    }
+
+}
+__device__ double cubicInterpolateDEVICED(double A, double B, double C, double D, double t)
+{
+    double a = -A / 2.0f + (3.0f * B) / 2.0f - (3.0f * C) / 2.0f + D / 2.0f;
+    double b = A - (5.0f * B) / 2.0f + 2.0f * C - D / 2.0f;
+    double c = -A / 2.0f + C / 2.0f;
+    double d = B;
+    return a * t * t * t + b * t * t + c * t + d;
+}
+
+__global__ void bilinearDownscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor)
+{
+    int x = (int) (threadIdx.x + blockIdx.x * blockDim.x);
+    int y = (int) (threadIdx.y + blockIdx.y * blockDim.y);
+
+    uint widthO = width / factor;
+    uint heightO = height / factor;
+
+    uint idx = x + y * widthO;
+
+    int i;
+    int j;
+    int p00;
+    int p01;
+    int p10;
+    int p11;
+    double alpha;
+    double beta;
+
+    if (idx < widthO * heightO * 3)
+    {
+        i = x * factor;
+        j = y * factor;
+        alpha = ((double) x * factor) - i;
+        beta = ((double) y * factor) - j;
+
+        for (int k = 0; k < 3; k++)
+        {
+            p00 = imgIn[(i + j * width) * 3 + k];
+            p01 = imgIn[(i + 1 + j * width) * 3 + k];
+            p10 = imgIn[(i + (j + 1) * width) * 3 + k];
+            p11 = imgIn[(i + 1 + (j + 1) * width) * 3 + k];
+
+            imgOut[(idx * 3) + k] = (int) ((1 - alpha) * (1 - beta) * p00 + (1 - alpha) *
+                                                                            beta * p01 + alpha * (1 - beta) * p10 +
+                                           alpha * beta * p11);
+        }
+    }
+}
+__global__ void bicubicDownscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor, uint channels)
+{
+    int x = (int) (threadIdx.x + blockIdx.x * blockDim.x);
+    int y = (int) (threadIdx.y + blockIdx.y * blockDim.y);
+
+    uint widthO = width / factor;
+    uint heightO = height / factor;
+
+    uint idx = x + y * widthO;
+
+    int i;
+    int j;
+    double alpha;
+    double beta;
+    unsigned char square[16][3];
+    int pixel[3];
+
+    if (idx < widthO * heightO * channels)
+    {
+        i = x * factor;
+        j = y * factor;
+
+        alpha = 0.5;
+        beta = 0.5;
+
+
+        createSquareDEVICED(square, imgIn, i, j, width, height, channels);
+
+        for (int k = 0; k < channels; k++)
+        {
+            double p1 = cubicInterpolateDEVICED(square[0][k], square[1][k], square[2][k], square[3][k], alpha);
+            double p2 = cubicInterpolateDEVICED(square[4][k], square[5][k], square[6][k], square[7][k], alpha);
+            double p3 = cubicInterpolateDEVICED(square[8][k], square[9][k], square[10][k], square[11][k], alpha);
+            double p4 = cubicInterpolateDEVICED(square[12][k], square[13][k], square[14 + k][k], square[15][k], alpha);
+            double p = cubicInterpolateDEVICED(p1, p2, p3, p4, beta);
+
+            if (p > 255)
+                p = 255;
+            else if (p < 0)
+                p = 0;
+
+            pixel[k] = (int) p;
+
+        }
+
+        imgOut[idx * channels] = pixel[0];
+        imgOut[(idx * channels) + 1] = pixel[1];
+        imgOut[(idx * channels) + 2] = pixel[2];
+    }
 }
