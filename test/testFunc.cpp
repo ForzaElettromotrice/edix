@@ -33,8 +33,8 @@ void test(const unsigned char *img1, const unsigned char *img2, const uint *widt
     //free(grayscaleSerial(img1, *width1, *height1, &outW, &outH));
     //free(colorFilterSerial(img1, *width1, *height1, 0, 0, 255, 0, &outW, &outH));
     //free(overlapSerial(img1, img2, *width1, *height1, *width2, *height2, 100, 200, &outW, &outH));
-    free(compositionSerial(img1, img2, *width1, *height1, *channels1, *width2, *height2, *channels2, UP, &outW, &outH));
-    //free(upscaleSerialBilinear(img1, *width1, *height1, 1, &outW, &outH));
+    //free(compositionSerial(img1, img2, *width1, *height1, *width2, *height2, UP, &outW, &outH));
+    free(upscaleSerialBilinear(img1, *width1, *height1, 3, 1, &outW, &outH));
     //free(upscaleSerialBicubic(img1, *width1, *height1, 1, &outW, &outH));
     //free(downscaleSerialBilinear(img1, *width1, *height1, 1, &outW, &outH));
 
@@ -53,8 +53,8 @@ void test(const unsigned char *img1, const unsigned char *img2, const uint *widt
             //free(grayscaleOmp(img1, *width1, *height1, &outW, &outH, i));
             //free(colorFilterOmp(img1, *width1, *height1, 0, 0, 255, 0, &outW, &outH, i));
             //free(overlapOmp(img1, img2, *width1, *height1, *width2, *height2, 20, 20, &outW, &outH, i));
-            free(compositionOmp(img1, img2, *width1, *height1, *channels1, *width2, *height2, *channels2, UP, &outW, &outH, i));
-            //free(upscaleOmpBilinear(img1, *width1, *height1, 1, &outW, &outH, i));
+            //free(compositionOmp(img1, img2, *width1, *height1, *width2, *height2, UP, &outW, &outH, i));
+            free(upscaleOmpBilinear(img1, *width1, *height1, 3, 1, &outW, &outH, i));
             //free(upscaleOmpBicubic(img1, *width1, *height1, 1, &outW, &outH, i));
             //free(downscaleOmpBilinear(img1, *width1, *height1, 1, &outW, &outH, i));
 

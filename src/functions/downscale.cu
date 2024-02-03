@@ -13,7 +13,7 @@ int parseDownscaleArgs(char *args)
 
     if (pathIn == nullptr || pathOut == nullptr || factor == 0)
     {
-        handle_error("Invalid arguments for upscale\n");
+        handle_error("usage " BOLD "funx downscale IN OUT FACTOR\n" RESET);
     }
 
     char *tpp = getStrFromKey((char *) "TPP");

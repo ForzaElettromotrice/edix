@@ -187,7 +187,7 @@ int listS()
            RED BOLD " TPP  "   RESET  ITALIC"   Tecnologia di parallelismo\n\t" RESET "    * CUDA: Elaborazione parallela su unità di elaborazione grafica (GPU)\n\t    * OMP: Elaborazione parallela su sistemi condivisi di memoria\n\t    *" BOLD " Serial" RESET "(default): Non viene effettuata alcuna ottimizzazione\n\n"
            RED BOLD " TUP  "   RESET  ITALIC"   Tecnologia di upscaling\n\t" RESET BOLD "    * Bilinear" RESET "(default)\n\t    * Bicubic\n");
     
-    puts("----------------------------------------------------------------------------------------------------");
+    puts("----------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
     printf(BOLD YELLOW "IMPOSTAZIONI ATTUALI:\n" RESET
            BOLD "\n * " GREEN "TUP    " RESET BOLD "==>" RESET " [%s]"

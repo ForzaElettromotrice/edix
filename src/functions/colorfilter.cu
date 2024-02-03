@@ -46,7 +46,7 @@ int parseColorFilterArgs(char *args)
 
     if (imgIn == nullptr || pathOut == nullptr || r > 255 || g > 255 || b > 255)
     {
-        handle_error("Invalid arguments for color filter function.\n");
+        handle_error("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
     }
 
     char *tpp = getStrFromKey((char *) "TPP");

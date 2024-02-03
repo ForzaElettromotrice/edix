@@ -118,7 +118,7 @@ int parseUpscaleArgs(char *args)
 
     if (pathIn == nullptr || pathOut == nullptr || factor == 0)
     {
-        handle_error("Invalid arguments for upscale\n");
+        handle_error("usage " BOLD "funx upscale IN OUT FACTOR\n" RESET);
     }
 
     char *tpp = getStrFromKey((char *) "TPP");
@@ -217,7 +217,52 @@ unsigned char *upscaleSerialBilinear(const unsigned char *imgIn, uint width, uin
 }
 unsigned char *upscaleOmpBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight, int nThread)
 {
-    return nullptr;
+    uint widthO = width * factor;
+    uint heightO = height * factor;
+    auto *imgOut = (unsigned char *) malloc((widthO * heightO * 3) * sizeof(unsigned char));
+    if (imgOut == nullptr)
+    {
+        fprintf(stderr, RED "Error: " RESET "Error while malloc!\n");
+        return nullptr;
+    }
+
+    int x;
+    int y;
+    int p00;
+    int p01;
+    int p10;
+    int p11;
+    double alpha;
+    double beta;
+
+    #pragma omp parallel for num_threads(nThread) collapse(2) default(none) shared(imgIn, width, height, imgOut, widthO, heightO, factor, channels) private(x, y, alpha, beta, p00, p01, p10, p11) 
+    for (int i = 0; i < widthO; ++i)
+    {
+        for (int j = 0; j < heightO; ++j)
+        {
+            x = i / factor;
+            y = j / factor;
+            alpha = ((double) i / factor) - x;
+            beta = ((double) j / factor) - y;
+
+            for (int k = 0; k < channels; ++k)
+            {
+                //TODO: se sbordi, usa lo stesso pixel
+                p00 = imgIn[(x + y * width) * 3 + k];
+                p01 = imgIn[(x + 1 + y * width) * 3 + k];
+                p10 = imgIn[(x + (y + 1) * width) * 3 + k];
+                p11 = imgIn[(x + 1 + (y + 1) * width) * 3 + k];
+
+
+                imgOut[(i + j * widthO) * 3 + k] = bilinearInterpolation(p00, p01, p10, p11, alpha, beta);
+            }
+        }
+    }
+
+    *oWidth = widthO;
+    *oHeight = heightO;
+
+    return imgOut;
 }
 unsigned char *upscaleCudaBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
 {

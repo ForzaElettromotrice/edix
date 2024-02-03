@@ -9,7 +9,7 @@ int parseBlurArgs(char *args)
 
     if (imgIn == nullptr || pathOut == nullptr || radius <= 0)
     {
-        handle_error("usage " BOLD "funx blur imgIn imgOut radius(>0)\n" RESET);
+        handle_error("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
     }
 
     //TODO: leggere le immagini in base alla loro estensione

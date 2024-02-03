@@ -15,7 +15,7 @@ int parseOverlapArgs(char *args)
 
     if (img1 == nullptr || img2 == nullptr || pathOut == nullptr)
     {
-        handle_error("Invalid arguments for overlap\n");
+        handle_error("usage " BOLD "funx overlap IN1 IN2 OUT SIDE\n" RESET);
     }
 
     char *tpp = getStrFromKey((char *) "TPP");

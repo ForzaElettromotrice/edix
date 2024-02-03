@@ -479,8 +479,6 @@ int parseExitP(Env *env)
 
     return 0;
 }
-
-
 int funx(char *name, char *args)
 {
     if (strcmp(name, "blur") == 0)
@@ -757,29 +755,37 @@ int force()
 }
 int helpP()
 {
-    // TODO: aggiungere help dei dix o backup (?)
     printf("Ecco la lista dei comandi che puoi utilizzare all'interno del tuo progetto:\n\n"
-           YELLOW BOLD "  ls"           RESET " [" UNDERLINE "OPTION" RESET "] ... [" UNDERLINE "FILE" RESET "] ...\t\t\tStampa il contenuto di FILE. Se non viene inserito FILE, stampa il contenuto della directory corrente\n"
-           YELLOW BOLD "  funx"         RESET " " UNDERLINE "nameFroc" RESET "\t\t\t\t\tEsegui la froceria nameFroc\n"
-           YELLOW BOLD "  cd"           RESET " [" UNDERLINE "DIRECTORY" RESET "]\t\t\t\tCambia la directory corrente a DIRECTORY\n"
-           YELLOW BOLD "  load"         RESET " " UNDERLINE "FILE" RESET " ...\t\t\t\t\tCarica l'immagine FILE\n"
-           YELLOW BOLD "  rm"           RESET " [" UNDERLINE "OPTION" RESET "] ... [" UNDERLINE "FILE" RESET "] ...\t\t\tRimuovi FILE\n"
-           YELLOW BOLD "  mkdir"        RESET " [" UNDERLINE "OPTION" RESET "] ... [" UNDERLINE "FILE" RESET "] ...\t\t\tCrea la directory DIRECTORY\n"
-           YELLOW BOLD "  rmdir"        RESET " [" UNDERLINE "OPTION" RESET "] ... [" UNDERLINE "FILE" RESET "] ...\t\t\tRimuovi la directory DIRECTORY\n"
-           YELLOW BOLD "  mv"           RESET " [" UNDERLINE "OPTION" RESET "] ... " UNDERLINE "SOURCE" RESET " " UNDERLINE "DEST" RESET "\t\t\tRinomina SOURCE in DEST \n"
-           YELLOW BOLD "  mv"           RESET " [" UNDERLINE "OPTION" RESET "] ... " UNDERLINE "SOURCE" RESET " ... " UNDERLINE "DIRECTORY" RESET "\t\tSposta SOURCE in DIRECTORY\n"
-           YELLOW BOLD "  force"        RESET "\t\t\t\t\t\tForza il caricamento delle modifiche su DB\n"
-           YELLOW BOLD "  settings"     RESET "\t\t\t\t\tAccedi ai settings\n"
-           YELLOW BOLD "  dix commmit"  RESET "\t\t\t\t\tEsegue il commit del dix\n"
-           YELLOW BOLD "  dix reload"   RESET "\t\t\t\t\tRicarica un dix commitato precedentemente\n"
-           YELLOW BOLD "  dix list"     RESET "\t\t\t\t\tElenca tutti i dix commitati finora\n"
-           YELLOW BOLD "  help"         RESET "\t\t\t\t\t\tElenca la lista dei comandi da poter eseguire\n"
-           YELLOW BOLD "  exit"         RESET "\t\t\t\t\t\tEsci dal progetto\n\n");
+           YELLOW BOLD "  ls"           RESET " [" UNDERLINE "OPTION" RESET "] ... [" UNDERLINE "FILE" RESET "] ...\t\t\t\tStampa il contenuto di FILE. Se non viene inserito FILE, stampa il contenuto della directory corrente\n"
+           YELLOW BOLD "  funx"         RESET " " UNDERLINE "FUNX" RESET " " UNDERLINE "ARGS" RESET  " ...\t\t\t\t\tEsegui la funx FUNX con ARGS\n"
+           YELLOW BOLD "  cd"           RESET " [" UNDERLINE "DIRECTORY" RESET "]\t\t\t\t\tCambia la directory corrente a DIRECTORY\n"
+           YELLOW BOLD "  load"         RESET " " UNDERLINE "FILE" RESET " ...\t\t\t\t\t\tCarica l'immagine FILE\n"
+           YELLOW BOLD "  rm"           RESET " [" UNDERLINE "OPTION" RESET "] ... [" UNDERLINE "FILE" RESET "] ...\t\t\t\tRimuovi FILE\n"
+           YELLOW BOLD "  mkdir"        RESET " [" UNDERLINE "OPTION" RESET "] ... [" UNDERLINE "FILE" RESET "] ...\t\t\t\tCrea la directory DIRECTORY\n"
+           YELLOW BOLD "  rmdir"        RESET " [" UNDERLINE "OPTION" RESET "] ... [" UNDERLINE "FILE" RESET "] ...\t\t\t\tRimuovi la directory DIRECTORY\n"
+           YELLOW BOLD "  mv"           RESET " [" UNDERLINE "OPTION" RESET "] ... " UNDERLINE "SOURCE" RESET " " UNDERLINE "DEST" RESET "\t\t\t\tRinomina SOURCE in DEST \n"
+           YELLOW BOLD "  mv"           RESET " [" UNDERLINE "OPTION" RESET "] ... " UNDERLINE "SOURCE" RESET " ... " UNDERLINE "DIRECTORY" RESET "\t\t\tSposta SOURCE in DIRECTORY\n"
+           YELLOW BOLD "  force"        RESET "\t\t\t\t\t\t\tForza il caricamento delle modifiche su DB\n"
+           YELLOW BOLD "  settings"     RESET "\t\t\t\t\t\tAccedi ai settings\n"
+           YELLOW BOLD "  dix commmit"  RESET "\t\t\t\t\t\tEsegue il commit del dix\n"
+           YELLOW BOLD "  dix reload"   RESET "\t\t\t\t\t\tRicarica un dix commitato precedentemente\n"
+           YELLOW BOLD "  dix list"     RESET "\t\t\t\t\t\tElenca tutti i dix commitati finora\n"
+           YELLOW BOLD "  help"         RESET "\t\t\t\t\t\t\tElenca la lista dei comandi da poter eseguire\n"
+           YELLOW BOLD "  helpF"        RESET "\t\t\t\t\t\t\tElenca la lista delle funx da poter eseguire\n"
+           YELLOW BOLD "  exit"         RESET "\t\t\t\t\t\t\tEsci dal progetto\n"
+           "----------------------------------------------------------------------------------------------------------------------------------------------------------------\n"
+           "Ecco la liste delle funx che puoi utilizzare sulle tue immagini:\n\n"
+           BOLD GREEN "   funx blur " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "RADIUS" RESET ITALIC BOLD "\t\t\t\tEffettua il blur di IN con radius RADIUS e viene salvato in OUT\n\t" RESET "* " BOLD "IN" RESET ": il path dell'immagine di input\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "RADIUS" RESET ": il livello di blur (> 0)\n\n" 
+           BOLD GREEN "   funx colorfilter " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "R" RESET " " UNDERLINE "G" RESET " " UNDERLINE "B" RESET " " UNDERLINE "TOLERANCE" RESET ITALIC BOLD"\t\tEffettua il color filter di IN di valore RGB con tolerance TOLERANCE e viene salvato in OUT\n\t" RESET "* " BOLD "IN" RESET ": il path dell'immagine di input\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "R" RESET ": il valore di rosso (0 <= R <= 255)\n\t* " BOLD "G" RESET ": il valore di verde (0 <= G <= 255)\n\t* " BOLD "B" RESET ": il valore di blu (0 <= B <= 255)\n\t* " BOLD "TOLERANCE" RESET ": permette di regolare la sensibilità del filtro rispetto i dettagli del colore nell'immagine(>=0)\n\n"
+           BOLD GREEN "   funx grayscale " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET ITALIC BOLD"\t\t\t\tEffettua il grayscale di IN e viene salvato in OUT \n\t" RESET "* " BOLD "IN" RESET ": il path dell'immagine di input\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\n"
+           BOLD GREEN "   funx composition " RESET UNDERLINE "IN1" RESET " " UNDERLINE "IN2" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "SIDE" RESET ITALIC BOLD"\t\t\tCompone IN2 sul SIDE di IN1 e il risultato viene salvato in OUT\n\t" RESET "* " BOLD "IN1" RESET ": il path dell'immagine di input\n\t* " BOLD "IN2" RESET ": il path dell'immagine da comporre a IN1\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "SIDE" RESET ": indica il lato su cui comporre l'immagine (UP=0, DOWN=1, LEFT=2, RIGTH=3)\n\n"
+           BOLD GREEN "   funx overlap " RESET UNDERLINE "IN1" RESET " " UNDERLINE "IN2" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "X" RESET " " UNDERLINE "Y" RESET ITALIC BOLD "\t\t\t\tViene sovrapposta IN2 su IN1 alla posizione (X, Y) e viene salvato in OUT \n\t" RESET "* " BOLD "IN1" RESET ": il path dell'immagine di input\n\t* " BOLD "IN2" RESET ": il path dell'immagine da sovrapporre a IN1\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "X" RESET ": posizione sull'ascisse\n\t* " BOLD "Y" RESET ": posizione sull'ordinata\n\n" 
+           BOLD GREEN "   funx upscale " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "FACTOR" RESET ITALIC BOLD "\t\t\t\tEffettua l'upscale di IN di fattore FACTOR e viene salvato in OUT\n\t" RESET " * " BOLD "IN" RESET ": il path dell'immagine di input\n\t * " BOLD "OUT" RESET ": il path dell'immagine in output\n\t * " BOLD "FACTOR" RESET ": fattore di scala dell'immagine(> 0)\n\n"
+           BOLD GREEN "   funx downscale " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "FACTOR" RESET ITALIC BOLD "\t\t\t\tEffettua il downscale di IN di fattore FACTOR e viene salvato in OUT\n\t" RESET " * " BOLD "IN" RESET ": il path dell'immagine di input\n\t * " BOLD "OUT" RESET ": il path dell'immagine in output\n\t *" BOLD " FACTOR" RESET ": fattore di scala dell'immagine(> 0)\n\n");
     return 0;
 }
 int exitP(Env *env)
 {
-    // TODO: Chiediamo all'utente se vuole fare il forcing o meno ?
     force();
     deallocateFromRedis();
 

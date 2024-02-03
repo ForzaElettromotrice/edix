@@ -23,7 +23,7 @@ int parseGrayscaleArgs(char *args)
 
     if (imgIn == nullptr || pathOut == nullptr)
     {
-        handle_error("Errore nel parsing degli argomenti\n");
+        handle_error("usage " BOLD "funx grayscale IN OUT\n" RESET);
     }
 
     char *tpp = getStrFromKey((char *) "TPP");
@@ -113,20 +113,19 @@ unsigned char *grayscaleOmp(const unsigned char *imgIn, uint width, uint height,
         return nullptr;
     }
 
-    int r, g, b, grayValue;
-
-    //TODO: schedule e controllo su num_threads
-#pragma omp parallel for num_threads(nThread) default(none) private(r, g, b, grayValue) shared(img_out, imgIn, width, height)
+    int r, g, b, grayValue, index;
+    #pragma omp parallel for num_threads(nThread) collapse(2) default(none) private(r, g, b, grayValue, index) shared(img_out, imgIn, width, height) schedule(static)
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)
         {
-            r = imgIn[((y * width) + x) * 3];
-            g = imgIn[((y * width) + x) * 3 + 1];
-            b = imgIn[((y * width) + x) * 3 + 2];
+            index = y * width + x;
+            r = imgIn[index * 3];
+            g = imgIn[index * 3 + 1];
+            b = imgIn[index * 3 + 2];
             grayValue = (r + g + b) / 3;
 
-            img_out[y * width + x] = grayValue;
+            img_out[index] = grayValue;
         }
     }
 
