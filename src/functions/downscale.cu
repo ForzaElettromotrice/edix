@@ -135,8 +135,8 @@ unsigned char *downscaleSerialBilinear(const unsigned char *imgIn, uint width, u
         {
             x = i * factor;
             y = j * factor;
-            alpha = ((double) i * factor) - x + 0.5;
-            beta = ((double) j * factor) - y + 0.5;
+            alpha = 0.5;
+            beta = 0.5;
 
 
             for (int k = 0; k < channels; ++k)
