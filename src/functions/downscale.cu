@@ -2,6 +2,7 @@
 // Created by f3m on 19/01/24.
 //
 
+
 #include "downscale.cuh"
 
 void createSquareD(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels)
@@ -55,7 +56,56 @@ __global__ void bilinearDownscaleCUDA(const unsigned char *imgIn, unsigned char 
         }
     }
 }
+__global__ void bicubicDownscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor, uint channels)
+{
+    int x = threadIdx.x + blockIdx.x * blockDim.x;
+    int y = threadIdx.y + blockIdx.y * blockDim.y;
 
+    uint widthO = width / factor;
+    uint heightO = height / factor;
+
+    uint idx = x + y * widthO;
+
+    int i;
+    int j;
+    double alpha;
+    double beta;
+    unsigned char square[16][3];
+    int pixel[3];
+
+    if (idx < widthO * heightO * channels)
+    {
+        i = x * factor;
+        j = y * factor;
+
+        alpha = 0.5;
+        beta = 0.5;
+
+
+        createSquareDEVICE(square, imgIn, i, j, width,height,channels);
+
+        for (int k = 0; k < channels; k++)
+        {
+            double p1 = cubicInterpolateDEVICE(square[0][k], square[1][k], square[2][k], square[3][k], alpha);
+            double p2 = cubicInterpolateDEVICE(square[4][k], square[5][k], square[6][k], square[7][k], alpha);
+            double p3 = cubicInterpolateDEVICE(square[8][k], square[9][k], square[10][k], square[11][k], alpha);
+            double p4 = cubicInterpolateDEVICE(square[12][k], square[13][k], square[14 + k][k], square[15][k], alpha);
+            double p = cubicInterpolateDEVICE(p1, p2, p3, p4, beta);
+
+            if (p > 255)
+                p = 255;
+            else if (p < 0)
+                p = 0;
+
+            pixel[k] = (int) p;
+
+        }
+
+        imgOut[idx * channels] = pixel[0];
+        imgOut[(idx * channels) + 1] = pixel[1];
+        imgOut[(idx * channels) + 2] = pixel[2];
+    }
+}
 int parseDownscaleArgs(char *args)
 {
     char *pathIn = strtok(args, " ");
