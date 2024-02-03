@@ -18,6 +18,29 @@ double cubicInterpolate(double A, double B, double C, double D, double t)
     return a * t * t * t + b * t * t + c * t + d;
 //    return A + 0.5 * t * (C - A + t * (2.0 * A - 5.0 * B + 4.0 * C - D + t * (3.0 * (B - C) + D - A)));
 }
+__device__ void createSquareDEVICE(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels){
+    
+    for (int i = -1; i < 3; ++i)
+    {
+        for (int j = -1; j < 3; ++j)
+        {
+            if (x - i < 0 || y - j < 0 || x + i >= width || y + j >= height)
+                continue;
+            for (int k = 0; k < channels; ++k)
+                square[(i + 1) + (j + 1) * 4][k] = img[channels * (x + i + (y + j) * width) + k];
+        }
+    }
+
+}
+__device__ double cubicInterpolateDEVICE(double A, double B, double C, double D, double t)
+{
+    double a = -A / 2.0f + (3.0f * B) / 2.0f - (3.0f * C) / 2.0f + D / 2.0f;
+    double b = A - (5.0f * B) / 2.0f + 2.0f * C - D / 2.0f;
+    double c = -A / 2.0f + C / 2.0f;
+    double d = B;
+    return a * t * t * t + b * t * t + c * t + d;
+}
+
 void createSquare(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels)
 {
     for (int i = -1; i < 3; ++i)
@@ -71,7 +94,7 @@ __global__ void bilinearUpscaleCUDA(const unsigned char *imgIn, unsigned char *i
         }
     }
 }
-__global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor, dim3 gridSize, dim3 blockSize)
+__global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor, uint channels)
 {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -88,7 +111,7 @@ __global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *im
     unsigned char square[16][3];
     int pixel[3];
 
-    if (idx < widthO * heightO * 3)
+    if (idx < widthO * heightO * channels)
     {
         i = x / factor;
         j = y / factor;
@@ -97,57 +120,15 @@ __global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *im
         beta = ((double) y / factor) - j;
 
 
-        for (int k = -1; k < 3; ++k)
+        createSquareDEVICE(square, imgIn, i, j, width,height,channels);
+
+        for (int k = 0; k < channels; k++)
         {
-            for (int z = -1; z < 3; ++z)
-            {
-                if (i - k < 0 || y - z < 0 || i + k >= width || j + z >= height)
-                    continue;
-                int r = imgIn[3 * (i + k + (j + z) * width)];
-                int g = imgIn[3 * (i + k + (j + z) * width) + 1];
-                int b = imgIn[3 * (i + k + (j + z) * width) + 2];
-                square[(k + 1) + (z + 1) * 3][0] = r;
-                square[(k + 1) + (z + 1) * 3][1] = g;
-                square[(k + 1) + (z + 1) * 3][2] = b;
-            }
-        }
-
-        for (int k = 0; k < 3; k++)
-        {
-
-            double a = -square[0][0 + k] / 2.0f + (3.0f * square[1][0 + k]) / 2.0f - (3.0f * square[2][0 + k]) / 2.0f + square[3][0 + k] / 2.0f;
-            double b = square[0][0 + k] - (5.0f * square[1][0 + k]) / 2.0f + 2.0f * square[2][0 + k] - square[3][0 + k] / 2.0f;
-            double c = -square[0][0 + k] / 2.0f + square[2][0 + k] / 2.0f;
-            double d = square[1][0 + k];
-            double p1 = a * alpha * alpha * alpha + b * alpha * alpha + c * alpha + d;
-
-
-            a = -square[4][0 + k] / 2.0f + (3.0f * square[5][0 + k]) / 2.0f - (3.0f * square[6][0 + k]) / 2.0f + square[7][0 + k] / 2.0f;
-            b = square[4][0 + k] - (5.0f * square[5][0 + k]) / 2.0f + 2.0f * square[6][0 + k] - square[7][0 + k] / 2.0f;
-            c = -square[4][0 + k] / 2.0f + square[6][0 + k] / 2.0f;
-            d = square[5][0 + k];
-            double p2 = a * alpha * alpha * alpha + b * alpha * alpha + c * alpha + d;
-
-
-            a = -square[8][0 + k] / 2.0f + (3.0f * square[9][0 + k]) / 2.0f - (3.0f * square[10][0 + k]) / 2.0f + square[11][0 + k] / 2.0f;
-            b = square[8][0 + k] - (5.0f * square[9][0 + k]) / 2.0f + 2.0f * square[10][0 + k] - square[11][0 + k] / 2.0f;
-            c = -square[8][0 + k] / 2.0f + square[10][0 + k] / 2.0f;
-            d = square[9][0 + k];
-            double p3 = a * alpha * alpha * alpha + b * alpha * alpha + c * alpha + d;
-
-
-            a = -square[12][0 + k] / 2.0f + (3.0f * square[13][0 + k]) / 2.0f - (3.0f * square[14 + k][0 + k]) / 2.0f + square[15][0 + k] / 2.0f;
-            b = square[12][0 + k] - (5.0f * square[13][0 + k]) / 2.0f + 2.0f * square[14 + k][0 + k] - square[15][0 + k] / 2.0f;
-            c = -square[12][0 + k] / 2.0f + square[14 + k][0 + k] / 2.0f;
-            d = square[13][0 + k];
-            double p4 = a * alpha * alpha * alpha + b * alpha * alpha + c * alpha + d;
-
-
-            a = -p1 / 2.0f + (3.0f * p2) / 2.0f - (3.0f * p3) / 2.0f + p4 / 2.0f;
-            b = p1 - (5.0f * p2) / 2.0f + 2.0f * p3 - p4 / 2.0f;
-            c = -p1 / 2.0f + p3 / 2.0f;
-            d = p2;
-            double p = a * beta * beta * beta + b * beta * beta + c * beta + d;
+            double p1 = cubicInterpolateDEVICE(square[0][k], square[1][k], square[2][k], square[3][k], alpha);
+            double p2 = cubicInterpolateDEVICE(square[4][k], square[5][k], square[6][k], square[7][k], alpha);
+            double p3 = cubicInterpolateDEVICE(square[8][k], square[9][k], square[10][k], square[11][k], alpha);
+            double p4 = cubicInterpolateDEVICE(square[12][k], square[13][k], square[14 + k][k], square[15][k], alpha);
+            double p = cubicInterpolateDEVICE(p1, p2, p3, p4, beta);
 
             if (p > 255)
                 p = 255;
@@ -158,9 +139,9 @@ __global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *im
 
         }
 
-        imgOut[idx * 3] = pixel[0];
-        imgOut[(idx * 3) + 1] = pixel[1];
-        imgOut[(idx * 3) + 2] = pixel[2];
+        imgOut[idx * channels] = pixel[0];
+        imgOut[(idx * channels) + 1] = pixel[1];
+        imgOut[(idx * channels) + 2] = pixel[2];
     }
 }
 
@@ -411,7 +392,7 @@ unsigned char *upscaleCudaBicubic(const unsigned char *imgIn, uint width, uint h
     //upscale
     dim3 gridSize = {(wf + 7) / 8, (hf + 7) / 8, 1};
     dim3 blockSize = {8, 8, 1};
-    bicubicUpscaleCUDA<<<gridSize, blockSize>>>(d_imgIn, d_imgOut, width, height, factor, gridSize, blockSize);
+    bicubicUpscaleCUDA<<<gridSize, blockSize>>>(d_imgIn, d_imgOut, width, height, factor, channels);
 
 
     //copy back
