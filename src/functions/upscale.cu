@@ -60,13 +60,13 @@ __global__ void bilinearUpscaleCUDA(const unsigned char *imgIn, unsigned char *i
 }
 __global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor, uint channels)
 {
-    int x = (int) (threadIdx.x + blockIdx.x * blockDim.x);
-    int y = (int) (threadIdx.y + blockIdx.y * blockDim.y);
+    int absX = (int) (threadIdx.x + blockIdx.x * blockDim.x);
+    int absY = (int) (threadIdx.y + blockIdx.y * blockDim.y);
 
-    uint widthO = width * factor;
-    uint heightO = height * factor;
+    uint oWidth = width * factor;
+    uint oHeight = height * factor;
 
-    uint idx = x + y * widthO;
+    uint idx = absX + absY * oWidth;
 
     int i;
     int j;
@@ -75,13 +75,13 @@ __global__ void bicubicUpscaleCUDA(const unsigned char *imgIn, unsigned char *im
     unsigned char square[16][3];
     int pixel[3];
 
-    if (idx < widthO * heightO * channels)
+    if (idx < oWidth * oHeight * channels)
     {
-        i = x / factor;
-        j = y / factor;
+        i = absX / factor;
+        j = absY / factor;
 
-        alpha = ((double) x / factor) - i;
-        beta = ((double) y / factor) - j;
+        alpha = ((double) absX / factor) - i;
+        beta = ((double) absY / factor) - j;
 
 
         createSquareDEVICE(square, imgIn, i, j, width, height, channels);
@@ -235,7 +235,7 @@ unsigned char *upscaleOmpBilinear(const unsigned char *imgIn, uint width, uint h
     double alpha;
     double beta;
 
-    #pragma omp parallel for num_threads(nThread) collapse(2) default(none) shared(imgIn, width, height, imgOut, widthO, heightO, factor, channels) private(x, y, alpha, beta, p00, p01, p10, p11) 
+#pragma omp parallel for num_threads(nThread) collapse(2) default(none) shared(imgIn, width, height, imgOut, widthO, heightO, factor, channels) private(x, y, alpha, beta, p00, p01, p10, p11)
     for (int i = 0; i < widthO; ++i)
     {
         for (int j = 0; j < heightO; ++j)
@@ -455,3 +455,207 @@ __device__ double cubicInterpolateDEVICE(double A, double B, double C, double D,
     double d = B;
     return a * t * t * t + b * t * t + c * t + d;
 }
+
+
+__global__ void bilinearUpscaleCUDAShared(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, uint channels, int factor)
+{
+    int absX = (int) (threadIdx.x + blockIdx.x * blockDim.x);
+    int absY = (int) (threadIdx.y + blockIdx.y * blockDim.y);
+    uint oWidth = width * factor;
+    uint oHeight = height * factor;
+
+    if (absX >= oWidth || absY >= oHeight)
+        return;
+
+    int relX = (int) threadIdx.x;
+    int relY = (int) threadIdx.y;
+
+    uint sSize = ((uint) (8 + factor - 1) / factor) + 1;
+    extern __shared__ unsigned char shared[];
+
+    uint oldX = absX / factor;
+    uint oldY = absY / factor;
+
+    if (relX == 0 && relY == 0)
+    {
+        for (int i = 0; i < sSize; ++i)
+            for (int j = 0; j < sSize; ++j)
+            {
+                if (oldX + i >= width || oldY + j >= height)
+                    continue;
+
+                for (int k = 0; k < channels; ++k)
+                    shared[(i + j * sSize) * channels + k] = imgIn[(oldX + i + (oldY + j) * width) * channels + k];
+            }
+    }
+    __syncthreads();
+
+
+    int x;
+    int y;
+    int p00;
+    int p01;
+    int p10;
+    int p11;
+    double alpha;
+    double beta;
+
+    x = relX / factor;
+    y = relY / factor;
+    alpha = ((double) relX / factor) - x;
+    beta = ((double) relY / factor) - y;
+
+    for (int k = 0; k < channels; k++)
+    {
+        p00 = shared[(x + y * sSize) * channels + k];
+        p01 = oldX + x + 1 >= width ? p00 : shared[(x + 1 + y * sSize) * channels + k];
+        p10 = oldY + y + 1 >= height ? p00 : shared[(x + (y + 1) * sSize) * channels + k];
+        p11 = oldX + x + 1 >= width || oldY + y + 1 >= height ? p00 : shared[(x + 1 + (y + 1) * sSize) * channels + k];
+
+        imgOut[(absX + absY * oWidth) * channels + k] = (int) ((1 - alpha) * (1 - beta) * p00 + (1 - alpha) * beta * p01 + alpha * (1 - beta) * p10 + alpha * beta * p11);
+    }
+
+}
+unsigned char *upscaleCudaBilinearShared(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
+{
+
+    //host
+    uint wf = width * factor;
+    uint hf = height * factor;
+
+    uint iSize = width * height * channels;
+    uint oSize = wf * hf * channels;
+
+    auto h_imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
+    if (h_imgOut == nullptr)
+    {
+        fprintf(stderr, RED "Error: " RESET "Errore nell'allocazione della memoria\n");
+        return nullptr;
+    }
+    mlock(imgIn, iSize * sizeof(unsigned char));
+
+    //device
+    unsigned char *d_imgIn;
+    unsigned char *d_imgOut;
+    cudaMalloc(&d_imgIn, iSize * sizeof(unsigned char));
+    cudaMalloc(&d_imgOut, oSize * sizeof(unsigned char));
+
+    //copy
+    cudaMemcpy(d_imgIn, imgIn, iSize * sizeof(unsigned char), cudaMemcpyHostToDevice);
+
+    //upscale
+    dim3 gridSize = {(wf + 7) / 8, (hf + 7) / 8, 1};
+    dim3 blockSize = {8, 8, 1};
+    size_t sharedDim = (size_t) pow((int) ((8 + factor - 1) / factor) + 1, 2) * channels;
+    bilinearUpscaleCUDAShared<<<gridSize, blockSize, sharedDim>>>(d_imgIn, d_imgOut, width, height, channels, factor);
+
+    //copy back
+    cudaMemcpy(h_imgOut, d_imgOut, oSize * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+
+    //free
+    munlock(imgIn, iSize * sizeof(unsigned char));
+    cudaFree(d_imgIn);
+    cudaFree(d_imgOut);
+
+    *oWidth = wf;
+    *oHeight = hf;
+
+    return h_imgOut;
+}
+
+__global__ void bicubicUpscaleCUDAShared(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, int factor, uint channels)
+{
+    int x = (int) (threadIdx.x + blockIdx.x * blockDim.x);
+    int y = (int) (threadIdx.y + blockIdx.y * blockDim.y);
+
+    uint widthO = width * factor;
+    uint heightO = height * factor;
+
+    uint idx = x + y * widthO;
+
+    int i;
+    int j;
+    double alpha;
+    double beta;
+    unsigned char square[16][3];
+    int pixel[3];
+
+    if (idx < widthO * heightO * channels)
+    {
+        i = x / factor;
+        j = y / factor;
+
+        alpha = ((double) x / factor) - i;
+        beta = ((double) y / factor) - j;
+
+
+        createSquareDEVICE(square, imgIn, i, j, width, height, channels);
+
+        for (int k = 0; k < channels; k++)
+        {
+            double p1 = cubicInterpolateDEVICE(square[0][k], square[1][k], square[2][k], square[3][k], alpha);
+            double p2 = cubicInterpolateDEVICE(square[4][k], square[5][k], square[6][k], square[7][k], alpha);
+            double p3 = cubicInterpolateDEVICE(square[8][k], square[9][k], square[10][k], square[11][k], alpha);
+            double p4 = cubicInterpolateDEVICE(square[12][k], square[13][k], square[14 + k][k], square[15][k], alpha);
+            double p = cubicInterpolateDEVICE(p1, p2, p3, p4, beta);
+
+            if (p > 255)
+                p = 255;
+            else if (p < 0)
+                p = 0;
+
+            pixel[k] = (int) p;
+
+        }
+
+        imgOut[idx * channels] = pixel[0];
+        imgOut[(idx * channels) + 1] = pixel[1];
+        imgOut[(idx * channels) + 2] = pixel[2];
+    }
+}
+unsigned char *upscaleCudaBicubicShared(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
+{
+
+    //host
+    uint wf = width * factor;
+    uint hf = height * factor;
+    uint iSize = width * height * channels;
+    uint oSize = wf * hf * channels;
+    auto h_imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
+    if (h_imgOut == nullptr)
+    {
+        fprintf(stderr, RED "Error: " RESET "Errore nell'allocazione della memoria\n");
+        return nullptr;
+    }
+    mlock(imgIn, iSize * sizeof(unsigned char));
+
+    //device
+    unsigned char *d_imgIn;
+    unsigned char *d_imgOut;
+    cudaMalloc(&d_imgIn, iSize * sizeof(unsigned char));
+    cudaMalloc(&d_imgOut, oSize * sizeof(unsigned char));
+
+    //copy
+    cudaMemcpy(d_imgIn, imgIn, iSize * sizeof(unsigned char), cudaMemcpyHostToDevice);
+
+    //upscale
+    dim3 gridSize = {(wf + 7) / 8, (hf + 7) / 8, 1};
+    dim3 blockSize = {8, 8, 1};
+    size_t sharedDim = (size_t) pow((int) ((8 + factor - 1) / factor) + 3, 2) * channels;
+    bicubicUpscaleCUDA<<<gridSize, blockSize, sharedDim>>>(d_imgIn, d_imgOut, width, height, factor, channels);
+
+
+    //copy back
+    cudaMemcpy(h_imgOut, d_imgOut, oSize * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+
+    //free
+    munlock(imgIn, iSize * sizeof(unsigned char));
+    cudaFree(d_imgIn);
+    cudaFree(d_imgOut);
+
+    *oWidth = wf;
+    *oHeight = hf;
+
+    return h_imgOut;
+}
+

@@ -15,8 +15,6 @@ int banner()
            "_/_/_/_/    _/_/_/  _/  _/      _/\n\n"
            RESET
            BOLD BLUE "Benvenuto su EdiX :).\n" RESET
-           BOLD YELLOW "new" RESET " projectName\t\t"
-           ITALIC "Se e' la tua prima volta crea un progetto tramite il comando\n" RESET
            BOLD YELLOW "help\t\t\t" RESET
            ITALIC "Se hai bisogno di maggiori informazioni sui comandi\n" RESET
            BOLD YELLOW "exit" RESET " /" BOLD YELLOW " Ctrl + D\t\t" RESET
@@ -290,9 +288,9 @@ int parseHome(char *line, Env *env)
      *  - new Name -m (crea il progetto) (-m sta per manuale) <p>
      *  - open Name (apre il progetto) <p>
      *  - del Name  (elimina il progetto) <p>
-     *  - listH      (visualizza tutti i progetti) <p>
-     *  - helpH      (lista dei comandi disponibili) <p>
-     *  - exitH      (esce da edix) <p>
+     *  - list      (visualizza tutti i progetti) <p>
+     *  - help      (lista dei comandi disponibili) <p>
+     *  - exit      (esce da edix) <p>
      */
 
     char *copy = strdup(line);
@@ -324,10 +322,7 @@ int parseNew(Env *env)
     char *token1 = strtok(nullptr, " ");
     char *token2 = strtok(nullptr, " ");
 
-    char *err = strtok(nullptr, " ");
-
-
-    if (token1 == nullptr || (token2 != nullptr && err != nullptr))
+    if (token1 == nullptr || strtok(nullptr, " ") != nullptr)
     {
         handle_error("usage" BOLD ITALIC "new ProjectName [-m]\n" RESET);
     }

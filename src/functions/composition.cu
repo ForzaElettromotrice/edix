@@ -6,6 +6,7 @@
 
 int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint channels1, uint channels2, uint x, uint y)
 {
+    //TODO: riparare il segfault
     for (int i = 0; i < widthI; ++i)
         for (int j = 0; j < heightI; ++j)
         {

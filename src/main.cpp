@@ -7,7 +7,6 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     checkDb();
     banner();
-    // TODO: far si che tutte le funzioni sulle immagini funzionino con qualsiasi numero di canale
     // TODO: magari puoi aprire direttamente un progetto passandolo come argomento
     // TODO: ovunque si usi il path, mettere PATH_MAX oppure (meglio) far si che l'allocazione sia dinamica
     // TODO: stiamo usando ovunque path assoluti, dovremmo usare dei path relativi
@@ -24,20 +23,19 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
     }
 
-    //TODO: fare tutte le cose da fare prima di chiudere
+    //TODO: messaggio di saluto
 
     return 0;
 }
 int inputLoop()
 {
     size_t lineSize = 256;
-    char *line = (char *) malloc(256);
+    char *line = (char *) malloc(256 * sizeof(char));
 
     size_t bytesRead;
     Env env = HOMEPAGE;
-    bool stop = false;
 
-    while (!stop && ((int) (bytesRead = getline(&line, &lineSize, stdin))) != -1)
+    while (((int) (bytesRead = getline(&line, &lineSize, stdin))) != -1)
     {
         if (bytesRead == 1) continue;
 
@@ -58,7 +56,7 @@ int inputLoop()
                 break;
         }
         if (env == EXIT)
-            stop = true;
+            break;
     }
 
     free(line);

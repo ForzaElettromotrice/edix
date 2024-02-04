@@ -17,7 +17,7 @@ int main()
     uint oWidth;
     uint oHeight;
 
-    unsigned char *oImg = upscaleSerialBicubic(img2, width2, height2, channels2, 2, &oWidth, &oHeight);
+    unsigned char *oImg = upscaleCudaBilinearShared(img1, width1, height1, channels1, 2, &oWidth, &oHeight);
     writeImage((char *) "images/out.ppm", oImg, oWidth, oHeight, channels1);
 
     free(oImg);
