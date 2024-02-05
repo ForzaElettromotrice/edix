@@ -71,4 +71,6 @@ unsigned char *downscaleCudaBicubic(const unsigned char *imgIn, uint width, uint
 
 unsigned char *upscaleCudaBilinearShared(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
 unsigned char *upscaleCudaBicubicShared(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
+
+unsigned char *downscaleCudaBilinearShared(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
 #endif  //EDIX_GRAYSCALE_HU
