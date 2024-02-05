@@ -14,8 +14,9 @@ int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint 
             uint yO = y + j;
             if (channels2 == 3 || channels1 == channels2)
             {
-                for (int k = 0; k < channels1; ++k)
+                for (int k = 0; k < channels1; ++k){
                     mOut[(xO + yO * widthO) * channels1 + k] = mIn[(i + j * widthI) * channels2 + k];
+                }
             } else
             {
                 for (int k = 0; k < channels1; ++k)
@@ -129,10 +130,11 @@ unsigned char *compositionSerial(const unsigned char *img1, const unsigned char 
             return nullptr;
         }
     }
+    
 
-
-    uint oSize = widthOut * heightOut * channels1 == 3 ? 3 : channels2;
+    uint oSize = widthOut * heightOut * (channels1 == 3 ? 3 : channels2);
     auto *imgOut = (unsigned char *) calloc(sizeof(unsigned char), oSize);
+    
     switch (side)
     {
         case UP:
