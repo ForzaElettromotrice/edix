@@ -152,7 +152,7 @@ unsigned char *lzTransformer(unsigned char *img, size_t maxSize, size_t *oSize, 
                 {
                     tSize *= 2;
                     auto *tmp1 = (unsigned char *) realloc(tmp, tSize * sizeof(unsigned char));
-                    if (tmp == nullptr)
+                    if (tmp1 == nullptr)
                     {
                         free(oImg);
                         free(tmp);
