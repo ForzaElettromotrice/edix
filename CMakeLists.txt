@@ -25,13 +25,9 @@ set(SOURCE_FILES
         src/functions/blur.cu
         src/functions/imgutils.cpp
         src/functions/colorfilter.cu
-        src/functions/upscale.cu
-        src/functions/downscale.cu
         src/functions/overlap.cu
         src/functions/composition.cu
         src/functions/composition.cuh
-        src/functions/upscale.cuh
-        src/functions/downscale.cuh
         src/functions/compression.cu
         src/functions/compression.cuh
         src/functions/blur.cuh
@@ -51,13 +47,9 @@ set(SOURCE_FILES_TEST
         src/functions/blur.cu
         src/functions/imgutils.cpp
         src/functions/colorfilter.cu
-        src/functions/upscale.cu
-        src/functions/downscale.cu
         src/functions/overlap.cu
         src/functions/composition.cu
         src/functions/composition.cuh
-        src/functions/upscale.cuh
-        src/functions/downscale.cuh
         src/functions/compression.cu
         src/functions/compression.cuh
         src/functions/blur.cuh

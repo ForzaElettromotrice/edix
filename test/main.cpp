@@ -9,7 +9,7 @@ int main()
     uint width2;
     uint height2;
     uint channels2;
-    unsigned char *img1 = loadImage((char *) "images/out.ppm", &width1, &height1, &channels1);          // 1337x965
+    unsigned char *img1 = loadImage((char *) "images/4emp.ppm", &width1, &height1, &channels1);          // 1337x965
     unsigned char *img2 = loadImage((char *) "images/immagine.ppm", &width2, &height2, &channels2);    // 640x360
 
 //    test(img1, img2, &width1, &height1, &width2, &height2, &channels1, &channels2);
@@ -18,9 +18,9 @@ int main()
     uint oHeight;
 
     auto start = std::chrono::high_resolution_clock::now();
-    unsigned char *oImg = scaleCudaBilinear(img1, width1, height1, channels1, 4, true, &oWidth, &oHeight, false);
+    unsigned char *oImg = scaleCudaBicubic(img1, width1, height1, channels1, 2, true, &oWidth, &oHeight, true);
     auto end = std::chrono::high_resolution_clock::now();
-    writeImage((char *) "images/out2.ppm", oImg, oWidth, oHeight, channels1);
+    writeImage((char *) "images/out.ppm", oImg, oWidth, oHeight, channels1);
 
     uint delta = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     printf("Time: %u\n", delta);

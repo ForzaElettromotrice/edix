@@ -53,30 +53,13 @@ unsigned char *compositionSerial(const unsigned char *img1, const unsigned char 
 unsigned char *compositionOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, int side, uint *oWidth, uint *oHeight, int nThread);
 unsigned char *compositionCuda(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, int side, uint *oWidth, uint *oHeight);
 
-unsigned char *upscaleSerialBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
-unsigned char *upscaleOmpBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight, int nThread);
-unsigned char *upscaleCudaBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
-
-unsigned char *upscaleSerialBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
-unsigned char *upscaleOmpBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight, int nThread);
-unsigned char *upscaleCudaBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
-
-unsigned char *downscaleSerialBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
-unsigned char *downscaleOmpBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight, int nThread);
-unsigned char *downscaleCudaBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
-
-unsigned char *downscaleSerialBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
-unsigned char *downscaleOmpBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight, int nThread);
-unsigned char *downscaleCudaBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
-
-unsigned char *upscaleCudaBilinearShared(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
-unsigned char *upscaleCudaBicubicShared(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
-
-unsigned char *downscaleCudaBilinearShared(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight);
-
 unsigned char *scaleSerialBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, bool upscale, uint *oWidth, uint *oHeight);
 unsigned char *scaleOmpBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, bool upscale, uint *oWidth, uint *oHeight, int nThreads);
 unsigned char *scaleCudaBilinear(const unsigned char *h_imgIn, uint width, uint height, uint channels, int factor, bool upscale, uint *oWidth, uint *oHeight, bool useShared);
 
+
+unsigned char *scaleSerialBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, bool upscale, uint *oWidth, uint *oHeight);
+unsigned char *scaleOmpBicubic(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, bool upscale, uint *oWidth, uint *oHeight, int nThreads);
+unsigned char *scaleCudaBicubic(const unsigned char *h_imgIn, uint width, uint height, uint channels, int factor, bool upscale, uint *oWidth, uint *oHeight, bool useShared);
 
 #endif  //EDIX_GRAYSCALE_HU
