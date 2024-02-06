@@ -37,6 +37,8 @@ set(SOURCE_FILES
         src/functions/blur.cuh
         src/functions/overlap.cuh
         src/functions/imgutils.hpp
+        src/functions/scale.cu
+        src/functions/scale.cuh
 )
 
 set(SOURCE_FILES_TEST
@@ -70,6 +72,8 @@ set(SOURCE_FILES_TEST
         src/dbutils/rdutils.cpp
         src/dbutils/rdutils.hpp
         src/functions/imgutils.hpp
+        src/functions/scale.cu
+        src/functions/scale.cuh
 )
 
 # Aggiungi tutte le sorgenti del progetto

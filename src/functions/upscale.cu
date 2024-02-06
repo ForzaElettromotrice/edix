@@ -5,7 +5,6 @@
 #include "upscale.cuh"
 
 
-
 void createSquare(unsigned char square[16][3], const unsigned char *img, int x, int y, uint width, uint height, uint channels)
 {
     for (int i = -1; i < 3; ++i)
@@ -457,12 +456,13 @@ __device__ void createSquareDEVICES(unsigned char square[16][3], const unsigned 
         {
             // if (x - i < 0 || y - j < 0 || x + i >= width || y + j >= height)
             //     continue;
-            for (int k = 0; k < channels; ++k){
+            for (int k = 0; k < channels; ++k)
+            {
                 if (x - i < 0 || y - j < 0 || x + i >= width || y + j >= height)
-                    square[(i + 1) + (j + 1) * 4][k] = img[channels * (x +1 + (y+1) * width) +k];
+                    square[(i + 1) + (j + 1) * 4][k] = img[channels * (x + 1 + (y + 1) * width) + k];
                 else
                     square[(i + 1) + (j + 1) * 4][k] = img[channels * (x + i + (y + j) * width) + k];
-                
+
             }
         }
     }
@@ -588,13 +588,13 @@ __global__ void bicubicUpscaleCUDAShared(const unsigned char *imgIn, unsigned ch
 {
     int absX = (int) (threadIdx.x + blockIdx.x * blockDim.x);
     int absY = (int) (threadIdx.y + blockIdx.y * blockDim.y);
-   
+
     int relX = threadIdx.x;
     int relY = threadIdx.y;
 
     uint oWidth = width * factor;
     uint oHeight = height * factor;
-    
+
     if (absX >= oWidth && absY >= oHeight)
         return;
 
@@ -603,19 +603,22 @@ __global__ void bicubicUpscaleCUDAShared(const unsigned char *imgIn, unsigned ch
 
     uint oldX = absX / factor;
     uint oldY = absY / factor;
-    
-    if (relX == 0 && relY == 0){
-        for(int i= 0; i < sSize ; i++){
-            for(int j = 0; j < sSize ; j++){
-            
+
+    if (relX == 0 && relY == 0)
+    {
+        for (int i = 0; i < sSize; i++)
+        {
+            for (int j = 0; j < sSize; j++)
+            {
+
                 if (oldX + i >= width || oldY + j >= height)
                     continue;
-                for(int k = 0; k < channels ; k++)
-                    shared[(i+j*sSize)*channels+k] = imgIn[(oldX + i + (oldY + j) * width)*channels +k];
+                for (int k = 0; k < channels; k++)
+                    shared[(i + j * sSize) * channels + k] = imgIn[(oldX + i + (oldY + j) * width) * channels + k];
             }
         }
     }
-    
+
     __syncthreads();
 
     int x;
@@ -626,37 +629,36 @@ __global__ void bicubicUpscaleCUDAShared(const unsigned char *imgIn, unsigned ch
     int pixel[3];
 
 
-    
-        x = relX / factor;
-        y = relY / factor;
+    x = relX / factor;
+    y = relY / factor;
 
-        alpha = ((double) relX / factor) - x;
-        beta = ((double) relY / factor) - y;
+    alpha = ((double) relX / factor) - x;
+    beta = ((double) relY / factor) - y;
 
 
-        createSquareDEVICES(square, shared, x, y, sSize, sSize, channels);
+    createSquareDEVICES(square, shared, x, y, sSize, sSize, channels);
 
-        for (int k = 0; k < channels; k++)
-        {
-            double p1 = cubicInterpolateDEVICE(square[0][k], square[1][k], square[2][k], square[3][k], alpha);
-            double p2 = cubicInterpolateDEVICE(square[4][k], square[5][k], square[6][k], square[7][k], alpha);
-            double p3 = cubicInterpolateDEVICE(square[8][k], square[9][k], square[10][k], square[11][k], alpha);
-            double p4 = cubicInterpolateDEVICE(square[12][k], square[13][k], square[14 + k][k], square[15][k], alpha);
-            double p = cubicInterpolateDEVICE(p1, p2, p3, p4, beta);
+    for (int k = 0; k < channels; k++)
+    {
+        double p1 = cubicInterpolateDEVICE(square[0][k], square[1][k], square[2][k], square[3][k], alpha);
+        double p2 = cubicInterpolateDEVICE(square[4][k], square[5][k], square[6][k], square[7][k], alpha);
+        double p3 = cubicInterpolateDEVICE(square[8][k], square[9][k], square[10][k], square[11][k], alpha);
+        double p4 = cubicInterpolateDEVICE(square[12][k], square[13][k], square[14 + k][k], square[15][k], alpha);
+        double p = cubicInterpolateDEVICE(p1, p2, p3, p4, beta);
 
-            if (p > 255)
-                p = 255;
-            else if (p < 0)
-                p = 0;
+        if (p > 255)
+            p = 255;
+        else if (p < 0)
+            p = 0;
 
-            pixel[k] = (int) p;
+        pixel[k] = (int) p;
 
-        }
+    }
 
-        imgOut[(absX + absY * oWidth)*channels] = pixel[0];
-        imgOut[(absX + absY * oWidth)*channels + 1] = pixel[1];
-        imgOut[(absX + absY * oWidth)*channels + 2] = pixel[2];
-    
+    imgOut[(absX + absY * oWidth) * channels] = pixel[0];
+    imgOut[(absX + absY * oWidth) * channels + 1] = pixel[1];
+    imgOut[(absX + absY * oWidth) * channels + 2] = pixel[2];
+
 }
 unsigned char *upscaleCudaBicubicShared(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, uint *oWidth, uint *oHeight)
 {
