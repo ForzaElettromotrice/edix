@@ -95,7 +95,7 @@ triple_t *lzTriples(unsigned char *img, size_t maxSize, size_t *oSize, int n)
             if (tmp == nullptr)
             {
                 free(triples);
-                fprintf(stderr, RED "Error: " RESET "Error while realloc!\n");
+                E_Print(RED "Error: " RESET "Error while realloc!\n");
                 return nullptr;
             }
             triples = tmp;
@@ -156,7 +156,7 @@ unsigned char *lzTransformer(unsigned char *img, size_t maxSize, size_t *oSize, 
                     {
                         free(oImg);
                         free(tmp);
-                        fprintf(stderr, RED "Error: " RESET "Error while realloc!\n");
+                        E_Print(RED "Error: " RESET "Error while realloc!\n");
                         return nullptr;
                     }
                     tmp = tmp1;
@@ -175,7 +175,7 @@ unsigned char *lzTransformer(unsigned char *img, size_t maxSize, size_t *oSize, 
                 {
                     free(oImg);
                     free(tmp);
-                    fprintf(stderr, RED "Error: " RESET "Error while realloc!\n");
+                    E_Print(RED "Error: " RESET "Error while realloc!\n");
                     return nullptr;
                 }
                 oImg = tmp1;
@@ -195,7 +195,7 @@ unsigned char *lzTransformer(unsigned char *img, size_t maxSize, size_t *oSize, 
                 {
                     free(oImg);
                     free(tmp);
-                    fprintf(stderr, RED "Error: " RESET "Error while realloc!\n");
+                    E_Print(RED "Error: " RESET "Error while realloc!\n");
                     return nullptr;
                 }
                 oImg = tmp1;
@@ -237,7 +237,7 @@ unsigned char *decoder(const unsigned char *img, size_t maxSize, size_t *oSize)
                 if (tmp == nullptr)
                 {
                     free(oImg);
-                    fprintf(stderr, RED "Error: " RESET "Error while realloc!\n");
+                    E_Print(RED "Error: " RESET "Error while realloc!\n");
                     return nullptr;
                 }
                 oImg = tmp;
@@ -259,7 +259,7 @@ unsigned char *decoder(const unsigned char *img, size_t maxSize, size_t *oSize)
                 if (tmp == nullptr)
                 {
                     free(oImg);
-                    fprintf(stderr, RED "Error: " RESET "Error while realloc!\n");
+                    E_Print(RED "Error: " RESET "Error while realloc!\n");
                     return nullptr;
                 }
                 oImg = tmp;
@@ -272,7 +272,7 @@ unsigned char *decoder(const unsigned char *img, size_t maxSize, size_t *oSize)
         {
             *oSize = 0;
             free(oImg);
-            fprintf(stderr, RED "Error: " RESET "Errore, immagine compressa corrotta!\n");
+            E_Print(RED "Error: " RESET "Errore, immagine compressa corrotta!\n");
             return nullptr;
         }
     }

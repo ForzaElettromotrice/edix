@@ -74,7 +74,7 @@ unsigned char *compositionSerial(const unsigned char *img1, const unsigned char 
             break;
         default:
         {
-            fprintf(stderr, RED "Error: " RESET "Parametro side non valido!\n");
+            E_Print(RED "Error: " RESET "Parametro side non valido!\n");
             return nullptr;
         }
     }
@@ -124,7 +124,7 @@ unsigned char *compositionOmp(const unsigned char *img1, const unsigned char *im
             break;
         default:
         {
-            fprintf(stderr, RED "Error: " RESET "Parametro side non valido!\n");
+            E_Print(RED "Error: " RESET "Parametro side non valido!\n");
             return nullptr;
         }
     }

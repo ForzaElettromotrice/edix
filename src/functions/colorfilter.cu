@@ -45,7 +45,7 @@ unsigned char *colorFilterSerialOld(const unsigned char *imgIn, uint width, uint
     filteredImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * 3);
     if (filteredImage == nullptr)
     {
-        fprintf(stderr, RED "FUNX Error: " RESET "Errore durante l'allocazione di memoria");
+        E_Print(RED "FUNX Error: " RESET "Errore durante l'allocazione di memoria");
         return nullptr;
     }
 
@@ -118,7 +118,7 @@ unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint heigh
 
     if (filteredImage == nullptr)
     {
-        fprintf(stderr, RED "FUNX Error: " RESET "Errore durante l'allocazione di memoria");
+        E_Print(RED "FUNX Error: " RESET "Errore durante l'allocazione di memoria");
         return nullptr;
     }
 
@@ -168,7 +168,7 @@ unsigned char *colorFilterCuda(const unsigned char *imgIn, uint width, uint heig
     h_imgOut = (unsigned char *) malloc(width * height * 3 * sizeof(unsigned char));
     if (h_imgOut == nullptr)
     {
-        fprintf(stderr, RED "Error: " RESET "Errore nell'allocazione della memoria\n");
+        E_Print(RED "Error: " RESET "Errore nell'allocazione della memoria\n");
         munlock(imgIn, width * height * 3 * sizeof(unsigned char));
         return nullptr;
     }
@@ -203,7 +203,11 @@ unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint he
     *oHeight = height;
 
     auto *imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
-
+    if (imgOut == nullptr)
+    {
+        E_Print("Errore durante la malloc!\n");
+        return nullptr;
+    }
 
     return imgOut;
 }

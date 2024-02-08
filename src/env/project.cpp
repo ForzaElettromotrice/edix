@@ -41,7 +41,7 @@ char *askComment()
     uint bRead = getline(&line, &aSize, stdin);
     if (bRead == -1)
     {
-        fprintf(stderr, RED "\nError: " RESET "Errore inserimento dati\n");
+        E_Print(RED "\nError: " RESET "Errore inserimento dati\n");
         return nullptr;
     } else if (bRead == 1 || strcmp(line, "n\n") == 0 || strcmp(line, "N\n") == 0)
     {
@@ -120,7 +120,7 @@ int cloneProject(char *projectPath, char *path, char *dixName)
 
         if (stat(newPath, &file_stat) == -1)
         {
-            fprintf(stderr, RED "Error:" RESET "Errore nell'ottenere le informazioni sul file\n");
+            E_Print(RED "Error:" RESET "Errore nell'ottenere le informazioni sul file\n");
             continue;
         }
         if (S_ISDIR(file_stat.st_mode))

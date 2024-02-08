@@ -28,7 +28,7 @@ unsigned char *loadImage(char *path, uint *width, uint *height, uint *channels)
     } else
     {
         free(copy);
-        fprintf(stderr, RED "Error: " RESET "Formato immagine non valido!\n");
+        E_Print(RED "Error: " RESET "Formato immagine non valido!\n");
         return nullptr;
     }
 
@@ -52,7 +52,7 @@ int writeImage(char *path, unsigned char *img, uint width, uint height, uint cha
     else
     {
         free(copy);
-        fprintf(stderr, RED "Error: " RESET "Formato immagine non valido!\n");
+        E_Print(RED "Error: " RESET "Formato immagine non valido!\n");
         return 1;
     }
 
@@ -68,7 +68,7 @@ unsigned char *loadPPM(const char *path, uint *width, uint *height, uint *channe
 
     if (!file)
     {
-        fprintf(stderr, RED "Error: " RESET "Failed to open file %s\n", path);
+        E_Print(RED "Error: " RESET "Failed to open file %s\n", path);
         return nullptr;
     }
 
@@ -83,7 +83,7 @@ unsigned char *loadPPM(const char *path, uint *width, uint *height, uint *channe
     } else
     {
         fclose(file);
-        fprintf(stderr, RED "Error: " RESET "Invalid PPM file\n");
+        E_Print(RED "Error: " RESET "Invalid PPM file\n");
         return nullptr;
     }
 
@@ -97,7 +97,7 @@ unsigned char *loadPPM(const char *path, uint *width, uint *height, uint *channe
     if (*width <= 0 || *height <= 0)
     {
         fclose(file);
-        fprintf(stderr, RED "Error: " RESET "Invalid PPM file\n");
+        E_Print(RED "Error: " RESET "Invalid PPM file\n");
         return nullptr;
     }
 
@@ -112,7 +112,7 @@ unsigned char *loadPPM(const char *path, uint *width, uint *height, uint *channe
     if (!img)
     {
         fclose(file);
-        fprintf(stderr, RED "Error: " RESET "Failed to allocate memory\n");
+        E_Print(RED "Error: " RESET "Failed to allocate memory\n");
         return nullptr;
     }
 
@@ -126,7 +126,7 @@ unsigned char *loadJpeg(const char *path, uint *width, uint *height, uint *chann
     FILE *jpeg_file = fopen(path, "rb");
     if (!jpeg_file)
     {
-        fprintf(stderr, RED "Error: " RESET "Errore nell'apertura del file JPEG.\n");
+        E_Print(RED "Error: " RESET "Errore nell'apertura del file JPEG.\n");
         return nullptr;
     }
 
@@ -183,7 +183,7 @@ unsigned char *loadPng(const char *path, uint *width, uint *height, uint *channe
     FILE *png_file = fopen(path, "rb");
     if (!png_file)
     {
-        fprintf(stderr, RED "Error: " RESET "Errore nell'apertura del file PNG.\n");
+        E_Print(RED "Error: " RESET "Errore nell'apertura del file PNG.\n");
         return nullptr;
     }
 
@@ -192,7 +192,7 @@ unsigned char *loadPng(const char *path, uint *width, uint *height, uint *channe
     if (!png_ptr)
     {
         fclose(png_file);
-        fprintf(stderr, RED "Error: " RESET "Errore nell'inizializzazione della struttura PNG.\n");
+        E_Print(RED "Error: " RESET "Errore nell'inizializzazione della struttura PNG.\n");
         return nullptr;
     }
 
@@ -201,14 +201,14 @@ unsigned char *loadPng(const char *path, uint *width, uint *height, uint *channe
     {
         png_destroy_read_struct(&png_ptr, (png_infopp) nullptr, (png_infopp) nullptr);
         fclose(png_file);
-        fprintf(stderr, RED "Error: " RESET "Errore nell'inizializzazione della struttura di informazioni PNG.\n");
+        E_Print(RED "Error: " RESET "Errore nell'inizializzazione della struttura di informazioni PNG.\n");
         return nullptr;
     }
 
     // Impostazione della gestione degli errori durante la lettura del PNG
     if (setjmp(png_jmpbuf(png_ptr)))
     {
-        fprintf(stderr, RED "Error: " RESET "Errore durante la lettura del file PNG.\n");
+        E_Print(RED "Error: " RESET "Errore durante la lettura del file PNG.\n");
         png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp) nullptr);
         fclose(png_file);
         return nullptr;
@@ -272,14 +272,14 @@ void writePPM(const char *path, unsigned char *img, uint width, uint height, uin
 {
     if (channels != 3 && channels != 1)
     {
-        fprintf(stderr, RED "Error: " RESET "Canali non validi!\n");
+        E_Print(RED "Error: " RESET "Canali non validi!\n");
         return;
     }
     FILE *file = fopen(path, "wb");
 
     if (!file)
     {
-        fprintf(stderr, "Failed to open file %s\n", path);
+        E_Print("Failed to open file %s\n", path);
         return;
     }
 
@@ -294,7 +294,7 @@ void writeJpeg(const char *path, unsigned char *img, uint width, uint height, in
 {
     if (channels != 3 && channels != 1)
     {
-        fprintf(stderr, RED "Error: " RESET "Canali non validi!\n");
+        E_Print(RED "Error: " RESET "Canali non validi!\n");
         return;
     }
 
@@ -303,7 +303,7 @@ void writeJpeg(const char *path, unsigned char *img, uint width, uint height, in
     FILE *outfile = fopen(path, "wb");
     if (!outfile)
     {
-        fprintf(stderr, RED "Error: " RESET "Errore nell'apertura del file di output.");
+        E_Print(RED "Error: " RESET "Errore nell'apertura del file di output.");
         return;
     }
     // Inizializzazione della struttura jpeg_compress_struct

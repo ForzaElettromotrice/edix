@@ -24,10 +24,10 @@ unsigned char *grayscaleSerial(const unsigned char *imgIn, uint width, uint heig
 
     if (img_out == nullptr)
     {
-        fprintf(stderr, RED
-                        "Error: "
-                        RESET
-                        "Errore nell'allocazione della memoria\n");
+        E_Print(RED
+                "Error: "
+                RESET
+                "Errore nell'allocazione della memoria\n");
         return nullptr;
     }
 
@@ -64,7 +64,7 @@ unsigned char *grayscaleOmp(const unsigned char *imgIn, uint width, uint height,
 
     if (img_out == nullptr)
     {
-        fprintf(stderr, RED "Error: " RESET "Errore nell'allocazione della memoria");
+        E_Print(RED "Error: " RESET "Errore nell'allocazione della memoria");
         return nullptr;
     }
 
@@ -101,7 +101,7 @@ unsigned char *grayscaleCuda(const unsigned char *imgIn, uint width, uint height
     h_imgOut = (unsigned char *) malloc(width * height * sizeof(unsigned char *));
     if (h_imgOut == nullptr)
     {
-        fprintf(stderr, RED "Error: " RESET "Errore nell'allocazione della memoria\n");
+        E_Print(RED "Error: " RESET "Errore nell'allocazione della memoria\n");
         munlock(imgIn, width * height * 3 * sizeof(unsigned char));
         return nullptr;
     }

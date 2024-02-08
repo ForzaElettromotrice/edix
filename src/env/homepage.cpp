@@ -177,7 +177,7 @@ bool isValidName(char *word)
     for (size_t i = 0; i < strlen(word) - 1; ++i)
         if (!isalnum(word[i]) && word[i] != '_')
         {
-            fprintf(stderr, RED "Error: " RESET "Invalid character " BOLD ITALIC "%c\n" RESET, word[i]);
+            E_Print(RED "Error: " RESET "Invalid character " BOLD ITALIC "%c\n" RESET, word[i]);
             return false;
         }
 
@@ -197,7 +197,7 @@ bool isValidPath(char *path)
         char *tmp = (char *) malloc((strlen(path) + strlen(home) + 1) * sizeof(char));
         if (tmp == nullptr)
         {
-            fprintf(stderr, RED "Error: " RESET "Error while malloc!\n");
+            E_Print(RED "Error: " RESET "Error while malloc!\n");
             return false;
         }
         sprintf(tmp, "%s%s", home, path + 1);
@@ -208,7 +208,7 @@ bool isValidPath(char *path)
 
     if (result == nullptr)
     {
-        fprintf(stderr, RED "Error: " RESET "Path non valido!\n");
+        E_Print(RED "Error: " RESET "Path non valido!\n");
         return false;
     }
 
@@ -216,7 +216,7 @@ bool isValidPath(char *path)
     if (tmp == nullptr)
     {
         free(result);
-        fprintf(stderr, RED "Error: " RESET "Error while realloc!\n");
+        E_Print(RED "Error: " RESET "Error while realloc!\n");
         return false;
     }
     path = tmp;
@@ -229,7 +229,7 @@ bool isValidComp(char *comp)
 {
     if (strcmp(comp, "PPM") != 0 && strcmp(comp, "PNG") != 0 && strcmp(comp, "JPEG") != 0)
     {
-        fprintf(stderr, RED "Error: " RESET "Risposta non valida!\n");
+        E_Print(RED "Error: " RESET "Risposta non valida!\n");
         return false;
     }
     return true;
@@ -238,7 +238,7 @@ bool isValidTPP(char *tpp)
 {
     if (strcmp(tpp, "Serial") != 0 && strcmp(tpp, "OMP") != 0 && strcmp(tpp, "CUDA") != 0)
     {
-        fprintf(stderr, RED "Error: " RESET "Risposta non valida!\n");
+        E_Print(RED "Error: " RESET "Risposta non valida!\n");
         return false;
     }
     return true;
@@ -247,7 +247,7 @@ bool isValidTUP(char *tup)
 {
     if (strcmp(tup, "Bilinear") != 0 && strcmp(tup, "Bicubic") != 0)
     {
-        fprintf(stderr, RED "Error: " RESET "Risposta non valida!\n");
+        E_Print(RED "Error: " RESET "Risposta non valida!\n");
         return false;
     }
     return true;
@@ -256,7 +256,7 @@ bool isValidMode(char *mode)
 {
     if (strcmp(mode, "Immediate") != 0 && strcmp(mode, "Programmed") != 0)
     {
-        fprintf(stderr, RED "Error: " RESET "Risposta non valida!\n");
+        E_Print(RED "Error: " RESET "Risposta non valida!\n");
         return false;
     }
     return true;
@@ -265,7 +265,7 @@ bool isValidTTS(char *tts)
 {
     if (strtoul(tts, nullptr, 10) < 5)
     {
-        fprintf(stderr, RED "Error: " RESET "Risposta non valida!\n");
+        E_Print(RED "Error: " RESET "Risposta non valida!\n");
         return false;
     }
     return true;
@@ -274,7 +274,7 @@ bool isValidBackup(char *backup)
 {
     if (strcmp(backup, "y") != 0 && strcmp(backup, "n") != 0 && strcmp(backup, "Y") != 0 && strcmp(backup, "N") != 0)
     {
-        fprintf(stderr, RED "Error: " RESET "Risposta non valida!\n");
+        E_Print(RED "Error: " RESET "Risposta non valida!\n");
         return false;
     }
     return true;
@@ -310,7 +310,7 @@ int parseHome(char *line, Env *env)
     else if (strcmp(token, "exit") == 0)
         parseExitH(env);
     else
-        fprintf(stderr, RED "Error: " RESET "Command not found\n");
+        E_Print(RED "Error: " RESET "Command not found\n");
 
 
     free(copy);
@@ -444,10 +444,10 @@ int newP(char *name, bool ask, Env *env)
     char command[256];
     sprintf(command, "mkdir %s > /dev/null 2> /dev/null", path);
     if (system(command) != 0)
-        fprintf(stderr, RED
-                        "Error: "
-                        RESET
-                        "Errore nella creazione della cartella!\n");
+        E_Print(RED
+                "Error: "
+                RESET
+                "Errore nella creazione della cartella!\n");
 
     if (chdir(path) != 0)
     {

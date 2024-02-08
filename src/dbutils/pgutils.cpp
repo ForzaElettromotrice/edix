@@ -11,7 +11,7 @@ int checkDb()
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        fprintf(stderr, RED "POSTGRES Error :" RESET "di connessione a PostgreSQL: %s\n", PQerrorMessage(conn));
+        E_Print(RED "POSTGRES Error :" RESET "di connessione a PostgreSQL: %s\n", PQerrorMessage(conn));
         return 1;
     }
     const char *roleNameToCheck = "edix";
@@ -234,9 +234,9 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
         const char *sqlstate = PQresultErrorField(res, PG_DIAG_SQLSTATE);
 
         if (strcmp(sqlstate, "23505") == 0)
-            fprintf(stderr, RED "POSTGRES Error:" RESET " Questo progetto già esiste!\n");
+            E_Print(RED "POSTGRES Error:" RESET " Questo progetto già esiste!\n");
         else
-            fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQerrorMessage(conn));
+            E_Print("Errore nell'esecuzione della query: %s\n", PQerrorMessage(conn));
 
 
         PQclear(res);
@@ -345,9 +345,9 @@ int addDix(char *projectName, char *dixName, char *comment, char **images, char 
         const char *sqlstate = PQresultErrorField(res, PG_DIAG_SQLSTATE);
 
         if (strcmp(sqlstate, "23505") == 0)
-            fprintf(stderr, RED "Error:" RESET " Questo dix già esiste!\n");
+            E_Print(RED "Error:" RESET " Questo dix già esiste!\n");
         else
-            fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQerrorMessage(conn));
+            E_Print("Errore nell'esecuzione della query: %s\n", PQerrorMessage(conn));
 
         free(query);
         PQclear(res);
@@ -447,7 +447,7 @@ int updateSettings(int id, char *tup, char *mode, char *comp, u_int tts, char *t
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK)
     {
-        fprintf(stderr, "Query di UPDATE fallita: %s", PQresultErrorMessage(result));
+        E_Print("Query di UPDATE fallita: %s", PQresultErrorMessage(result));
         PQclear(result);
         PQfinish(conn);
         return 1;
@@ -468,7 +468,7 @@ char *getProjects()
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        fprintf(stderr, "Errore di connessione: %s\n", PQerrorMessage(conn));
+        E_Print("Errore di connessione: %s\n", PQerrorMessage(conn));
         return nullptr;
     }
 
@@ -481,7 +481,7 @@ char *getProjects()
     {
         PQclear(result);
         PQfinish(conn);
-        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        E_Print("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
         return nullptr;
     }
 
@@ -513,7 +513,7 @@ char *getDixs(char *projectName)
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        fprintf(stderr, "Errore di connessione: %s\n", PQerrorMessage(conn));
+        E_Print("Errore di connessione: %s\n", PQerrorMessage(conn));
         return nullptr;
     }
 
@@ -526,7 +526,7 @@ char *getDixs(char *projectName)
     {
         PQclear(result);
         PQfinish(conn);
-        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        E_Print("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
         return nullptr;
     }
 
@@ -567,7 +567,7 @@ char **getProject(PGconn *conn, char *projectName)
 
     if (PQresultStatus(result) != PGRES_TUPLES_OK)
     {
-        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        E_Print("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
         PQclear(result);
         PQfinish(conn);
         return nullptr;
@@ -600,7 +600,7 @@ char **getSettings(PGconn *conn, char *projectName)
 
     if (PQresultStatus(result) != PGRES_TUPLES_OK)
     {
-        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        E_Print("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
         PQclear(result);
         PQfinish(conn);
         return nullptr;
@@ -634,7 +634,7 @@ char *getPath(PGconn *conn, char *name)
     {
         PQclear(result);
         PQfinish(conn);
-        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        E_Print("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
         return nullptr;
     }
 
@@ -648,7 +648,7 @@ unsigned char *getImageData(char *path, size_t *dim)
     FILE *file = fopen(path, "rb");
     if (!file)
     {
-        fprintf(stderr, RED "POSTGRES Error: " RESET "Errore nell'apertura del file -> %s\n", strerror(errno));
+        E_Print(RED "POSTGRES Error: " RESET "Errore nell'apertura del file -> %s\n", strerror(errno));
         return nullptr;
     }
 
@@ -662,7 +662,7 @@ unsigned char *getImageData(char *path, size_t *dim)
     if (bytea_data == nullptr)
     {
         fclose(file);
-        fprintf(stderr, RED "POSTGRES Error:" RESET "Errore nell'allocazione di memoria\n");
+        E_Print(RED "POSTGRES Error:" RESET "Errore nell'allocazione di memoria\n");
         return nullptr;
     }
 
@@ -682,7 +682,7 @@ bool existProject(char *name)
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        fprintf(stderr, "Errore di connessione: %s\n", PQerrorMessage(conn));
+        E_Print("Errore di connessione: %s\n", PQerrorMessage(conn));
         return false;
     }
 
@@ -695,7 +695,7 @@ bool existProject(char *name)
     {
         PQclear(result);
         PQfinish(conn);
-        fprintf(stderr, "Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        E_Print("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
         return false;
     }
 
@@ -769,7 +769,7 @@ int saveImage(char *path, char *img)
     FILE *file = fopen(path, "wb");
     if (!file)
     {
-        fprintf(stderr, RED "POSTGRES Error: " RESET "Errore nell'apertura del file -> %s\n", strerror(errno));
+        E_Print(RED "POSTGRES Error: " RESET "Errore nell'apertura del file -> %s\n", strerror(errno));
         return 1;
     }
 

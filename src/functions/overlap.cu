@@ -9,7 +9,7 @@ unsigned char *overlapSerial(const unsigned char *img1, const unsigned char *img
 {
     if (x + width2 > width1 || y + height2 > height1)
     {
-        fprintf(stderr, RED "Error: " RESET "La secondo immagine è troppo grande per essere inserita li!\n");
+        E_Print(RED "Error: " RESET "La secondo immagine è troppo grande per essere inserita li!\n");
         return nullptr;
     }
 
@@ -53,7 +53,7 @@ unsigned char *overlapCuda(const unsigned char *img1, const unsigned char *img2,
 {
     if (x + width2 > width1 || y + height2 > height1)
     {
-        fprintf(stderr, RED "Error: " RESET "La secondo immagine è troppo grande per essere inserita li!\n");
+        E_Print(RED "Error: " RESET "La secondo immagine è troppo grande per essere inserita li!\n");
         return nullptr;
     }
     //host

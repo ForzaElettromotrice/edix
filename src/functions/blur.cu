@@ -10,7 +10,7 @@ unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, u
     blurImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * 3);
     if (blurImage == nullptr)
     {
-        fprintf(stderr, RED "FUNX Error: " RESET "Errore nell'allocare memoria\n");
+        E_Print(RED "FUNX Error: " RESET "Errore nell'allocare memoria\n");
         return nullptr;
     }
 
@@ -57,7 +57,7 @@ unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, uint
     auto *blurImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * 3);
     if (blurImage == nullptr)
     {
-        fprintf(stderr, RED "FUNX Error: " RESET "Errore nell'allocare memoria\n");
+        E_Print(RED "FUNX Error: " RESET "Errore nell'allocare memoria\n");
         return nullptr;
     }
 //TODO: collapse

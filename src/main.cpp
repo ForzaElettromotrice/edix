@@ -16,10 +16,10 @@ int main(int argc, char *argv[])
             inputLoop();
             break;
         default:
-            fprintf(stderr, RED
-                            "usage:"
-                            RESET
-                            " ./edix\n");
+            E_Print(RED
+                    "usage:"
+                    RESET
+                    " ./edix\n");
             exit(EXIT_FAILURE);
     }
 

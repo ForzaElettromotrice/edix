@@ -11,10 +11,10 @@ int openConnection(redisContext **context)
     {
         if (*context)
         {
-            fprintf(stderr, RED "Error" RESET "while connecting to redis: %s\n", (*context)->errstr);
+            E_Print(RED "Error" RESET "while connecting to redis: %s\n", (*context)->errstr);
             redisFree(*context);
         } else
-            fprintf(stderr, RED"Error: " RESET "Unable to initialize connection to redis\n");
+            E_Print(RED"Error: " RESET "Unable to initialize connection to redis\n");
 
         return 1;
     }
@@ -148,7 +148,7 @@ int setElementToRedis(char *key, char *value)
     auto *reply = (redisReply *) redisCommand(context, "RPUSH %s %s", key, value);
     if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
     {
-        fprintf(stderr, RED "REDIS Error: " RESET " while appending an element to list \n");
+        E_Print(RED "REDIS Error: " RESET " while appending an element to list \n");
         freeReplyObject(reply);
         redisFree(context);
         return 1;
@@ -174,7 +174,7 @@ char *getStrFromKey(char *key)
         value = strdup(reply->str);
     } else
     {
-        fprintf(stderr, RED "REDIS Error: " RESET "the object you received is not a str!\n");
+        E_Print(RED "REDIS Error: " RESET "the object you received is not a str!\n");
         return nullptr;
     }
 
@@ -199,7 +199,7 @@ int getIntFromKey(char *key)
         value = (int) strtol(reply->str, nullptr, 10);
     } else
     {
-        fprintf(stderr, RED "REDIS Error: " RESET "the object you received is not a str!\n");
+        E_Print(RED "REDIS Error: " RESET "the object you received is not a str!\n");
         return -9999;
     }
 
@@ -216,7 +216,7 @@ char **getCharArrayFromRedis(char *key)
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY)
     {
         D_Print("reply type : %d\n", reply->type);
-        fprintf(stderr, RED "REDIS Error: " RESET "Error while retrieving set elements\n");
+        E_Print(RED "REDIS Error: " RESET "Error while retrieving set elements\n");
         freeReplyObject(reply);
         redisFree(context);
         exit(EXIT_FAILURE);
@@ -226,7 +226,7 @@ char **getCharArrayFromRedis(char *key)
     char **elements_array = (char **) malloc((num_elements + 1) * sizeof(char *));
     if (elements_array == nullptr)
     {
-        fprintf(stderr, RED "REDIS Error: " RESET "Error while allocating array\n");
+        E_Print(RED "REDIS Error: " RESET "Error while allocating array\n");
         freeReplyObject(reply);
         redisFree(context);
         return nullptr;
@@ -237,7 +237,7 @@ char **getCharArrayFromRedis(char *key)
         elements_array[i] = strdup(reply->element[i]->str);
         if (elements_array[i] == nullptr)
         {
-            fprintf(stderr, RED "REDIS Error: " RESET "Error while duplicating string\n");
+            E_Print(RED "REDIS Error: " RESET "Error while duplicating string\n");
             freeReplyObject(reply);
             free(elements_array);
             redisFree(context);
@@ -260,7 +260,7 @@ int removeKeyFromRedis(char *key)
     auto *reply = (redisReply *) redisCommand(context, "DEL %s", key);
     if (reply == nullptr)
     {
-        fprintf(stderr, RED "REDIS Error: " RESET "Error while deleting key: %s\n", key);
+        E_Print(RED "REDIS Error: " RESET "Error while deleting key: %s\n", key);
         return 1;
     }
 

@@ -227,7 +227,7 @@ unsigned char *scaleSerialBilinear(const unsigned char *imgIn, uint width, uint 
     auto *imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
     if (imgOut == nullptr)
     {
-        fprintf(stderr, RED "Error: " RESET "Error while malloc!\n");
+        E_Print(RED "Error: " RESET "Error while malloc!\n");
         return nullptr;
     }
 
@@ -273,7 +273,7 @@ unsigned char *scaleOmpBilinear(const unsigned char *imgIn, uint width, uint hei
     auto *imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
     if (imgOut == nullptr)
     {
-        fprintf(stderr, RED "Error: " RESET "Error while malloc!\n");
+        E_Print(RED "Error: " RESET "Error while malloc!\n");
         return nullptr;
     }
 
@@ -321,7 +321,7 @@ unsigned char *scaleCudaBilinear(const unsigned char *h_imgIn, uint width, uint 
     auto *h_imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
     if (h_imgOut == nullptr)
     {
-        fprintf(stderr, RED "Error: " RESET "Error while malloc!\n");
+        E_Print(RED "Error: " RESET "Error while malloc!\n");
         return nullptr;
     }
     mlock(h_imgIn, iSize * sizeof(unsigned char));
@@ -362,7 +362,7 @@ unsigned char *scaleSerialBicubic(const unsigned char *imgIn, uint width, uint h
     auto *imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
     if (imgOut == nullptr)
     {
-        fprintf(stderr, RED "Error: " RESET "Error while malloc!\n");
+        E_Print(RED "Error: " RESET "Error while malloc!\n");
         return nullptr;
     }
 
@@ -415,7 +415,7 @@ unsigned char *scaleOmpBicubic(const unsigned char *imgIn, uint width, uint heig
     auto *imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
     if (imgOut == nullptr)
     {
-        fprintf(stderr, RED "Error: " RESET "Error while malloc!\n");
+        E_Print(RED "Error: " RESET "Error while malloc!\n");
         return nullptr;
     }
 
@@ -468,7 +468,7 @@ unsigned char *scaleCudaBicubic(const unsigned char *h_imgIn, uint width, uint h
     auto *h_imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
     if (h_imgOut == nullptr)
     {
-        fprintf(stderr, RED "Error: " RESET "Error while malloc!\n");
+        E_Print(RED "Error: " RESET "Error while malloc!\n");
         return nullptr;
     }
     mlock(h_imgIn, iSize * sizeof(unsigned char));
