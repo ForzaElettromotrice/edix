@@ -5,198 +5,34 @@
 #include "colorfilter.cuh"
 
 
-__global__ void colorFilterCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, uint r, uint g, uint b, uint tolerance)
+__global__ void colorFilter(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, uint channels, int r, int g, int b, uint squareTolerance)
 {
-    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    int x = (int) (threadIdx.x + blockIdx.x * blockDim.x);
+    int y = (int) (threadIdx.y + blockIdx.y * blockDim.y);
 
-    int i = idx * 3;
+    if (x >= width || y >= height)
+        return;
 
-    if (i < 3 * width * height)
-    {
-        int diffR = imgIn[i] - (int) r;
-        int diffG = imgIn[i + 1] - (int) g;
-        int diffB = imgIn[i + 2] - (int) b;
+    int diff[] = {0, 0, 0};
+    int RGB[] = {r, g, b};
+    uint squareDistance;
 
-        uint distance = diffR * diffR + diffG * diffG + diffB * diffB;
+    for (int k = 0; k < channels; ++k)
+        diff[k] = imgIn[(x + y * width) * channels + k] - RGB[k];
 
-        if (distance > tolerance * tolerance)
-        {
-            imgOut[i] = (imgIn[i] + (int) r) / 2;
-            imgOut[i + 1] = (imgIn[i + 1] + (int) g) / 2;
-            imgOut[i + 2] = (imgIn[i + 2] + (int) b) / 2;
-        } else
-        {
-            imgOut[i] = imgIn[i];
-            imgOut[i + 1] = imgIn[i + 1];
-            imgOut[i + 2] = imgIn[i + 2];
-        }
+    squareDistance = (uint) (pow(diff[0], 2) + pow(diff[1], 2) + pow(diff[2], 2));
 
-    }
+    if (squareDistance > squareTolerance)
+        for (int k = 0; k < channels; ++k)
+            imgOut[(x + y * width) * channels + k] = (imgOut[(x + y * width) * channels + k] + diff[k]) / 2;
+    else
+        for (int k = 0; k < channels; ++k)
+            imgOut[(x + y * width) * channels + k] = imgIn[(x + y * width) * channels + k];
+
 }
 
 
-unsigned char *colorFilterSerialOld(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
-{
-    //TODO: rifare tutta la funzione
-    unsigned char *filteredImage;
-
-    uint totalPixels = width * height;
-
-    filteredImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * 3);
-    if (filteredImage == nullptr)
-    {
-        E_Print(RED "FUNX Error: " RESET "Errore durante l'allocazione di memoria");
-        return nullptr;
-    }
-
-    for (int i = 0; i < 3 * width * height; i += 3)
-    {
-        int diffR;
-        int diffG;
-        int diffB;
-        if (channels == 3)
-        {
-            diffR = imgIn[i] - (int) r;
-            diffG = imgIn[i + 1] - (int) g;
-            diffB = imgIn[i + 2] - (int) b;
-        } else
-        {
-            diffR = imgIn[i] - (int) r;
-            diffG = imgIn[i] - (int) g;
-            diffB = imgIn[i] - (int) b;
-        }
-
-        // Calcola la distanza euclidea nel cubo RGB
-        uint distance = diffR * diffR + diffG * diffG + diffB * diffB;
-
-        // Applica la soglia di tolleranza per filtrare il colore desiderato
-        if (channels == 3)
-        {
-            if (distance > tolerance * tolerance)
-            {
-                // Riduci la saturazione degli altri colori
-                filteredImage[i] = (imgIn[i] + (int) r) / 2;
-                filteredImage[i + 1] = (imgIn[i + 1] + (int) g) / 2;
-                filteredImage[i + 2] = (imgIn[i + 2] + (int) b) / 2;
-            } else
-            {
-                filteredImage[i] = imgIn[i];
-                filteredImage[i + 1] = imgIn[i + 1];
-                filteredImage[i + 2] = imgIn[i + 2];
-            }
-        } else
-        {
-            if (distance > tolerance * tolerance)
-            {
-                // Riduci la saturazione degli altri colori
-                filteredImage[i] = (imgIn[i] + (int) r) / 2;
-                filteredImage[i + 1] = (imgIn[i] + (int) g) / 2;
-                filteredImage[i + 2] = (imgIn[i] + (int) b) / 2;
-            } else
-            {
-                filteredImage[i] = imgIn[i];
-                filteredImage[i + 1] = imgIn[i];
-                filteredImage[i + 2] = imgIn[i];
-            }
-        }
-    }
-
-    *oWidth = width;
-    *oHeight = height;
-
-    return filteredImage;
-}
-unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight, int nThread)
-{
-    uint diffR,
-            diffG,
-            diffB,
-            distance,
-            totalPixels = width * height;
-
-    unsigned char *filteredImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * 3);
-
-    if (filteredImage == nullptr)
-    {
-        E_Print(RED "FUNX Error: " RESET "Errore durante l'allocazione di memoria");
-        return nullptr;
-    }
-
-#pragma omp parallel for num_threads(nThread) \
-    default(none) private(diffR, diffG, diffB, distance) shared(filteredImage, imgIn, width, height, r, g, b, tolerance) \
-    collapse(2)
-    // TODO: prova a vedere se si puo' incrementare l'efficienza
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            uint rPix = ((y * width) + x) * 3,
-                    gPix = ((y * width) + x) * 3 + 1,
-                    bPix = ((y * width) + x) * 3 + 2;
-            diffR = imgIn[rPix] - r;
-            diffG = imgIn[gPix] - g;
-            diffB = imgIn[bPix] - b;
-
-            distance = (diffR * diffR) + (diffG * diffG) + (diffB * diffB);
-
-            if (distance > tolerance * tolerance)
-            {
-                filteredImage[rPix] = (imgIn[rPix] + r) / 2;
-                filteredImage[gPix] = (imgIn[gPix] + g) / 2;
-                filteredImage[bPix] = (imgIn[bPix] + b) / 2;
-            } else
-            {
-                filteredImage[rPix] = imgIn[rPix];
-                filteredImage[gPix] = imgIn[gPix];
-                filteredImage[bPix] = imgIn[bPix];
-            }
-        }
-    }
-    *oWidth = width;
-    *oHeight = height;
-    return filteredImage;
-}
-unsigned char *colorFilterCuda(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
-{
-    unsigned char *h_imgOut;
-
-    unsigned char *d_imgOut;
-    unsigned char *d_imgIn;
-
-
-    mlock(imgIn, width * height * 3 * sizeof(unsigned char));
-    h_imgOut = (unsigned char *) malloc(width * height * 3 * sizeof(unsigned char));
-    if (h_imgOut == nullptr)
-    {
-        E_Print(RED "Error: " RESET "Errore nell'allocazione della memoria\n");
-        munlock(imgIn, width * height * 3 * sizeof(unsigned char));
-        return nullptr;
-    }
-
-
-    cudaMalloc((void **) &d_imgIn, width * height * 3 * sizeof(unsigned char));
-    cudaMemcpy(d_imgIn, imgIn, width * height * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
-    cudaMalloc((void **) &d_imgOut, width * height * 3 * sizeof(unsigned char));
-
-
-    uint blockSize = 8 * 8 * 3;
-    uint gridSize = (3 * width * height + blockSize - 1) / blockSize;
-    colorFilterCUDA<<<gridSize, blockSize>>>(d_imgIn, d_imgOut, width, height, r, g, b, tolerance);
-
-
-    cudaMemcpy(h_imgOut, d_imgOut, width * height * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
-
-    munlock(imgIn, width * height * 3 * sizeof(unsigned char));
-    cudaFree(d_imgIn);
-    cudaFree(d_imgOut);
-
-    *oHeight = height;
-    *oWidth = width;
-
-    return h_imgOut;
-}
-
-unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
+unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint height, uint channels, int r, int g, int b, uint tolerance, uint *oWidth, uint *oHeight)
 {
     uint oSize = width * height * channels;
     *oWidth = width;
@@ -209,5 +45,102 @@ unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint he
         return nullptr;
     }
 
+    int diff[] = {0, 0, 0};
+    int RGB[] = {r, g, b};
+    int squareTolerance = (int) (pow(tolerance, 2));
+    uint squareDistance;
+
+    for (int i = 0; i < width; ++i)
+        for (int j = 0; j < height; ++j)
+        {
+            for (int k = 0; k < channels; ++k)
+                diff[k] = imgIn[(i + j * width) * channels + k] - RGB[k];
+
+            squareDistance = (uint) (pow(diff[0], 2) + pow(diff[1], 2) + pow(diff[2], 2));
+
+            if (squareDistance > squareTolerance)
+                for (int k = 0; k < channels; ++k)
+                {
+                    int val = (imgOut[(i + j * width) * channels + k] + diff[k]) / 2;
+                    imgOut[(i + j * width) * channels + k] = val;
+                }
+            else
+                for (int k = 0; k < channels; ++k)
+                    imgOut[(i + j * width) * channels + k] = imgIn[(i + j * width) * channels + k];
+        }
+
     return imgOut;
+}
+unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint channels, int r, int g, int b, uint tolerance, uint *oWidth, uint *oHeight, int nThreads)
+{
+    uint oSize = width * height * channels;
+    *oWidth = width;
+    *oHeight = height;
+
+    auto *imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
+    if (imgOut == nullptr)
+    {
+        E_Print("Errore durante la malloc!\n");
+        return nullptr;
+    }
+
+    int diff[] = {0, 0, 0};
+    int RGB[] = {r, g, b};
+    int squareTolerance = (int) (pow(tolerance, 2));
+    uint squareDistance;
+
+#pragma omp parallel for num_threads(nThreads) collapse(2) schedule(static) default(none) shared(width, height, channels, imgIn, imgOut, RGB, squareTolerance) private(diff, squareDistance)
+    for (int i = 0; i < width; ++i)
+        for (int j = 0; j < height; ++j)
+        {
+            for (int k = 0; k < channels; ++k)
+                diff[k] = imgIn[(i + j * width) * channels + k] - RGB[k];
+
+            squareDistance = (uint) (pow(diff[0], 2) + pow(diff[1], 2) + pow(diff[2], 2));
+
+            if (squareDistance > squareTolerance)
+                for (int k = 0; k < channels; ++k)
+                    imgOut[(i + j * width) * channels + k] = (imgOut[(i + j * width) * channels + k] + diff[k]) / 2;
+            else
+                for (int k = 0; k < channels; ++k)
+                    imgOut[(i + j * width) * channels + k] = imgIn[(i + j * width) * channels + k];
+        }
+
+    return imgOut;
+}
+unsigned char *colorFilterCuda(const unsigned char *h_imgIn, uint width, uint height, uint channels, int r, int g, int b, uint tolerance, uint *oWidth, uint *oHeight)
+{
+    uint oSize = width * height * channels;
+    *oWidth = width;
+    *oHeight = height;
+    int squareTolerance = (int) (pow(tolerance, 2));
+
+    auto *h_imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
+    if (h_imgOut == nullptr)
+    {
+        E_Print("Errore durante la malloc!\n");
+        return nullptr;
+    }
+    mlock(h_imgIn, oSize * sizeof(unsigned char));
+
+    unsigned char *d_imgIn;
+    unsigned char *d_imgOut;
+    cudaMalloc(&d_imgIn, oSize * sizeof(unsigned char));
+    cudaMalloc(&d_imgOut, oSize * sizeof(unsigned char));
+
+    cudaMemcpy(d_imgIn, h_imgIn, oSize * sizeof(unsigned char), cudaMemcpyHostToDevice);
+
+
+    dim3 gridSize = {(width + 7) / 8, (height + 7) / 8, 1};
+    dim3 blockSize = {8, 8, 1};
+
+    colorFilter<<<gridSize, blockSize>>>(d_imgIn, d_imgOut, width, height, channels, r, g, b, squareTolerance);
+
+    cudaMemcpy(h_imgOut, d_imgOut, oSize * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+
+    munlock(h_imgOut, oSize * sizeof(unsigned char));
+    cudaFree(d_imgIn);
+    cudaFree(d_imgOut);
+
+    return h_imgOut;
 }

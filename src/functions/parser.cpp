@@ -106,9 +106,9 @@ int parseColorFilterArgs(char *args)
     char *imgIn = strtok(args, " ");
     char *pathOut = strtok(nullptr, " ");
     //TODO: controllare che i valori siano compresi tra 0 e 255 e che non siano state inserite stringhe
-    uint r = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
-    uint g = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
-    uint b = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
+    int r = (int) strtol(strtok(nullptr, " "), nullptr, 10);
+    int g = (int) strtol(strtok(nullptr, " "), nullptr, 10);
+    int b = (int) strtol(strtok(nullptr, " "), nullptr, 10);
     uint tollerance = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
 
     if (imgIn == nullptr || pathOut == nullptr || r > 255 || g > 255 || b > 255)
@@ -122,6 +122,8 @@ int parseColorFilterArgs(char *args)
     uint height;
     uint channels;
     unsigned char *img = loadImage(imgIn, &width, &height, &channels);
+    if (channels == 1)
+        img = from1To3Channels(img, width, height);
 
     uint oWidth;
     uint oHeight;

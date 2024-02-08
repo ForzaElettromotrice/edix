@@ -6,7 +6,6 @@
 #include <sys/mman.h>
 
 
-__global__ void colorFilterCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, uint r, uint g, uint b, uint tolerance);
-
+__global__ void colorFilter(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, uint channels, int r, int g, int b, uint squareTolerance);
 
 #endif //EDIX_COLORFILTER_CUH

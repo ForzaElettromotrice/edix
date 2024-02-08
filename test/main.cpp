@@ -1,4 +1,4 @@
-#include "testFunc.hpp"
+#include "main.hpp"
 
 int main()
 {
@@ -18,7 +18,7 @@ int main()
     uint oHeight;
 
     auto start = std::chrono::high_resolution_clock::now();
-    unsigned char *oImg = scaleCudaBicubic(img1, width1, height1, channels1, 2, true, &oWidth, &oHeight, true);
+    unsigned char *oImg = colorFilterCuda(img1, width1, height1, channels1, 255, 128, 128, 0, &oWidth, &oHeight);
     auto end = std::chrono::high_resolution_clock::now();
     writeImage((char *) "images/out.ppm", oImg, oWidth, oHeight, channels1);
 

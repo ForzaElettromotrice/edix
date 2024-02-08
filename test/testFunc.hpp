@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cstdint>
 #include <chrono>
+#include "../src/utils.hpp"
+
 
 double percentage(long time1, long time2);
 long print_times(auto time1, auto time2);

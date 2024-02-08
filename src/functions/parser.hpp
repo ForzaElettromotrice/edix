@@ -27,9 +27,9 @@ unsigned char *grayscaleSerial(const unsigned char *imgIn, uint width, uint heig
 unsigned char *grayscaleOmp(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight, int nThread);
 unsigned char *grayscaleCuda(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight);
 
-unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight);
-unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight, int nThread);
-unsigned char *colorFilterCuda(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight);
+unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint height, uint channels, int r, int g, int b, uint tolerance, uint *oWidth, uint *oHeight);
+unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint channels, int r, int g, int b, uint tolerance, uint *oWidth, uint *oHeight, int nThread);
+unsigned char *colorFilterCuda(const unsigned char *imgIn, uint width, uint height, uint channels, int r, int g, int b, uint tolerance, uint *oWidth, uint *oHeight);
 
 unsigned char *scaleSerialBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, bool upscale, uint *oWidth, uint *oHeight);
 unsigned char *scaleOmpBilinear(const unsigned char *imgIn, uint width, uint height, uint channels, int factor, bool upscale, uint *oWidth, uint *oHeight, int nThreads);
