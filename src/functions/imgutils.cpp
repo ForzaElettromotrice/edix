@@ -5,6 +5,11 @@
 
 #include "imgutils.hpp"
 
+unsigned char *from1To3Channels(unsigned char *imgIn, uint width, uint height)
+{
+    return nullptr;
+}
+
 unsigned char *loadImage(char *path, uint *width, uint *height, uint *channels)
 {
     char *copy = strdup(path);

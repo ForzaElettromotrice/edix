@@ -11,6 +11,8 @@
 #include <png.h>
 #include "../utils.hpp"
 
+unsigned char *from1To3Channels(unsigned char *imgIn, uint width, uint height);
+
 unsigned char *loadImage(char *path, uint *width, uint *height, uint *channels);
 int writeImage(char *path, unsigned char *img, uint width, uint height, uint channels);
 
