@@ -5,7 +5,8 @@
 #ifndef EDIX_OVERLAP_CUH
 #define EDIX_OVERLAP_CUH
 
-#include "functions.cuh"
+#include <iostream>
+#include "../utils.hpp"
 #include "sys/mman.h"
 
 __global__ void overlap(unsigned char *img, const unsigned char *img2, uint width, uint width2, uint height2, uint posX, uint posY);

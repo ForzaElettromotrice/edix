@@ -4,61 +4,6 @@
 
 #include "overlap.cuh"
 
-int parseOverlapArgs(char *args)
-{
-    char *img1 = strtok(args, " ");
-    char *img2 = strtok(nullptr, " ");
-    char *pathOut = strtok(nullptr, " ");
-    //TODO: controllare se x e y sono stringhe o meno
-    uint x = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
-    uint y = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
-
-    if (img1 == nullptr || img2 == nullptr || pathOut == nullptr)
-    {
-        handle_error("usage " BOLD "funx overlap IN1 IN2 OUT SIDE\n" RESET);
-    }
-
-    char *tpp = getStrFromKey((char *) "TPP");
-    uint width1;
-    uint height1;
-    uint channels1;
-    uint width2;
-    uint height2;
-    uint channels2;
-    unsigned char *img1_1 = loadImage(img1, &width1, &height1, &channels1);
-    unsigned char *img2_1 = loadImage(img2, &width2, &height2, &channels2);
-
-    uint oWidth;
-    uint oHeight;
-    uint oChannels = channels1 == 3 ? 3 : channels2;
-    unsigned char *oImg;
-
-
-    if (strcmp(tpp, "Serial") == 0)
-        oImg = overlapSerial(img1_1, img2_1, width1, height1, channels1, width2, height2, channels2, x, y, &oWidth, &oHeight);
-    else if (strcmp(tpp, "OMP") == 0)
-        oImg = overlapOmp(img1_1, img2_1, width1, height1, channels1, width2, height2, channels2, x, y, &oWidth, &oHeight, 4);
-    else if (strcmp(tpp, "CUDA") == 0)
-        oImg = overlapCuda(img1_1, img2_1, width1, height1, channels1, width2, height2, channels2, x, y, &oWidth, &oHeight);
-    else
-    {
-        free(img1_1);
-        free(img2_1);
-        free(tpp);
-        handle_error("Invalid TPP\n");
-    }
-
-    if (oImg != nullptr)
-    {
-        writeImage(pathOut, oImg, oWidth, oHeight, oChannels);
-        free(oImg);
-    }
-
-    free(img1_1);
-    free(img2_1);
-    free(tpp);
-    return 0;
-}
 
 unsigned char *overlapSerial(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, uint x, uint y, uint *oWidth, uint *oHeight)
 {

@@ -8,6 +8,18 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(OpenMP REQUIRED)
 
 set(SOURCE_FILES
+        src/functions/scale.cuh
+        src/functions/composition.cuh
+        src/functions/compression.cuh
+        src/functions/blur.cuh
+        src/functions/grayscale.cu
+        src/functions/blur.cu
+        src/functions/overlap.cuh
+        src/functions/colorfilter.cu
+        src/functions/overlap.cu
+        src/functions/composition.cu
+        src/functions/compression.cu
+        src/functions/scale.cu
         src/dbutils/pgutils.cpp
         src/dbutils/pgutils.hpp
         src/env/homepage.cpp
@@ -20,39 +32,29 @@ set(SOURCE_FILES
         src/main.hpp
         src/dbutils/rdutils.cpp
         src/dbutils/rdutils.hpp
-        src/functions/functions.cuh
-        src/functions/grayscale.cu
-        src/functions/blur.cu
         src/functions/imgutils.cpp
-        src/functions/colorfilter.cu
-        src/functions/overlap.cu
-        src/functions/composition.cu
-        src/functions/composition.cuh
-        src/functions/compression.cu
-        src/functions/compression.cuh
-        src/functions/blur.cuh
-        src/functions/overlap.cuh
         src/functions/imgutils.hpp
-        src/functions/scale.cu
-        src/functions/scale.cuh
+        src/functions/parser.cpp
+        src/functions/parser.hpp
 )
 
 set(SOURCE_FILES_TEST
+        src/functions/scale.cuh
+        src/functions/composition.cuh
+        src/functions/compression.cuh
+        src/functions/blur.cuh
+        src/functions/grayscale.cu
+        src/functions/blur.cu
+        src/functions/colorfilter.cu
+        src/functions/overlap.cu
+        src/functions/composition.cu
+        src/functions/compression.cu
+        src/functions/scale.cu
         test/main.hpp
         test/main.cpp
         test/testFunc.cpp
         test/testFunc.hpp
-        src/functions/functions.cuh
-        src/functions/grayscale.cu
-        src/functions/blur.cu
         src/functions/imgutils.cpp
-        src/functions/colorfilter.cu
-        src/functions/overlap.cu
-        src/functions/composition.cu
-        src/functions/composition.cuh
-        src/functions/compression.cu
-        src/functions/compression.cuh
-        src/functions/blur.cuh
         src/dbutils/pgutils.cpp
         src/dbutils/pgutils.hpp
         src/env/homepage.cpp
@@ -64,8 +66,8 @@ set(SOURCE_FILES_TEST
         src/dbutils/rdutils.cpp
         src/dbutils/rdutils.hpp
         src/functions/imgutils.hpp
-        src/functions/scale.cu
-        src/functions/scale.cuh
+        src/functions/parser.cpp
+        src/functions/parser.hpp
 )
 
 # Aggiungi tutte le sorgenti del progetto

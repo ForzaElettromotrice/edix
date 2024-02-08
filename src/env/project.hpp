@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include "../dbutils/pgutils.hpp"
 #include "../utils.hpp"
-#include "../functions/functions.cuh"
+#include "../functions/parser.hpp"
 
 //UTILS
 int isPathIn(const char *path, const char *pathProj);

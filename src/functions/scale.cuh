@@ -5,7 +5,8 @@
 #ifndef EDIX_SCALE_CUH
 #define EDIX_SCALE_CUH
 
-#include "functions.cuh"
+#include <iostream>
+#include "../utils.hpp"
 #include <sys/mman.h>
 
 

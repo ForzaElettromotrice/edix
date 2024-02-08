@@ -14,7 +14,8 @@ int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint 
             uint yO = y + j;
             if (channels2 == 3 || channels1 == channels2)
             {
-                for (int k = 0; k < channels1; ++k){
+                for (int k = 0; k < channels1; ++k)
+                {
                     mOut[(xO + yO * widthO) * channels1 + k] = mIn[(i + j * widthI) * channels2 + k];
                 }
             } else
@@ -56,59 +57,6 @@ int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, ui
     return 0;
 }
 
-int parseCompositionArgs(char *args)
-{
-    char *img1 = strtok(args, " ");
-    char *img2 = strtok(nullptr, " ");
-    char *pathOut = strtok(nullptr, " ");
-    //TODO: check meglio (crasha se ci sono troppi pochi valori)
-    int side = (int) strtol(strtok(nullptr, " "), nullptr, 10);
-
-    if (img1 == nullptr || img2 == nullptr || pathOut == nullptr)
-    {
-        handle_error("usage " BOLD "funx composition IN1 IN2 OUT SIDE\n" RESET);
-    }
-
-    char *tpp = getStrFromKey((char *) "TPP");
-    uint width1;
-    uint height1;
-    uint channels1;
-    uint width2;
-    uint height2;
-    uint channels2;
-    unsigned char *img1_1 = loadPPM(img1, &width1, &height1, &channels1);
-    unsigned char *img2_1 = loadPPM(img2, &width2, &height2, &channels2);
-
-    uint oWidth;
-    uint oHeight;
-    uint oChannels = channels1 == 3 ? 3 : channels2;
-    unsigned char *oImg;
-
-    if (strcmp(tpp, "Serial") == 0)
-        oImg = compositionSerial(img1_1, img2_1, width1, height1, channels1, width2, height2, channels2, side, &oWidth, &oHeight);
-    else if (strcmp(tpp, "OMP") == 0)
-        oImg = compositionOmp(img1_1, img2_1, width1, height1, channels1, width2, height2, channels2, side, &oWidth, &oHeight, 3);
-    else if (strcmp(tpp, "CUDA") == 0)
-        oImg = compositionCuda(img1_1, img2_1, width1, height1, channels1, width2, height2, channels2, side, &oWidth, &oHeight);
-    else
-    {
-        free(img1_1);
-        free(img2_1);
-        free(tpp);
-        handle_error("Invalid arguments for composition function.\n");
-    }
-
-    if (oImg != nullptr)
-    {
-        writeImage(pathOut, oImg, oWidth, oHeight, oChannels);
-        free(oImg);
-    }
-    free(img1_1);
-    free(img2_1);
-    free(tpp);
-    return 0;
-}
-
 
 unsigned char *compositionSerial(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, int side, uint *oWidth, uint *oHeight)
 {
@@ -130,11 +78,11 @@ unsigned char *compositionSerial(const unsigned char *img1, const unsigned char 
             return nullptr;
         }
     }
-    
+
 
     uint oSize = widthOut * heightOut * (channels1 == 3 ? 3 : channels2);
     auto *imgOut = (unsigned char *) calloc(sizeof(unsigned char), oSize);
-    
+
     switch (side)
     {
         case UP:

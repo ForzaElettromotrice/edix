@@ -5,26 +5,26 @@
 #include "colorfilter.cuh"
 
 
-__global__ void colorFilterCUDA(unsigned char *imgIn,unsigned char *imgOut, uint width, uint height, uint r, uint g, uint b, uint tolerance){
+__global__ void colorFilterCUDA(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, uint r, uint g, uint b, uint tolerance)
+{
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
 
     int i = idx * 3;
 
     if (i < 3 * width * height)
     {
-        int diffR = imgIn[i] - (int)r;
-        int diffG = imgIn[i + 1] - (int)g;
-        int diffB = imgIn[i + 2] - (int)b;
+        int diffR = imgIn[i] - (int) r;
+        int diffG = imgIn[i + 1] - (int) g;
+        int diffB = imgIn[i + 2] - (int) b;
 
         uint distance = diffR * diffR + diffG * diffG + diffB * diffB;
 
         if (distance > tolerance * tolerance)
         {
-            imgOut[i] = (imgIn[i] + (int)r) / 2;
-            imgOut[i + 1] = (imgIn[i + 1] + (int)g) / 2;
-            imgOut[i + 2] = (imgIn[i + 2] + (int)b) / 2;
-        }
-        else
+            imgOut[i] = (imgIn[i] + (int) r) / 2;
+            imgOut[i + 1] = (imgIn[i + 1] + (int) g) / 2;
+            imgOut[i + 2] = (imgIn[i + 2] + (int) b) / 2;
+        } else
         {
             imgOut[i] = imgIn[i];
             imgOut[i + 1] = imgIn[i + 1];
@@ -34,55 +34,6 @@ __global__ void colorFilterCUDA(unsigned char *imgIn,unsigned char *imgOut, uint
     }
 }
 
-int parseColorFilterArgs(char *args)
-{
-    char *imgIn = strtok(args, " ");
-    char *pathOut = strtok(nullptr, " ");
-    //TODO: controllare che i valori siano compresi tra 0 e 255 e che non siano state inserite stringhe
-    uint r = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
-    uint g = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
-    uint b = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
-    uint tollerance = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
-
-    if (imgIn == nullptr || pathOut == nullptr || r > 255 || g > 255 || b > 255)
-    {
-        handle_error("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
-    }
-
-    char *tpp = getStrFromKey((char *) "TPP");
-    uint width;
-    uint height;
-    uint channels;
-    unsigned char *img = loadImage(imgIn, &width, &height, &channels);
-
-    uint oWidth;
-    uint oHeight;
-    unsigned char *oImg;
-
-    if (strcmp(tpp, "Serial") == 0)
-        oImg = colorFilterSerial(img, width, height, channels, r, g, b, tollerance, &oWidth, &oHeight);
-    else if (strcmp(tpp, "OMP") == 0)
-        oImg = colorFilterOmp(img, width, height, channels, r, g, b, tollerance, &oWidth, &oHeight, 4);
-    else if (strcmp(tpp, "CUDA") == 0)
-        oImg = colorFilterCuda(img, width, height, channels, r, g, b, tollerance, &oWidth, &oHeight);
-    else
-    {
-        free(img);
-        free(tpp);
-        handle_error("Invalid arguments for color filter function.\n");
-    }
-
-    if (oImg != nullptr)
-    {
-        writeImage(pathOut, oImg, oWidth, oHeight, channels);
-        free(oImg);
-    }
-
-    free(img);
-    free(tpp);
-
-    return 0;
-}
 
 unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
 {
@@ -211,29 +162,30 @@ unsigned char *colorFilterCuda(const unsigned char *imgIn, uint width, uint heig
 
     unsigned char *d_imgOut;
     unsigned char *d_imgIn;
-    
 
-    mlock(imgIn,width * height * 3 * sizeof(unsigned char));
-    h_imgOut = (unsigned char *)malloc(width * height * 3 * sizeof(unsigned char));
-    if (h_imgOut == nullptr){
+
+    mlock(imgIn, width * height * 3 * sizeof(unsigned char));
+    h_imgOut = (unsigned char *) malloc(width * height * 3 * sizeof(unsigned char));
+    if (h_imgOut == nullptr)
+    {
         fprintf(stderr, RED "Error: " RESET "Errore nell'allocazione della memoria\n");
         munlock(imgIn, width * height * 3 * sizeof(unsigned char));
         return nullptr;
     }
-    
 
-    cudaMalloc((void **)&d_imgIn, width * height * 3 * sizeof(unsigned char));
-    cudaMemcpy(d_imgIn,imgIn,width * height * 3 * sizeof(unsigned char),cudaMemcpyHostToDevice);
-    cudaMalloc((void **)&d_imgOut,width * height * 3 * sizeof(unsigned char));
+
+    cudaMalloc((void **) &d_imgIn, width * height * 3 * sizeof(unsigned char));
+    cudaMemcpy(d_imgIn, imgIn, width * height * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
+    cudaMalloc((void **) &d_imgOut, width * height * 3 * sizeof(unsigned char));
 
 
     uint blockSize = 8 * 8 * 3;
-    uint gridSize = (3 * width * height  + blockSize -1) /blockSize;
-    colorFilterCUDA<<<gridSize,blockSize>>>(d_imgIn, d_imgOut ,width, height, r,  g, b, tolerance);
-    
+    uint gridSize = (3 * width * height + blockSize - 1) / blockSize;
+    colorFilterCUDA<<<gridSize, blockSize>>>(d_imgIn, d_imgOut, width, height, r, g, b, tolerance);
 
-    cudaMemcpy(h_imgOut,d_imgOut,width * height * 3 * sizeof(unsigned char),cudaMemcpyDeviceToHost);
-    
+
+    cudaMemcpy(h_imgOut, d_imgOut, width * height * 3 * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+
     munlock(imgIn, width * height * 3 * sizeof(unsigned char));
     cudaFree(d_imgIn);
     cudaFree(d_imgOut);

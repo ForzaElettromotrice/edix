@@ -1,54 +1,6 @@
 #include "blur.cuh"
 
 
-int parseBlurArgs(char *args)
-{
-    char *imgIn = strtok(args, " ");
-    char *pathOut = strtok(nullptr, " ");
-    int radius = (int) strtol(strtok(nullptr, " "), nullptr, 10);
-
-    if (imgIn == nullptr || pathOut == nullptr || radius <= 0)
-    {
-        handle_error("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
-    }
-
-    //TODO: leggere le immagini in base alla loro estensione
-    char *tpp = getStrFromKey((char *) "TPP");
-    uint width;
-    uint height;
-    uint channels;
-    unsigned char *img = loadImage(imgIn, &width, &height, &channels);
-
-    uint oWidth;
-    uint oHeight;
-    unsigned char *oImg;
-
-
-    if (strcmp(tpp, "Serial") == 0)
-        oImg = blurSerial(img, width, height, channels, radius, &oWidth, &oHeight);
-    else if (strcmp(tpp, "OMP") == 0)
-        oImg = blurOmp(img, width, height, channels, radius, &oWidth, &oHeight, 4);
-    else if (strcmp(tpp, "CUDA") == 0)
-        oImg = blurCuda(img, width, height, channels, radius, &oWidth, &oHeight);
-    else
-    {
-        free(img);
-        free(tpp);
-        handle_error("Invalid arguments for blur function.\n");
-    }
-
-    if (oImg != nullptr)
-    {
-        writeImage(pathOut, oImg, oWidth, oHeight, channels);
-        free(oImg);
-    }
-    free(img);
-    free(tpp);
-
-    return 0;
-}
-
-
 unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight)
 {
     uint totalPixels = height * width;
