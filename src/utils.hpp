@@ -7,16 +7,11 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <cstdarg>
 #include <jpeglib.h>
 #include <png.h>
 
 #define DEBUG 1
-#define D_PRINT(format, ...) \
-        if(DEBUG)            \
-            printf(YELLOW "DEBUG: " RESET format, ##__VA_ARGS__)
-#define handle_error(msg, ...) \
-    fprintf(stderr, RED "Error: " RESET msg, ##__VA_ARGS__);\
-    return(EXIT_FAILURE)
 
 #define RED       "\033[31m"
 #define GREEN     "\033[32m"
@@ -34,5 +29,10 @@ typedef enum
     SETTINGS,
     EXIT
 } Env;
+
+
+void E_Print(const char *msg, ...);
+void D_Print(const char *msg, ...);
+
 
 #endif //EDIX_UTILS_HPP

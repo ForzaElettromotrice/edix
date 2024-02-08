@@ -36,6 +36,7 @@ set(SOURCE_FILES
         src/functions/imgutils.hpp
         src/functions/parser.cpp
         src/functions/parser.hpp
+        src/uitils.cpp
 )
 
 set(SOURCE_FILES_TEST
@@ -68,6 +69,7 @@ set(SOURCE_FILES_TEST
         src/functions/imgutils.hpp
         src/functions/parser.cpp
         src/functions/parser.hpp
+        src/uitils.cpp
 )
 
 # Aggiungi tutte le sorgenti del progetto

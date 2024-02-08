@@ -29,7 +29,7 @@ int checkDefaultFolder()
 
     if (!defaultDir)
     {
-        D_PRINT("Creating default dir\n");
+        D_Print("Creating default dir\n");
         system("mkdir ~/EdixProjects > /dev/null");
     }
     closedir(defaultDir);
@@ -48,7 +48,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         {
             free(answer);
             printf("\n");
-            D_PRINT("Operazione annullata\n");
+            D_Print("Operazione annullata\n");
             return 1;
         }
         if (bRead == 1)
@@ -65,7 +65,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         {
             free(answer);
             printf("\n");
-            D_PRINT("Operazione annullata\n");
+            D_Print("Operazione annullata\n");
             return 1;
         }
         if (bRead == 1)
@@ -82,7 +82,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         {
             free(answer);
             printf("\n");
-            D_PRINT("Operazione annullata\n");
+            D_Print("Operazione annullata\n");
             return 1;
         }
         if (bRead == 1)
@@ -99,7 +99,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         {
             free(answer);
             printf("\n");
-            D_PRINT("Operazione annullata\n");
+            D_Print("Operazione annullata\n");
             return 1;
         }
         if (bRead == 1)
@@ -117,7 +117,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         {
             free(answer);
             printf("\n");
-            D_PRINT("Operazione annullata\n");
+            D_Print("Operazione annullata\n");
             return 1;
         }
         if (bRead == 1)
@@ -135,7 +135,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
         {
             free(answer);
             printf("\n");
-            D_PRINT("Operazione annullata\n");
+            D_Print("Operazione annullata\n");
             return 1;
         }
         if (bRead == 1)
@@ -155,7 +155,7 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
             {
                 free(answer);
                 printf("\n");
-                D_PRINT("Operazione annullata\n");
+                D_Print("Operazione annullata\n");
                 return 1;
             }
             if (bRead == 1)
@@ -189,7 +189,7 @@ bool isValidFlag(const char *flag)
 }
 bool isValidPath(char *path)
 {
-    D_PRINT("Checking path...\n");
+    D_Print("Checking path...\n");
 
     if (path[0] == '~')
     {
@@ -324,7 +324,8 @@ int parseNew(Env *env)
 
     if (token1 == nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC "new ProjectName [-m]\n" RESET);
+        E_Print("usage" BOLD ITALIC "new ProjectName [-m]\n" RESET);
+        return 1;
     }
 
     if (token2 != nullptr)
@@ -337,14 +338,16 @@ int parseNew(Env *env)
                 name = token2;
             else
             {
-                handle_error("usage " BOLD ITALIC "new ProjectName [-m]\n" RESET);
+                E_Print("usage " BOLD ITALIC "new ProjectName [-m]\n" RESET);
+                return 1;
             }
         } else if (isValidFlag(token2) && isValidName(token1))
         {
             name = token1;
         } else
         {
-            handle_error("usage " BOLD ITALIC "new ProjectName [-m]\n" RESET);
+            E_Print("usage " BOLD ITALIC "new ProjectName [-m]\n" RESET);
+            return 1;
         }
 
         newP(name, true, env);
@@ -356,7 +359,8 @@ int parseNew(Env *env)
         return 0;
     }
 
-    handle_error("usage " BOLD ITALIC "new ProjectName [-m]\n" RESET);
+    E_Print("usage " BOLD ITALIC "new ProjectName [-m]\n" RESET);
+    return 1;
 }
 int parseOpen(Env *env)
 {
@@ -364,7 +368,8 @@ int parseOpen(Env *env)
 
     if (name == nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage " BOLD ITALIC "open ProjectName\n" RESET);
+        E_Print("usage " BOLD ITALIC "open ProjectName\n" RESET);
+        return 1;
     }
     openP(name, env);
 
@@ -375,7 +380,8 @@ int parseDel()
     char *name = strtok(nullptr, " ");
     if (name == nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " del ProjectName\n" RESET);
+        E_Print("usage" BOLD ITALIC " del ProjectName\n" RESET);
+        return 1;
     }
     delP(name);
 
@@ -385,7 +391,8 @@ int parseListH()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " listH\n" RESET);
+        E_Print("usage" BOLD ITALIC " listH\n" RESET);
+        return 1;
     }
 
     listH();
@@ -395,7 +402,8 @@ int parseHelpH()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " helpH\n" RESET);
+        E_Print("usage" BOLD ITALIC " helpH\n" RESET);
+        return 1;
     }
 
     helpH();
@@ -405,7 +413,8 @@ int parseExitH(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " exitH\n" RESET);
+        E_Print("usage" BOLD ITALIC " exitH\n" RESET);
+        return 1;
     }
 
     exitH(env);
@@ -453,11 +462,12 @@ int newP(char *name, bool ask, Env *env)
 
     if (loadProjectOnRedis(name))
     {
-        handle_error(
+        E_Print(
                 "Failed to load project on redis\n"
                 YELLOW
                 "Progetto creato, usare open per tentare di aprirlo\n"
                 RESET);
+        return 1;
     }
 
     *env = PROJECT;
@@ -467,7 +477,8 @@ int openP(char *name, Env *env)
 {
     if (!existProject(name))
     {
-        handle_error("Questo progetto non esiste!\n");
+        E_Print("Questo progetto non esiste!\n");
+        return 1;
     }
 
     if (loadProjectOnRedis(name))
@@ -479,10 +490,11 @@ int openP(char *name, Env *env)
 
     if (chdir(path) != 0)
     {
-        handle_error("chdir: %s", strerror(errno));
+        E_Print("chdir: %s", strerror(errno));
+        return 1;
     }
 
-    D_PRINT("Entering %s...\n", name);
+    D_Print("Entering %s...\n", name);
     *env = PROJECT;
     return 0;
 }
@@ -491,7 +503,8 @@ int delP(char *name)
 
     if (!existProject(name))
     {
-        handle_error("Questo progetto non esiste!\n");
+        E_Print("Questo progetto non esiste!\n");
+        return 1;
     }
 
     if (delProject(name))

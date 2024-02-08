@@ -12,7 +12,8 @@ int parseBlurArgs(char *args)
 
     if (imgIn == nullptr || pathOut == nullptr || radius <= 0)
     {
-        handle_error("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
+        E_Print("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
+        return 1;
     }
 
     //TODO: leggere le immagini in base alla loro estensione
@@ -37,7 +38,8 @@ int parseBlurArgs(char *args)
     {
         free(img);
         free(tpp);
-        handle_error("Invalid arguments for blur function.\n");
+        E_Print("Invalid arguments for blur function.\n");
+        return 1;
     }
 
     if (oImg != nullptr)
@@ -57,7 +59,8 @@ int parseGrayscaleArgs(char *args)
 
     if (imgIn == nullptr || pathOut == nullptr)
     {
-        handle_error("usage " BOLD "funx grayscale IN OUT\n" RESET);
+        E_Print("usage " BOLD "funx grayscale IN OUT\n" RESET);
+        return 1;
     }
 
     char *tpp = getStrFromKey((char *) "TPP");
@@ -68,7 +71,8 @@ int parseGrayscaleArgs(char *args)
     if (channels != 3)
     {
         free(img);
-        handle_error("Canali non validi per una scala di grigi!\n");
+        E_Print("Canali non validi per una scala di grigi!\n");
+        return 1;
     }
 
     uint oWidth;
@@ -85,7 +89,8 @@ int parseGrayscaleArgs(char *args)
     {
         free(img);
         free(tpp);
-        handle_error("Errore nel parsing degli argomenti\n");
+        E_Print("Errore nel parsing degli argomenti\n");
+        return 1;
     }
     if (oImg != nullptr)
     {
@@ -108,7 +113,8 @@ int parseColorFilterArgs(char *args)
 
     if (imgIn == nullptr || pathOut == nullptr || r > 255 || g > 255 || b > 255)
     {
-        handle_error("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
+        E_Print("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
+        return 1;
     }
 
     char *tpp = getStrFromKey((char *) "TPP");
@@ -131,7 +137,8 @@ int parseColorFilterArgs(char *args)
     {
         free(img);
         free(tpp);
-        handle_error("Invalid arguments for color filter function.\n");
+        E_Print("Invalid arguments for color filter function.\n");
+        return 1;
     }
 
     if (oImg != nullptr)
@@ -153,7 +160,8 @@ int parseUpscaleArgs(char *args)
 
     if (pathIn == nullptr || pathOut == nullptr || factor == 0)
     {
-        handle_error("usage " BOLD "funx upscale IN OUT FACTOR\n" RESET);
+        E_Print("usage " BOLD "funx upscale IN OUT FACTOR\n" RESET);
+        return 1;
     }
 
     char *tpp = getStrFromKey((char *) "TPP");
@@ -189,7 +197,8 @@ int parseUpscaleArgs(char *args)
     {
         free(img);
         free(tpp);
-        handle_error("Invalid TPP\n");
+        E_Print("Invalid TPP\n");
+        return 1;
     }
 
     if (imgOut != nullptr)
@@ -209,7 +218,8 @@ int parseDownscaleArgs(char *args)
 
     if (pathIn == nullptr || pathOut == nullptr || factor == 0)
     {
-        handle_error("usage " BOLD "funx downscale IN OUT FACTOR\n" RESET);
+        E_Print("usage " BOLD "funx downscale IN OUT FACTOR\n" RESET);
+        return 1;
     }
 
     char *tpp = getStrFromKey((char *) "TPP");
@@ -244,7 +254,8 @@ int parseDownscaleArgs(char *args)
     } else
     {
         free(tpp);
-        handle_error("Invalid TPP\n");
+        E_Print("Invalid TPP\n");
+        return 1;
     }
 
     if (oImg != nullptr)
@@ -268,7 +279,8 @@ int parseOverlapArgs(char *args)
 
     if (img1 == nullptr || img2 == nullptr || pathOut == nullptr)
     {
-        handle_error("usage " BOLD "funx overlap IN1 IN2 OUT SIDE\n" RESET);
+        E_Print("usage " BOLD "funx overlap IN1 IN2 OUT SIDE\n" RESET);
+        return 1;
     }
 
     char *tpp = getStrFromKey((char *) "TPP");
@@ -298,7 +310,8 @@ int parseOverlapArgs(char *args)
         free(img1_1);
         free(img2_1);
         free(tpp);
-        handle_error("Invalid TPP\n");
+        E_Print("Invalid TPP\n");
+        return 1;
     }
 
     if (oImg != nullptr)
@@ -322,7 +335,8 @@ int parseCompositionArgs(char *args)
 
     if (img1 == nullptr || img2 == nullptr || pathOut == nullptr)
     {
-        handle_error("usage " BOLD "funx composition IN1 IN2 OUT SIDE\n" RESET);
+        E_Print("usage " BOLD "funx composition IN1 IN2 OUT SIDE\n" RESET);
+        return 1;
     }
 
     char *tpp = getStrFromKey((char *) "TPP");
@@ -351,7 +365,8 @@ int parseCompositionArgs(char *args)
         free(img1_1);
         free(img2_1);
         free(tpp);
-        handle_error("Invalid arguments for composition function.\n");
+        E_Print("Invalid arguments for composition function.\n");
+        return 1;
     }
 
     if (oImg != nullptr)

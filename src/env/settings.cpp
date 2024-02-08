@@ -41,7 +41,8 @@ int parseSet()
 
     if ((name == nullptr || value == nullptr) || strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " set Key Value\n" RESET);
+        E_Print("usage" BOLD ITALIC " set Key Value\n" RESET);
+        return 1;
     }
 
 
@@ -53,7 +54,8 @@ int parseHelpS()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " help\n" RESET);
+        E_Print("usage" BOLD ITALIC " help\n" RESET);
+        return 1;
     }
 
     helpS();
@@ -64,7 +66,8 @@ int parseExitS(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " exit\n" RESET);
+        E_Print("usage" BOLD ITALIC " exit\n" RESET);
+        return 1;
     }
 
     exitS(env);
@@ -75,7 +78,8 @@ int parseListS()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " list\n" RESET);
+        E_Print("usage" BOLD ITALIC " list\n" RESET);
+        return 1;
     }
 
     listS();
@@ -91,7 +95,8 @@ int set(char *name, char *value)
             setKeyValueStr((char *) "Mode", value);
         else
         {
-            handle_error("Valore non valido!\n");
+            E_Print("Valore non valido!\n");
+            return 1;
         }
     } else if (strcmp(name, "TTS") == 0)
     {
@@ -100,7 +105,8 @@ int set(char *name, char *value)
             setKeyValueInt((char *) "TTS", (int) val);
         else
         {
-            handle_error("Valore non valido!\n");
+            E_Print("Valore non valido!\n");
+            return 1;
         }
     } else if (strcmp(name, "Backup") == 0)
     {
@@ -111,7 +117,8 @@ int set(char *name, char *value)
             setKeyValueStr((char *) "Backup", (char *) "false");
         else
         {
-            handle_error("Valore non valido!\n");
+            E_Print("Valore non valido!\n");
+            return 1;
         }
     } else if (strcmp(name, "COMP") == 0)
     {
@@ -119,7 +126,8 @@ int set(char *name, char *value)
             setKeyValueStr((char *) "COMP", value);
         else
         {
-            handle_error("Valore non valido!\n");
+            E_Print("Valore non valido!\n");
+            return 1;
         }
     } else if (strcmp(name, "TPP") == 0)
     {
@@ -127,7 +135,8 @@ int set(char *name, char *value)
             setKeyValueStr((char *) "TPP", value);
         else
         {
-            handle_error("Valore non valido!\n");
+            E_Print("Valore non valido!\n");
+            return 1;
         }
     } else if (strcmp(name, "TUP") == 0)
     {
@@ -135,11 +144,13 @@ int set(char *name, char *value)
             setKeyValueStr((char *) "TUP", value);
         else
         {
-            handle_error("Valore non valido!\n");
+            E_Print("Valore non valido!\n");
+            return 1;
         }
     } else
     {
-        handle_error("Valore non valido!\n");
+        E_Print("Valore non valido!\n");
+        return 1;
     }
     return 0;
 }
@@ -153,15 +164,15 @@ int helpS()
     //        RED BOLD " TPP"  RESET  ITALIC"   Tecnologia di parallelismo\n\t" RESET " * CUDA: Elaborazione parallela su unità di elaborazione grafica (GPU)\n\t * OMP: Elaborazione parallela su sistemi condivisi di memoria\n\t *" BOLD " Serial" RESET "(default): Non viene effettuata alcuna ottimizzazione\n\n"
     //        RED BOLD " TUP"  RESET  ITALIC"   Tecnologia di upscaling\n\t" RESET BOLD " * Bilinear" RESET "(default)\n\t * Bicubic\n\n");
     printf("Ecco la lista di comandi da poter utilizzare all'interno dei settings:\n\n"
-            YELLOW BOLD "  list" RESET "\t\t\tStampa i settings impostati\n"
-            YELLOW BOLD "  set "  RESET UNDERLINE "KEY" RESET " " UNDERLINE "VALUE" RESET "\t\tImposta il setting KEY a VALUE\n"
-            YELLOW BOLD "  exit" RESET "\t\t\tEsci dai settings\n\n");
+           YELLOW BOLD "  list" RESET "\t\t\tStampa i settings impostati\n"
+           YELLOW BOLD "  set "  RESET UNDERLINE "KEY" RESET " " UNDERLINE "VALUE" RESET "\t\tImposta il setting KEY a VALUE\n"
+           YELLOW BOLD "  exit" RESET "\t\t\tEsci dai settings\n\n");
 
     return 0;
 }
 int exitS(Env *env)
 {
-    D_PRINT("Uscita dai settings...\n");
+    D_Print("Uscita dai settings...\n");
     *env = PROJECT;
     return 0;
 }
@@ -186,7 +197,7 @@ int listS()
            RED BOLD " COMP "   RESET  ITALIC"   Formato di compressione dell'immagine\n\t" RESET BOLD "    * PPM" RESET "(default)\n\t    * JPEG\n\t    * PNG\n\n"
            RED BOLD " TPP  "   RESET  ITALIC"   Tecnologia di parallelismo\n\t" RESET "    * CUDA: Elaborazione parallela su unità di elaborazione grafica (GPU)\n\t    * OMP: Elaborazione parallela su sistemi condivisi di memoria\n\t    *" BOLD " Serial" RESET "(default): Non viene effettuata alcuna ottimizzazione\n\n"
            RED BOLD " TUP  "   RESET  ITALIC"   Tecnologia di upscaling\n\t" RESET BOLD "    * Bilinear" RESET "(default)\n\t    * Bicubic\n");
-    
+
     puts("----------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
     printf(BOLD YELLOW "IMPOSTAZIONI ATTUALI:\n" RESET
@@ -196,7 +207,6 @@ int listS()
            BOLD "\n * " GREEN "TTS    " RESET BOLD "==>" RESET " [%u]"
            BOLD "\n * " GREEN "TPP    " RESET BOLD "==>" RESET " [%s]"
            BOLD "\n * " GREEN "Backup " RESET BOLD "==>" RESET " [%s]\n\n", tup, mode, comp, tts, tpp, backup ? "On" : "Off");
-    
 
 
     return 0;

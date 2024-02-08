@@ -60,7 +60,7 @@ int inputLoop()
     }
 
     free(line);
-    D_PRINT("Uscita in corso...\n");
+    D_Print("Uscita in corso...\n");
 
     return 0;
 }

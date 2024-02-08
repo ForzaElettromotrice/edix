@@ -28,7 +28,8 @@ int checkRedisService()
 
     if (context == nullptr || (context)->err)
     {
-        handle_error("Redis is not running\n");
+        E_Print("Redis is not running\n");
+        return 1;
     }
     return 0;
 }
@@ -62,7 +63,7 @@ int settingsToRedis(int id, char *tup, char *mode, char *comp, u_int tts, char *
     redisContext *context;
     openConnection(&context);
 
-    D_PRINT("Adding settings on redis...\n");
+    D_Print("Adding settings on redis...\n");
     setKeyValueInt((char *) "ID", id);
     setKeyValueStr((char *) "Project", pName);
     setKeyValueStr((char *) "Mode", mode);
@@ -82,8 +83,8 @@ int projectToRedis(char *name, char *cDate, char *mDate, char *path, int setting
     redisContext *context;
     openConnection(&context);
 
-    //TODO: mettere i D_PRINT
-    D_PRINT("Adding project name on redis...\n");
+    //TODO: mettere i D_Print
+    D_Print("Adding project name on redis...\n");
     setKeyValueStr((char *) "pName", name);
     setKeyValueStr((char *) "CDate", cDate);
     setKeyValueStr((char *) "MDate", mDate);
@@ -102,7 +103,8 @@ int checkResponse(char *name, redisReply *reply, redisContext *context)
     {
         freeReplyObject(reply);
         redisFree(context);
-        handle_error("REDIS Error while executing command %s\n", name);
+        E_Print("REDIS Error while executing command %s\n", name);
+        return 1;
     }
     return 0;
 }
@@ -213,7 +215,7 @@ char **getCharArrayFromRedis(char *key)
     auto *reply = (redisReply *) redisCommand(context, "LRANGE %s 0 -1", key);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY)
     {
-        D_PRINT("reply type : %d\n", reply->type);
+        D_Print("reply type : %d\n", reply->type);
         fprintf(stderr, RED "REDIS Error: " RESET "Error while retrieving set elements\n");
         freeReplyObject(reply);
         redisFree(context);

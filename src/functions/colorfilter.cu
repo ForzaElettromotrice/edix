@@ -35,7 +35,7 @@ __global__ void colorFilterCUDA(const unsigned char *imgIn, unsigned char *imgOu
 }
 
 
-unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
+unsigned char *colorFilterSerialOld(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
 {
     //TODO: rifare tutta la funzione
     unsigned char *filteredImage;
@@ -194,4 +194,16 @@ unsigned char *colorFilterCuda(const unsigned char *imgIn, uint width, uint heig
     *oWidth = width;
 
     return h_imgOut;
+}
+
+unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint height, uint channels, uint r, uint g, uint b, uint tolerance, uint *oWidth, uint *oHeight)
+{
+    uint oSize = width * height * channels;
+    *oWidth = width;
+    *oHeight = height;
+
+    auto *imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
+
+
+    return imgOut;
 }

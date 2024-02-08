@@ -22,7 +22,8 @@ bool isValidImage(char *path)
 
     if (ext == nullptr)
     {
-        handle_error("Errore nella risoluzione del percorso\n");
+        E_Print("Errore nella risoluzione del percorso\n");
+        return false;
     }
 
 
@@ -88,7 +89,8 @@ int checkDix(char *projectPath, char *dixName)
             return 1;
     } else
     {
-        handle_error("Dix già esistente!\n");
+        E_Print("Dix già esistente!\n");
+        return 1;
     }
 
     return 0;
@@ -99,7 +101,8 @@ int cloneProject(char *projectPath, char *path, char *dixName)
 
     if (dir == nullptr)
     {
-        handle_error("Errore nell'apertura della directory: %s\n", strerror(errno));
+        E_Print("Errore nell'apertura della directory: %s\n", strerror(errno));
+        return 1;
     }
 
     struct dirent *entry;
@@ -230,13 +233,15 @@ int parseFunx()
     char *name = strtok(nullptr, " ");
     if (name == nullptr)
     {
-        handle_error("usage" BOLD ITALIC " funx nameFunx [args ...]\n" RESET);
+        E_Print("usage" BOLD ITALIC " funx nameFunx [args ...]\n" RESET);
+        return 1;
     }
 
     char *args = name + strlen(name) + 1;
     if (args == nullptr)
     {
-        handle_error("usage" BOLD ITALIC " funx nameFunx [args ...]\n" RESET);
+        E_Print("usage" BOLD ITALIC " funx nameFunx [args ...]\n" RESET);
+        return 1;
     }
 
     funx(name, args);
@@ -249,7 +254,8 @@ int parseLs()
 
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " ls [path ...]\n" RESET);
+        E_Print("usage" BOLD ITALIC " ls [path ...]\n" RESET);
+        return 1;
     }
 
     if (path == nullptr)
@@ -258,14 +264,16 @@ int parseLs()
     char *path_p = getStrFromKey((char *) "pPath");
     if (path_p == nullptr)
     {
-        handle_error("");
+        E_Print("Path del progetto inesistente!\n");
+        return 1;
     }
 
     int res = isPathIn(path, path_p);
     if (res != 0)
     {
         free(path_p);
-        handle_error("Il path non si trova all'interno del progetto\n");
+        E_Print("Il path non si trova all'interno del progetto\n");
+        return 1;
     }
 
     free(path_p);
@@ -279,7 +287,8 @@ int parseCd()
 
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " cd nameDir\n" RESET);
+        E_Print("usage" BOLD ITALIC " cd nameDir\n" RESET);
+        return 1;
     }
 
     if (path == nullptr)
@@ -292,7 +301,8 @@ int parseCd()
     int res = isPathIn(path, pPath);
     if (res != 0)
     {
-        handle_error("Il path non si trova all'interno del progetto\n");
+        E_Print("Il path non si trova all'interno del progetto\n");
+        return 1;
     }
 
     cd(path);
@@ -305,12 +315,14 @@ int parseLoad()
 
     if (path == nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " load pathToFile\n" RESET);
+        E_Print("usage" BOLD ITALIC " load pathToFile\n" RESET);
+        return 1;
     }
 
     if (!isValidImage(path))
     {
-        handle_error("I formati ammessi sono png/jpeg/ppm\n");
+        E_Print("I formati ammessi sono png/jpeg/ppm\n");
+        return 1;
     }
     loadI(path);
 
@@ -322,7 +334,8 @@ int parseRm()
 
     if (path == nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " rm filename\n" RESET);
+        E_Print("usage" BOLD ITALIC " rm filename\n" RESET);
+        return 1;
     }
 
 
@@ -332,7 +345,8 @@ int parseRm()
     int res = isPathIn(path, pPath);
     if (res != 0)
     {
-        handle_error("Il path non si trova all'interno del progetto\n");
+        E_Print("Il path non si trova all'interno del progetto\n");
+        return 1;
     }
 
     rm(path);
@@ -346,7 +360,8 @@ int parseMkdir()
 
     if (name == nullptr || err != nullptr)
     {
-        handle_error("usage:" BOLD ITALIC " mkdir nameDir\n" RESET);
+        E_Print("usage:" BOLD ITALIC " mkdir nameDir\n" RESET);
+        return 1;
     }
 
     char *pPath = getStrFromKey((char *) "pPath");
@@ -355,7 +370,8 @@ int parseMkdir()
     int res = isPathIn(name, pPath);
     if (res != 0)
     {
-        handle_error("Il path non si trova all'interno del progetto\n");
+        E_Print("Il path non si trova all'interno del progetto\n");
+        return 1;
     }
 
     mkdir(name);
@@ -368,7 +384,8 @@ int parseRmdir()
 
     if (name == nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage:" BOLD ITALIC " rmdir nameDir\n" RESET);
+        E_Print("usage:" BOLD ITALIC " rmdir nameDir\n" RESET);
+        return 1;
     }
 
     char *pPath = getStrFromKey((char *) "pPath");
@@ -377,7 +394,8 @@ int parseRmdir()
     int res = isPathIn(name, pPath);
     if (res != 0)
     {
-        handle_error("Il path non si trova all'interno del progetto\n");
+        E_Print("Il path non si trova all'interno del progetto\n");
+        return 1;
     }
 
     rmdir(name);
@@ -392,7 +410,8 @@ int parseMv()
 
     if (pathSrc == nullptr || pathDst == nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " mv fromPath toPath\n" RESET);
+        E_Print("usage" BOLD ITALIC " mv fromPath toPath\n" RESET);
+        return 1;
     }
 
 
@@ -400,12 +419,14 @@ int parseMv()
     int res = isPathIn(pathSrc, pPath);
     if (res != 0)
     {
-        handle_error("Il path non si trova all'interno del progetto\n");
+        E_Print("Il path non si trova all'interno del progetto\n");
+        return 1;
     }
     res = isPathIn(pathDst, pPath);
     if (res != 0)
     {
-        handle_error("Il path non si trova all'interno del progetto\n");
+        E_Print("Il path non si trova all'interno del progetto\n");
+        return 1;
     }
 
     mv(pathSrc, pathDst);
@@ -417,7 +438,8 @@ int parseSett(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " settings\n" RESET);
+        E_Print("usage" BOLD ITALIC " settings\n" RESET);
+        return 1;
     }
 
     settings(env);
@@ -431,7 +453,8 @@ int parseDix()
 
     if (op == nullptr || strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD " dix operation [name]\n" RESET);
+        E_Print("usage" BOLD " dix operation [name]\n" RESET);
+        return 1;
     }
 
     if (strcmp(op, "list") == 0 && name == nullptr)
@@ -442,7 +465,8 @@ int parseDix()
         dixReload(name);
     else
     {
-        handle_error("usage" BOLD " dix operation [name]\n" RESET);
+        E_Print("usage" BOLD " dix operation [name]\n" RESET);
+        return 1;
     }
 
     return 0;
@@ -451,7 +475,8 @@ int parseForce()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " force\n" RESET);
+        E_Print("usage" BOLD ITALIC " force\n" RESET);
+        return 1;
     }
 
     force();
@@ -461,7 +486,8 @@ int parseHelpP()
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " help\n" RESET);
+        E_Print("usage" BOLD ITALIC " help\n" RESET);
+        return 1;
     }
 
     helpP();
@@ -472,7 +498,8 @@ int parseExitP(Env *env)
 {
     if (strtok(nullptr, " ") != nullptr)
     {
-        handle_error("usage" BOLD ITALIC " exit\n" RESET);
+        E_Print("usage" BOLD ITALIC " exit\n" RESET);
+        return 1;
     }
 
     exitP(env);
@@ -497,7 +524,8 @@ int funx(char *name, char *args)
         parseCompositionArgs(args);
     else
     {
-        handle_error("Funx non trovata\n");
+        E_Print("Funx non trovata\n");
+        return 1;
     }
 
     return 0;
@@ -508,7 +536,8 @@ int ls(const char *path)
     char *comm = (char *) malloc((strlen(path) + 4) * sizeof(char));
     if (comm == nullptr)
     {
-        handle_error("Error while malloc!\n");
+        E_Print("Error while malloc!\n");
+        return 1;
     }
 
     sprintf(comm, "ls --color=auto %s", path);
@@ -516,7 +545,8 @@ int ls(const char *path)
     if (system(comm))
     {
         free(comm);
-        handle_error("Errore nell'esecuzione del comando ls\n");
+        E_Print("Errore nell'esecuzione del comando ls\n");
+        return 1;
     }
     free(comm);
     return 0;
@@ -534,7 +564,8 @@ int cd(char *path)
     {
         if (toFree)
             free(path);
-        handle_error("Errore nell'esecuzione del comando cd\n");
+        E_Print("Errore nell'esecuzione del comando cd\n");
+        return 1;
     }
 
     if (toFree)
@@ -550,14 +581,16 @@ int loadI(char *path)
     if (comm == nullptr)
     {
         free(pPath);
-        handle_error("Error while malloc!\n");
+        E_Print("Error while malloc!\n");
+        return 1;
     }
     sprintf(comm, "cp %s %s", path, pPath);
 
     if (system(comm))
     {
         free(comm);
-        handle_error("Errore nell'esecuzione del comando load\n");
+        E_Print("Errore nell'esecuzione del comando load\n");
+        return 1;
     }
 
     free(pPath);
@@ -569,7 +602,8 @@ int rm(char *name)
     char *comm = (char *) malloc((strlen(name) + 4) * sizeof(char));
     if (comm == nullptr)
     {
-        handle_error("Error while malloc!\n");
+        E_Print("Error while malloc!\n");
+        return 1;
     }
 
     sprintf(comm, "rm -rf %s", name);
@@ -577,7 +611,8 @@ int rm(char *name)
     if (system(comm))
     {
         free(comm);
-        handle_error("Errore nell'esecuzione del comando rm\n");
+        E_Print("Errore nell'esecuzione del comando rm\n");
+        return 1;
     }
     free(comm);
     return 0;
@@ -589,7 +624,8 @@ int mkdir(char *name)
     char *comm = (char *) malloc((strlen(name) + 7) * sizeof(char));
     if (comm == nullptr)
     {
-        handle_error("Error while malloc!");
+        E_Print("Error while malloc!");
+        return 1;
     }
 
     sprintf(comm, "mkdir -p %s", name);
@@ -597,7 +633,8 @@ int mkdir(char *name)
     if (system(comm))
     {
         free(comm);
-        handle_error("Errore nell'esecuzione del comando mkdir\n");
+        E_Print("Errore nell'esecuzione del comando mkdir\n");
+        return 1;
     }
     free(comm);
     return 0;
@@ -618,7 +655,8 @@ int mv(char *fromPath, char *toPath)
     char *comm = (char *) malloc((strlen(fromPath) + strlen(toPath) + 5) * sizeof(char));
     if (comm == nullptr)
     {
-        handle_error("Error while malloc!\n");
+        E_Print("Error while malloc!\n");
+        return 1;
     }
 
     sprintf(comm, "mv %s %s", fromPath, toPath);
@@ -626,7 +664,8 @@ int mv(char *fromPath, char *toPath)
     if (system(comm))
     {
         free(comm);
-        handle_error("Errore nell'esecuzione del comando mv\n");
+        E_Print("Errore nell'esecuzione del comando mv\n");
+        return 1;
     }
     free(comm);
 
@@ -635,7 +674,7 @@ int mv(char *fromPath, char *toPath)
 int settings(Env *env)
 {
     *env = SETTINGS;
-    D_PRINT("Entering settings...\n");
+    D_Print("Entering settings...\n");
     return 0;
 }
 int dixList()
@@ -684,14 +723,16 @@ int dixReload(char *name)
     if (comm == nullptr)
     {
         free(pPath);
-        handle_error("Error while malloc!\n");
+        E_Print("Error while malloc!\n");
+        return 1;
     }
     sprintf(comm, "rm -rf %s/*", pPath);
     if (system(comm))
     {
         free(comm);
         free(pPath);
-        handle_error("Errore nell'esecuzione del comando rm\n");
+        E_Print("Errore nell'esecuzione del comando rm\n");
+        return 1;
     }
     free(comm);
 
@@ -709,7 +750,7 @@ int dixReload(char *name)
 }
 int force()
 {
-    D_PRINT("Forcing push...\n");
+    D_Print("Forcing push...\n");
     char **names = getCharArrayFromRedis((char *) "dixNames");
     char **comments = getCharArrayFromRedis((char *) "dixComments");
     char *projectName = getStrFromKey((char *) "pName");
@@ -775,11 +816,11 @@ int helpP()
            YELLOW BOLD "  exit"         RESET "\t\t\t\t\t\t\tEsci dal progetto\n"
            "----------------------------------------------------------------------------------------------------------------------------------------------------------------\n"
            "Ecco la liste delle funx che puoi utilizzare sulle tue immagini:\n\n"
-           BOLD GREEN "   funx blur " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "RADIUS" RESET ITALIC BOLD "\t\t\t\tEffettua il blur di IN con radius RADIUS e viene salvato in OUT\n\t" RESET "* " BOLD "IN" RESET ": il path dell'immagine di input\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "RADIUS" RESET ": il livello di blur (> 0)\n\n" 
+           BOLD GREEN "   funx blur " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "RADIUS" RESET ITALIC BOLD "\t\t\t\tEffettua il blur di IN con radius RADIUS e viene salvato in OUT\n\t" RESET "* " BOLD "IN" RESET ": il path dell'immagine di input\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "RADIUS" RESET ": il livello di blur (> 0)\n\n"
            BOLD GREEN "   funx colorfilter " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "R" RESET " " UNDERLINE "G" RESET " " UNDERLINE "B" RESET " " UNDERLINE "TOLERANCE" RESET ITALIC BOLD"\t\tEffettua il color filter di IN di valore RGB con tolerance TOLERANCE e viene salvato in OUT\n\t" RESET "* " BOLD "IN" RESET ": il path dell'immagine di input\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "R" RESET ": il valore di rosso (0 <= R <= 255)\n\t* " BOLD "G" RESET ": il valore di verde (0 <= G <= 255)\n\t* " BOLD "B" RESET ": il valore di blu (0 <= B <= 255)\n\t* " BOLD "TOLERANCE" RESET ": permette di regolare la sensibilità del filtro rispetto i dettagli del colore nell'immagine(>=0)\n\n"
            BOLD GREEN "   funx grayscale " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET ITALIC BOLD"\t\t\t\tEffettua il grayscale di IN e viene salvato in OUT \n\t" RESET "* " BOLD "IN" RESET ": il path dell'immagine di input\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\n"
            BOLD GREEN "   funx composition " RESET UNDERLINE "IN1" RESET " " UNDERLINE "IN2" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "SIDE" RESET ITALIC BOLD"\t\t\tCompone IN2 sul SIDE di IN1 e il risultato viene salvato in OUT\n\t" RESET "* " BOLD "IN1" RESET ": il path dell'immagine di input\n\t* " BOLD "IN2" RESET ": il path dell'immagine da comporre a IN1\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "SIDE" RESET ": indica il lato su cui comporre l'immagine (UP=0, DOWN=1, LEFT=2, RIGTH=3)\n\n"
-           BOLD GREEN "   funx overlap " RESET UNDERLINE "IN1" RESET " " UNDERLINE "IN2" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "X" RESET " " UNDERLINE "Y" RESET ITALIC BOLD "\t\t\t\tViene sovrapposta IN2 su IN1 alla posizione (X, Y) e viene salvato in OUT \n\t" RESET "* " BOLD "IN1" RESET ": il path dell'immagine di input\n\t* " BOLD "IN2" RESET ": il path dell'immagine da sovrapporre a IN1\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "X" RESET ": posizione sull'ascisse\n\t* " BOLD "Y" RESET ": posizione sull'ordinata\n\n" 
+           BOLD GREEN "   funx overlap " RESET UNDERLINE "IN1" RESET " " UNDERLINE "IN2" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "X" RESET " " UNDERLINE "Y" RESET ITALIC BOLD "\t\t\t\tViene sovrapposta IN2 su IN1 alla posizione (X, Y) e viene salvato in OUT \n\t" RESET "* " BOLD "IN1" RESET ": il path dell'immagine di input\n\t* " BOLD "IN2" RESET ": il path dell'immagine da sovrapporre a IN1\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "X" RESET ": posizione sull'ascisse\n\t* " BOLD "Y" RESET ": posizione sull'ordinata\n\n"
            BOLD GREEN "   funx upscale " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "FACTOR" RESET ITALIC BOLD "\t\t\t\tEffettua l'upscale di IN di fattore FACTOR e viene salvato in OUT\n\t" RESET " * " BOLD "IN" RESET ": il path dell'immagine di input\n\t * " BOLD "OUT" RESET ": il path dell'immagine in output\n\t * " BOLD "FACTOR" RESET ": fattore di scala dell'immagine(> 0)\n\n"
            BOLD GREEN "   funx downscale " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "FACTOR" RESET ITALIC BOLD "\t\t\t\tEffettua il downscale di IN di fattore FACTOR e viene salvato in OUT\n\t" RESET " * " BOLD "IN" RESET ": il path dell'immagine di input\n\t * " BOLD "OUT" RESET ": il path dell'immagine in output\n\t *" BOLD " FACTOR" RESET ": fattore di scala dell'immagine(> 0)\n\n");
     return 0;
@@ -789,7 +830,7 @@ int exitP(Env *env)
     force();
     deallocateFromRedis();
 
-    D_PRINT("Uscita dal progetto in corso...\n");
+    D_Print("Uscita dal progetto in corso...\n");
     *env = HOMEPAGE;
     return 0;
 }

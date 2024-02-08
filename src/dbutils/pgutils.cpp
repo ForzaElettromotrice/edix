@@ -19,7 +19,7 @@ int checkDb()
 
     if (!checkRoleExists(conn, roleNameToCheck))
     {
-        D_PRINT("Creating user edix...\n");
+        D_Print("Creating user edix...\n");
         system("psql -d postgres -U postgres -c \"SELECT pg_catalog.set_config('search_path', '', false); CREATE ROLE edix NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS;\" > /dev/null");
     }
 
@@ -31,47 +31,47 @@ int checkDb()
 }
 int initDb()
 {
-    D_PRINT("Creating database...\n");
+    D_Print("Creating database...\n");
     system("psql -d postgres -U edix -c \"CREATE DATABASE edix;\" > /dev/null");
 
-    D_PRINT("Creating Tupx_t...\n");
+    D_Print("Creating Tupx_t...\n");
     system("psql -d edix -U edix -c \"CREATE TYPE Tupx_t AS ENUM ('Bilinear', 'Bicubic');\" > /dev/null");
-    D_PRINT("Creating Modex_t...\n");
+    D_Print("Creating Modex_t...\n");
     system("psql -d edix -U edix -c \"CREATE TYPE Modex_t AS ENUM('Immediate', 'Programmed');\" > /dev/null");
-    D_PRINT("Creating Compx_t...\n");
+    D_Print("Creating Compx_t...\n");
     system("psql -d edix -U edix -c \"CREATE TYPE Compx_t AS ENUM('JPEG', 'PNG', 'PPM');\" > /dev/null");
-    D_PRINT("Creating Tppx_t...\n");
+    D_Print("Creating Tppx_t...\n");
     system("psql -d edix -U edix -c \"CREATE TYPE Tppx_t AS ENUM('Serial', 'OMP', 'CUDA');\" > /dev/null");
 
-    D_PRINT("Creating Tupx...\n");
+    D_Print("Creating Tupx...\n");
     system("psql -d edix -U edix -c \"CREATE DOMAIN Tupx AS Tupx_t;\" > /dev/null");
-    D_PRINT("Creating Modex...\n");
+    D_Print("Creating Modex...\n");
     system("psql -d edix -U edix -c \"CREATE DOMAIN Modex AS Modex_t;\" > /dev/null");
-    D_PRINT("Creating Compx...\n");
+    D_Print("Creating Compx...\n");
     system("psql -d edix -U edix -c \"CREATE DOMAIN Compx AS Compx_t;\" > /dev/null");
-    D_PRINT("Creating Tppx...\n");
+    D_Print("Creating Tppx...\n");
     system("psql -d edix -U edix -c \"CREATE DOMAIN Tppx AS Tppx_t;\" > /dev/null");
-    D_PRINT("Creating Uint5...\n");
+    D_Print("Creating Uint5...\n");
     system("psql -d edix -U edix -c \"CREATE DOMAIN Uint5 AS integer CHECK(VALUE >= 5);\" > /dev/null");
 
-    D_PRINT("Creating table Project...\n");
+    D_Print("Creating table Project...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Project (Name VARCHAR(50) PRIMARY KEY NOT NULL,CDate TIMESTAMP NOT NULL,MDate TIMESTAMP NOT NULL,Path VARCHAR(256) UNIQUE NOT NULL,Settings INT NOT NULL);\" > /dev/null");
-    D_PRINT("Creating table Settings...\n");
+    D_Print("Creating table Settings...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Mode Modex NOT NULL,Comp Compx NOT NULL,TTS Uint5 NOT NULL,TPP Tppx NOT NULL,Backup BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
-    D_PRINT("Creating table Dix...\n");
+    D_Print("Creating table Dix...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP PRIMARY KEY NOT NULL,Project VARCHAR(50) NOT NULL, Name VARCHAR(50) NOT NULL, Comment VARCHAR(1024),UNIQUE (Project, Name),CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE);\" > /dev/null");
-    D_PRINT("Creating table Image...\n");
+    D_Print("Creating table Image...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Image (Id SERIAL PRIMARY KEY NOT NULL,Name VARCHAR(50) NOT NULL,Data Bytea NOT NULL,Comp Compx NOT NULL,Dix TIMESTAMP NOT NULL,Path VARCHAR(256) NOT NULL,CONSTRAINT V8 FOREIGN KEY (Dix) REFERENCES Dix(Instant) ON DELETE CASCADE);\" > /dev/null");
 
-    D_PRINT("Altering table Project...\n");
+    D_Print("Altering table Project...\n");
     system("psql -d edix -U edix -c \"ALTER TABLE Project ADD CONSTRAINT V1 CHECK (CDate <= MDate),ADD CONSTRAINT V2 UNIQUE (Settings),ADD CONSTRAINT V3 FOREIGN KEY (Settings) REFERENCES Settings(Id) ON DELETE CASCADE INITIALLY DEFERRED;\" > /dev/null");
-    D_PRINT("Altering table Settings...\n");
+    D_Print("Altering table Settings...\n");
     system("psql -d edix -U edix -c \"ALTER TABLE Settings ADD CONSTRAINT V4 UNIQUE (Project),ADD CONSTRAINT V5 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE INITIALLY DEFERRED;\" > /dev/null");
 
-    D_PRINT("Creating function CheckTimeFunction...\n");
+    D_Print("Creating function CheckTimeFunction...\n");
     system(R"(psql -d edix -U edix -c "CREATE FUNCTION CheckTimeFunction() RETURNS TRIGGER AS \$\$ BEGIN IF NEW.Instant < (SELECT CDate FROM Project p WHERE p.name = NEW.Project) THEN RAISE EXCEPTION 'Cannot insert a dix with Instant < CDate'; END IF; RETURN NEW; END; \$\$ LANGUAGE plpgsql;" > /dev/null)");
 
-    D_PRINT("Creating trigger on Dix...\n");
+    D_Print("Creating trigger on Dix...\n");
     system("psql -d edix -U edix -c \"CREATE TRIGGER CheckTime BEFORE INSERT ON Dix FOR EACH ROW EXECUTE FUNCTION CheckTimeFunction();\" > /dev/null");
 
     return 0;
@@ -83,7 +83,8 @@ int checkPostgresService()
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        handle_error("Postgres is not running\n");
+        E_Print("Postgres is not running\n");
+        return 1;
     }
 
     return 0;
@@ -96,7 +97,8 @@ int loadProjectOnRedis(char *projectName)
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        handle_error("Errore di connessione a postgres), %s\n", PQerrorMessage(conn));
+        E_Print("Errore di connessione a postgres), %s\n", PQerrorMessage(conn));
+        return 1;
     }
 
 
@@ -142,7 +144,8 @@ int loadDix(char *name, char *projectName, char *pPath)
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        handle_error("(Errore di connessione a postgres), %s\n", PQerrorMessage(conn));
+        E_Print("(Errore di connessione a postgres), %s\n", PQerrorMessage(conn));
+        return 1;
     }
 
     char query[256];
@@ -153,7 +156,8 @@ int loadDix(char *name, char *projectName, char *pPath)
     {
         PQclear(result);
         PQfinish(conn);
-        handle_error("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        E_Print("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        return 1;
     }
 
     int numRows = PQntuples(result);
@@ -161,7 +165,8 @@ int loadDix(char *name, char *projectName, char *pPath)
     if (numRows == 0)
     {
         PQfinish(conn);
-        handle_error("Il dix %s non esiste\n", name);
+        E_Print("Il dix %s non esiste\n", name);
+        return 1;
     }
 
     char *instant = PQgetvalue(result, 0, 0);
@@ -173,7 +178,8 @@ int loadDix(char *name, char *projectName, char *pPath)
     {
         PQclear(result);
         PQfinish(conn);
-        handle_error("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        E_Print("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        return 1;
     }
 
     numRows = PQntuples(result);
@@ -201,7 +207,8 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        handle_error("Errore di connessione a postgres: %s\n", PQerrorMessage(conn));
+        E_Print("Errore di connessione a postgres: %s\n", PQerrorMessage(conn));
+        return 1;
     }
 
     char query[1024];
@@ -216,10 +223,10 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
     //                "END $$;\n"
     //                "COMMIT;\n", name, path, TUP, modEx, comp, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name);
     sprintf(query, "BEGIN;\n"
-                    "INSERT INTO Settings (TUP, Mode, Comp, TTS, TPP, Backup, Project) VALUES ('%s', '%s', '%s', '%d', '%s', '%s', '%s') RETURNING Id;\n"
-                    "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), '%s', (SELECT Id FROM Settings ORDER BY Id DESC LIMIT 1));\n"
-                    "COMMIT;\n", TUP, modEx, comp, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name, path);
-    D_PRINT("Adding project to Postgres...\n");
+                   "INSERT INTO Settings (TUP, Mode, Comp, TTS, TPP, Backup, Project) VALUES ('%s', '%s', '%s', '%d', '%s', '%s', '%s') RETURNING Id;\n"
+                   "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), '%s', (SELECT Id FROM Settings ORDER BY Id DESC LIMIT 1));\n"
+                   "COMMIT;\n", TUP, modEx, comp, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name, path);
+    D_Print("Adding project to Postgres...\n");
     PGresult *res = PQexec(conn, query);
 
     if (PQresultStatus(res) != PGRES_COMMAND_OK)
@@ -246,14 +253,15 @@ int addDix(char *projectName, char *dixName, char *comment, char **images, char 
 {
     for (int i = 0; paths[i] != nullptr; ++i)
     {
-        D_PRINT("%s\n", paths[i]);
+        D_Print("%s\n", paths[i]);
     }
 
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        handle_error("Errore di connessione %s\n", PQerrorMessage(conn));
+        E_Print("Errore di connessione %s\n", PQerrorMessage(conn));
+        return 1;
     }
 
     char *pPath = getStrFromKey((char *) "pPath");
@@ -268,7 +276,7 @@ int addDix(char *projectName, char *dixName, char *comment, char **images, char 
 
     for (int i = 0; paths[i] != nullptr; ++i)
     {
-        D_PRINT("path = %s\timage = %s\n", paths[i], images[i]);
+        D_Print("path = %s\timage = %s\n", paths[i], images[i]);
         size_t iSize;
         char truePath[256];
         sprintf(truePath, "%s/.dix/%s/%s", pPath, dixName, images[i]);
@@ -301,7 +309,8 @@ int addDix(char *projectName, char *dixName, char *comment, char **images, char 
             free(query);
             free(line);
             free(pPath);
-            handle_error("Error while reallocating!\n");
+            E_Print("Error while reallocating!\n");
+            return 1;
         }
         query = tmp;
 
@@ -309,7 +318,7 @@ int addDix(char *projectName, char *dixName, char *comment, char **images, char 
 
         free(imageData);
         free(line);
-        D_PRINT("Fine for\n");
+        D_Print("Fine for\n");
     }
 
     free(pPath);
@@ -321,13 +330,14 @@ int addDix(char *projectName, char *dixName, char *comment, char **images, char 
     {
         free(query);
         PQfinish(conn);
-        handle_error("Error while reallocating!\n");
+        E_Print("Error while reallocating!\n");
+        return 1;
     }
     query = tmp;
 
     strcat(query, "COMMIT;");
 
-    D_PRINT("Adding dix to project %s...\n", projectName);
+    D_Print("Adding dix to project %s...\n", projectName);
     PGresult *res = PQexec(conn, query);
 
     if (PQresultStatus(res) != PGRES_COMMAND_OK)
@@ -357,7 +367,8 @@ int delProject(char *name)
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        handle_error("Errore di connessione %s\n", PQerrorMessage(conn));
+        E_Print("Errore di connessione %s\n", PQerrorMessage(conn));
+        return 1;
     }
 
     char *path = getPath(conn, name);
@@ -367,26 +378,28 @@ int delProject(char *name)
         return 1;
     }
 
-    D_PRINT("Removing project folder...\n");
+    D_Print("Removing project folder...\n");
     char command[256];
     sprintf(command, "rm -rf %s", path);
     if (system(command) != 0)
     {
         PQfinish(conn);
-        handle_error("Impossibile rimuovere cartella del progetto\n");
+        E_Print("Impossibile rimuovere cartella del progetto\n");
+        return 1;
     }
 
     char query[256];
     sprintf(query, "DELETE FROM Project p WHERE p.name = '%s';", name);
 
-    D_PRINT("Removing project from Postgres...\n");
+    D_Print("Removing project from Postgres...\n");
     PGresult *res = PQexec(conn, query);
 
     if (PQresultStatus(res) != PGRES_COMMAND_OK)
     {
         PQclear(res);
         PQfinish(conn);
-        handle_error("Errore nell'esecuzione della query -> %s", PQerrorMessage(conn));
+        E_Print("Errore nell'esecuzione della query -> %s", PQerrorMessage(conn));
+        return 1;
     }
     PQclear(res);
 
@@ -402,7 +415,7 @@ int updateSettings(int id, char *tup, char *mode, char *comp, u_int tts, char *t
     if (PQstatus(conn) != CONNECTION_OK)
     {
         PQfinish(conn);
-        handle_error("Errore di connessione a postgres: %s\n", PQerrorMessage(conn));
+        E_Print("Errore di connessione a postgres: %s\n", PQerrorMessage(conn));
         return 1;
     }
     char backupChar[256];
@@ -439,7 +452,7 @@ int updateSettings(int id, char *tup, char *mode, char *comp, u_int tts, char *t
         PQfinish(conn);
         return 1;
     }
-    D_PRINT("query update eseguita su settings\n");
+    D_Print("query update eseguita su settings\n");
     PQclear(result);
     PQfinish(conn);
 
@@ -653,9 +666,9 @@ unsigned char *getImageData(char *path, size_t *dim)
         return nullptr;
     }
 
-    D_PRINT("fread\n");
+    D_Print("fread\n");
     fread(bytea_data, 1, file_size, file);
-    D_PRINT("fread done\n");
+    D_Print("fread done\n");
     fclose(file);
     *dim = file_size;
 
@@ -738,14 +751,15 @@ int checkPath(char *path, char *pPath)
     if (strcmp(path, pPath) == 0)
         return 0;
 
-    D_PRINT("Creating folder %s...\n", path);
+    D_Print("Creating folder %s...\n", path);
     char *command = (char *) malloc((strlen(path) + 10) * sizeof(char));
     sprintf(command, "mkdir -p %s", path);
 
     if (system(command) != 0)
     {
         free(command);
-        handle_error("Error while creating dir!\n");
+        E_Print("Error while creating dir!\n");
+        return 1;
     }
 
     return 0;
