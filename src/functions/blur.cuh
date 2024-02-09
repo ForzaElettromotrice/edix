@@ -10,6 +10,8 @@
 #include <sys/mman.h>
 
 
-__global__ void blurShared(const unsigned char *img, unsigned char *blur_img, uint width, uint height, uint channels, int radius);
+__global__ void blur(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, uint channels, int radius);
+__global__ void blurShared(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, uint channels, int radius);
+
 
 #endif //EDIX_BLUR_CUH

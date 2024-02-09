@@ -31,9 +31,9 @@ int parseBlurArgs(char *args)
     if (strcmp(tpp, "Serial") == 0)
         oImg = blurSerial(img, width, height, channels, radius, &oWidth, &oHeight);
     else if (strcmp(tpp, "OMP") == 0)
-        oImg = blurOmp(img, width, height, channels, radius, &oWidth, &oHeight, 4);
+        oImg = blurOmp(img, width, height, channels, radius, &oWidth, &oHeight, 10, 10);
     else if (strcmp(tpp, "CUDA") == 0)
-        oImg = blurCuda(img, width, height, channels, radius, &oWidth, &oHeight);
+        oImg = blurCuda(img, width, height, channels, radius, &oWidth, &oHeight, true);
     else
     {
         free(img);

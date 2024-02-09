@@ -1,144 +1,45 @@
 #include "blur.cuh"
 
-
-unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight)
+__global__ void blur(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, uint channels, int radius)
 {
-    uint totalPixels = height * width;
+    int x = (int) (threadIdx.x + blockIdx.x * blockDim.x);
+    int y = (int) (threadIdx.y + blockIdx.y * blockDim.y);
 
-    unsigned char *blurImage;
+    if (x >= width || y >= height)
+        return;
 
-    blurImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * 3);
-    if (blurImage == nullptr)
+    int RGB[3];
+    for (int k = 0; k < channels; ++k)
+        RGB[k] = 0;
+
+    int curr_i;
+    int curr_j;
+    int num = 0;
+
+    for (int i = -radius; i <= radius; ++i)
     {
-        E_Print(RED "FUNX Error: " RESET "Errore nell'allocare memoria\n");
-        return nullptr;
-    }
-
-    for (int i = 0; i < width; i++)
-    {
-        for (int j = 0; j < height; j++)
+        for (int j = -radius; j <= radius; ++j)
         {
-            uint c[channels];
-            memset(c, 0, channels * sizeof(uint));
-
-            int num = 0;
-            int curr_i;
-            int curr_j;
-
-            for (int m = -radius; m <= radius; m++)
-            {
-                for (int n = -radius; n <= radius; n++)
-                {
-                    curr_i = i + m;
-                    curr_j = j + n;
-                    if ((curr_i < 0) || (curr_i > width - 1) || (curr_j < 0) || (curr_j > height - 1)) continue;
-
-                    for (int k = 0; k < channels; ++k)
-                        c[k] += imgIn[(3 * (curr_i + curr_j * width)) + k];
-                    num++;
-                }
-            }
-            for (int k = 0; k < channels; ++k)
-            {
-                c[k] /= num;
-                blurImage[3 * (i + j * width) + k] = c[k];
-            }
-        }
-    }
-    *oWidth = width;
-    *oHeight = height;
-
-    return blurImage;
-}
-unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight, int nThread)
-{
-    uint totalPixels = height * width;
-
-    auto *blurImage = (unsigned char *) malloc(sizeof(unsigned char *) * totalPixels * 3);
-    if (blurImage == nullptr)
-    {
-        E_Print(RED "FUNX Error: " RESET "Errore nell'allocare memoria\n");
-        return nullptr;
-    }
-//TODO: collapse
-//TODO: schedule
-//TODO: numero di thread ottimale
-#pragma omp parallel for num_threads(nThread) default(none) shared(width, height, channels, radius, imgIn, blurImage)
-    for (int j = 0; j < height; ++j)
-    {
-        for (int i = 0; i < width; i++)
-        {
-            if (j > height)
+            curr_i = x + i;
+            curr_j = y + j;
+            if (curr_i < 0 || curr_j < 0 || curr_i >= width || curr_j >= height)
                 continue;
-            uint c[channels];
-            memset(c, 0, channels * sizeof(uint));
-            int num = 0;
-            int curr_i;
-            int curr_j;
 
-            for (int m = -radius; m <= radius; m++)
-            {
-                for (int n = -radius; n <= radius; n++)
-                {
-
-                    curr_i = i + m;
-                    curr_j = j + n;
-                    if ((curr_i < 0) || (curr_i > width - 1) || (curr_j < 0) || (curr_j > height - 1)) continue;
-
-                    for (int k = 0; k < channels; ++k)
-                        c[k] += imgIn[(3 * (curr_i + curr_j * width)) + k];
-
-                    num++;
-                }
-            }
             for (int k = 0; k < channels; ++k)
-            {
-                c[k] /= num;
-                blurImage[3 * (i + j * width) + k] = c[k];
-            }
+                RGB[k] += imgIn[(curr_i + curr_j * width) * channels + k];
+            num++;
         }
     }
 
-    *oWidth = width;
-    *oHeight = height;
+    for (int k = 0; k < channels; ++k)
+    {
+        RGB[k] /= num;
+        imgOut[(x + y * width) * channels + k] = RGB[k];
+    }
 
-    return blurImage;
+
 }
-unsigned char *blurCuda(const unsigned char *imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight)
-{
-    //host
-    uint iSize = width * height * 3;
-    auto h_blur_img = (unsigned char *) malloc(iSize * sizeof(unsigned char));
-    mlock(imgIn, iSize * sizeof(unsigned char));
-
-    //device
-    unsigned char *d_img;
-    unsigned char *d_blur_img;
-    cudaMalloc(&d_img, iSize * sizeof(unsigned char));
-    cudaMalloc(&d_blur_img, iSize * sizeof(unsigned char));
-
-    //copy
-    cudaMemcpy(d_img, imgIn, iSize * sizeof(unsigned char), cudaMemcpyHostToDevice);
-
-    //blur
-    dim3 gridSize = {(width + 7) / 8, (height + 7) / 8, 1};
-    dim3 blockSize = {8, 8, 1};
-    size_t sharedDim = (size_t) pow(8 + 2 * radius, 2) * 3;
-    blurShared<<<gridSize, blockSize, sharedDim>>>(d_img, d_blur_img, width, height, channels, radius);
-
-    //copy back
-    cudaMemcpy(h_blur_img, d_blur_img, iSize * sizeof(unsigned char), cudaMemcpyDeviceToHost);
-
-    //free
-    munlock(imgIn, iSize * sizeof(unsigned char));
-    cudaFree(d_img);
-    cudaFree(d_blur_img);
-
-    *oWidth = width;
-    *oHeight = height;
-    return h_blur_img;
-}
-__global__ void blurShared(const unsigned char *img, unsigned char *blur_img, uint width, uint height, uint channels, int radius)
+__global__ void blurShared(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height, uint channels, int radius)
 {
     int absX = (int) (threadIdx.x + blockIdx.x * blockDim.x);
     int absY = (int) (threadIdx.y + blockIdx.y * blockDim.y);
@@ -149,41 +50,61 @@ __global__ void blurShared(const unsigned char *img, unsigned char *blur_img, ui
     int relX = (int) threadIdx.x;
     int relY = (int) threadIdx.y;
 
-    uint sDim = blockDim.x + 2 * radius;
+    uint sSide = blockDim.x + 2 * radius;
     extern __shared__ unsigned char shared[];
 
-    int x;
-    int y;
 
-    //Fa schifo, ma devo per forza allocare 3 e poi in caso uso solo 1
-    int c[3];
-    for (int k = 0; k < channels; ++k)
-        c[k] = 0;
-
-    int pixels = 0;
+    int amount = (int) ((sSide + blockDim.x - 1) / blockDim.x);
+    int jump = (int) (blockDim.x * blockDim.y);
+    int sX = (int) (absX - relX);
+    int sY = (int) (absY - relY);
 
     if (relX == 0 && relY == 0)
     {
-
-        for (int i = 0; i < sDim; ++i)
+        for (int i = 0; i < sSide; i++)
         {
-            for (int j = 0; j < sDim; ++j)
+            for (int j = 0; j < sSide; j++)
             {
-                x = absX - radius + i;
-                y = absY - radius + j;
-                if (x < 0 || x >= width || y < 0 || y >= height)
+                if (sX + i - radius >= width || sY + j - radius >= height)
                     continue;
 
-                for (int k = 0; k < channels; ++k)
-                    shared[(i + j * sDim) * 3 + k] = img[(x + y * width) * 3 + k];
+                for (int k = 0; k < channels; k++)
+                    shared[(i + j * sSide) * channels + k] = imgIn[(sX - radius + i + (sY - radius + j) * width) * channels + k];
             }
         }
     }
-
     __syncthreads();
 
-    for (int i = -radius; i <= radius; ++i)
+
+    for (int n = 0; n < amount; ++n)
     {
+        int x = relX;
+        int y = relY + n * jump;
+
+        if (blockIdx.x == 0 && blockIdx.y == 0)
+        {
+            printf("%d %d %d %d\n", x, y, relX, relY);
+        }
+
+        if (sX + x - radius >= width || sY + y - radius >= height || sX + x - radius < 0 || sY + y - radius < 0 || x >= sSide || y >= sSide)
+            continue;
+
+        for (int k = 0; k < channels; ++k)
+        {
+            shared[(x + y * sSide) * channels + k] = imgIn[(sX - radius + x + (sY - radius + y) * width) * channels + k];
+        }
+    }
+    __syncthreads();
+
+    int RGB[3];
+    for (int k = 0; k < channels; ++k)
+        RGB[k] = 0;
+
+    int x;
+    int y;
+    int num = 0;
+
+    for (int i = -radius; i <= radius; ++i)
         for (int j = -radius; j <= radius; ++j)
         {
             x = relX + radius + i;
@@ -193,14 +114,150 @@ __global__ void blurShared(const unsigned char *img, unsigned char *blur_img, ui
                 continue;
 
             for (int k = 0; k < channels; ++k)
-                c[k] += shared[(x + y * sDim) * 3 + k];
-            pixels++;
+                RGB[k] += shared[(x + y * sSide) * channels + k];
+            num++;
         }
-    }
 
     for (int k = 0; k < channels; ++k)
     {
-        c[k] /= pixels;
-        blur_img[(absX + absY * width) * 3 + k] = c[k];
+        RGB[k] /= num;
+        imgOut[(absX + absY * width) * channels + k] = RGB[k];
     }
+}
+
+
+unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight)
+{
+    *oWidth = width;
+    *oHeight = height;
+
+    uint oSize = width * height * channels;
+    auto imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
+    if (imgOut == nullptr)
+    {
+        E_Print("Errore durante la malloc!\n");
+        return nullptr;
+    }
+
+    int RGB[channels];
+    memset(RGB, 0, channels * sizeof(int));
+
+    int num;
+    int curr_i;
+    int curr_j;
+
+    for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
+        {
+            num = 0;
+
+            for (int i = -radius; i <= radius; i++)
+                for (int j = -radius; j <= radius; j++)
+                {
+                    curr_i = x + i;
+                    curr_j = y + j;
+                    if ((curr_i < 0) || (curr_i >= width) || (curr_j < 0) || (curr_j >= height))
+                        continue;
+
+                    for (int k = 0; k < channels; ++k)
+                        RGB[k] += imgIn[(curr_i + curr_j * width) * channels + k];
+                    num++;
+                }
+            for (int k = 0; k < channels; ++k)
+            {
+                RGB[k] /= num;
+                imgOut[(x + y * width) * channels + k] = RGB[k];
+            }
+        }
+
+
+    return imgOut;
+}
+unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight, int nThreads1, int nThreads2)
+{
+    *oWidth = width;
+    *oHeight = height;
+
+    uint oSize = width * height * channels;
+    auto imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
+    if (imgOut == nullptr)
+    {
+        E_Print("Errore durante la malloc!\n");
+        return nullptr;
+    }
+
+    int RGB[channels];
+    memset(RGB, 0, channels * sizeof(int));
+
+    int num;
+    int curr_i;
+    int curr_j;
+
+//TODO: magari cambiare schedule
+#pragma omp parallel for num_threads(nThreads1) collapse(2) schedule(static) default(none) shared(width, height, channels, imgIn, imgOut, radius, nThreads2) private(RGB, num, curr_i, curr_j)
+    for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
+        {
+            num = 0;
+#pragma omp parallel for num_threads(nThreads2) collapse(2) schedule(static) default(none) shared(radius, width, height, channels, x, y, imgIn) private(curr_i, curr_j) reduction(+:num) reduction(+:RGB[:channels])
+            for (int i = -radius; i <= radius; i++)
+                for (int j = -radius; j <= radius; j++)
+                {
+                    curr_i = x + i;
+                    curr_j = y + j;
+                    if ((curr_i < 0) || (curr_i >= width) || (curr_j < 0) || (curr_j >= height))
+                        continue;
+
+                    for (int k = 0; k < channels; ++k)
+                        RGB[k] += imgIn[(curr_i + curr_j * width) * channels + k];
+                    num++;
+                }
+            for (int k = 0; k < channels; ++k)
+            {
+                RGB[k] /= num;
+                imgOut[(x + y * width) * channels + k] = RGB[k];
+            }
+        }
+
+
+    return imgOut;
+}
+unsigned char *blurCuda(const unsigned char *h_imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight, bool useShared)
+{
+    *oWidth = width;
+    *oHeight = height;
+
+    uint oSize = width * height * channels;
+    auto h_imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
+    if (h_imgOut == nullptr)
+    {
+        E_Print("Errore durante la malloc!\n");
+        return nullptr;
+    }
+    mlock(h_imgIn, oSize * sizeof(unsigned char));
+
+
+    unsigned char *d_imgIn;
+    unsigned char *d_imgOut;
+    cudaMalloc(&d_imgIn, oSize * sizeof(unsigned char));
+    cudaMalloc(&d_imgOut, oSize * sizeof(unsigned char));
+
+    cudaMemcpy(d_imgIn, h_imgIn, oSize * sizeof(unsigned char), cudaMemcpyHostToDevice);
+
+    dim3 gridSize = {(width + 7) / 8, (height + 7) / 8, 1};
+    dim3 blockSize = {8, 8, 1};
+    if (useShared)
+    {
+        auto sharedDim = (size_t) pow(8 + 2 * radius, 2) * channels;
+        blurShared<<<gridSize, blockSize, sharedDim>>>(d_imgIn, d_imgOut, width, height, channels, radius);
+    } else
+        blur<<<gridSize, blockSize>>>(d_imgIn, d_imgOut, width, height, channels, radius);
+
+    cudaMemcpy(h_imgOut, d_imgOut, oSize * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+
+    munlock(h_imgIn, oSize * sizeof(unsigned char));
+    cudaFree(d_imgIn);
+    cudaFree(d_imgOut);
+
+    return h_imgOut;
 }

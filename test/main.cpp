@@ -18,9 +18,9 @@ int main()
     uint oHeight;
 
     auto start = std::chrono::high_resolution_clock::now();
-    unsigned char *oImg = grayscaleCuda(img1, width1, height1, &oWidth, &oHeight);
+    unsigned char *oImg = blurCuda(img1, width1, height1, channels1, 10, &oWidth, &oHeight, true);
     auto end = std::chrono::high_resolution_clock::now();
-    writeImage((char *) "images/out.ppm", oImg, oWidth, oHeight, 1);
+    writeImage((char *) "images/out.ppm", oImg, oWidth, oHeight, channels1);
 
     uint delta = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     printf("Time: %u\n", delta);
