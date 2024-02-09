@@ -3,18 +3,26 @@
 //
 
 #include "parser.hpp"
+#include <cstring>
 
 int parseBlurArgs(char *args)
 {
+   
     char *imgIn = strtok(args, " ");
     char *pathOut = strtok(nullptr, " ");
-    int radius = (int) strtol(strtok(nullptr, " "), nullptr, 10);
-
-    if (imgIn == nullptr || pathOut == nullptr || radius <= 0)
-    {
+    if (pathOut == nullptr){
         E_Print("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
         return 1;
     }
+    int radius;
+    const char *nptr = strtok(nullptr, " ");
+    if (nptr == nullptr){
+        E_Print("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
+        return 1;
+    }else{
+        radius = (int) strtol(nptr, nullptr, 10);
+    }
+
 
     //TODO: leggere le immagini in base alla loro estensione
     char *tpp = getStrFromKey((char *) "TPP");
