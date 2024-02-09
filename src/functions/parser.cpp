@@ -9,7 +9,7 @@ int parseBlurArgs(char *args)
 {
    
     char *imgIn = strtok(args, " ");
-    if (imgIn == nullptr) {
+    if (imgIn == nullptr){
         E_Print("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
         return 1;
     }
