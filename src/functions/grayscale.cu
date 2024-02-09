@@ -1,130 +1,113 @@
 #include "grayscale.cuh"
 
 
-__global__ void grayscaleCUDA(const unsigned char *ImgIn, unsigned char *ImgOut, uint width, uint height)
+__global__ void grayscale(const unsigned char *imgIn, unsigned char *imgOut, uint width, uint height)
 {
-    uint x = threadIdx.x + blockIdx.x * blockDim.x;
-    uint y = threadIdx.y + blockIdx.y * blockDim.y;
+    int x = (int) (threadIdx.x + blockIdx.x * blockDim.x);
+    int y = (int) (threadIdx.y + blockIdx.y * blockDim.y);
 
-    if (x < width && y < height)
-    {
+    if (x >= width || y >= height)
+        return;
 
-        unsigned char r = ImgIn[(y * width + x) * 3];
-        unsigned char g = ImgIn[(y * width + x) * 3 + 1];
-        unsigned char b = ImgIn[(y * width + x) * 3 + 2];
+    double RGB[] = {0, 0, 0};
 
-        ImgOut[(y * width + x)] = (r + g + b) / 3;
-    }
+    for (int k = 0; k < 3; ++k)
+        RGB[k] = imgIn[(x + y * width) * 3 + k];
 
+    imgOut[x + y * width] = (int) (RGB[0] * 0.2126 + RGB[1] * 0.7152 + RGB[2] * 0.0722);
 }
+
 
 unsigned char *grayscaleSerial(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight)
 {
-    auto *img_out = (unsigned char *) malloc((width * height) * sizeof(unsigned char));
+    *oWidth = width;
+    *oHeight = height;
 
-    if (img_out == nullptr)
+    uint oSize = width * height;
+    auto imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
+    if (imgOut == nullptr)
     {
-        E_Print(RED
-                "Error: "
-                RESET
-                "Errore nell'allocazione della memoria\n");
+        E_Print("Errore durante la malloc!\n");
         return nullptr;
     }
 
 
-    int r;
-    int g;
-    int b;
-    int i = 0;
-    int grayValue;
+    double RGB[] = {0, 0, 0};
 
-
-    for (int y = 0; y < height; y += 1)
-    {
-        for (int x = 0; x < width; x += 1)
+    for (int i = 0; i < width; ++i)
+        for (int j = 0; j < height; ++j)
         {
-            r = imgIn[((y * width) + x) * 3];
-            g = imgIn[((y * width) + x) * 3 + 1];
-            b = imgIn[((y * width) + x) * 3 + 2];
+            for (int k = 0; k < 3; ++k)
+                RGB[k] = imgIn[(i + j * width) * 3 + k];
 
-            grayValue = (r + g + b) / 3;
-
-            img_out[i++] = grayValue;
+            imgOut[i + j * width] = (int) (RGB[0] * 0.2126 + RGB[1] * 0.7152 + RGB[2] * 0.0722);
         }
-    }
 
+
+    return imgOut;
+}
+unsigned char *grayscaleOmp(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight, int nThreads)
+{
     *oWidth = width;
     *oHeight = height;
 
-    return img_out;
-}
-unsigned char *grayscaleOmp(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight, int nThread)
-{
-    auto *img_out = (unsigned char *) malloc((width * height) * sizeof(unsigned char));
-
-    if (img_out == nullptr)
+    uint oSize = width * height;
+    auto imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
+    if (imgOut == nullptr)
     {
-        E_Print(RED "Error: " RESET "Errore nell'allocazione della memoria");
+        E_Print("Errore durante la malloc!\n");
         return nullptr;
     }
 
-    int r, g, b, grayValue, index;
-#pragma omp parallel for num_threads(nThread) collapse(2) default(none) private(r, g, b, grayValue, index) shared(img_out, imgIn, width, height) schedule(static)
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
+
+    double RGB[] = {0, 0, 0};
+
+#pragma omp parallel for num_threads(nThreads) collapse(2) schedule(static) default(none) shared(width, height, imgIn, imgOut) private(RGB)
+    for (int i = 0; i < width; ++i)
+        for (int j = 0; j < height; ++j)
         {
-            index = y * width + x;
-            r = imgIn[index * 3];
-            g = imgIn[index * 3 + 1];
-            b = imgIn[index * 3 + 2];
-            grayValue = (r + g + b) / 3;
+            for (int k = 0; k < 3; ++k)
+                RGB[k] = imgIn[(i + j * width) * 3 + k];
 
-            img_out[index] = grayValue;
+            imgOut[i + j * width] = (int) (RGB[0] * 0.2126 + RGB[1] * 0.7152 + RGB[2] * 0.0722);
         }
-    }
 
+
+    return imgOut;
+}
+unsigned char *grayscaleCuda(const unsigned char *h_imgIn, uint width, uint height, uint *oWidth, uint *oHeight)
+{
     *oWidth = width;
     *oHeight = height;
 
-    return img_out;
-}
-unsigned char *grayscaleCuda(const unsigned char *imgIn, uint width, uint height, uint *oWidth, uint *oHeight)
-{
-    unsigned char *h_imgOut;
+    uint oSize = width * height;
+    uint iSize = width * height * 3;
 
-    unsigned char *d_imgOut;
-    unsigned char *d_imgIn;
-
-
-    mlock(imgIn, width * height * 3 * sizeof(unsigned char));
-    h_imgOut = (unsigned char *) malloc(width * height * sizeof(unsigned char *));
+    auto h_imgOut = (unsigned char *) malloc(oSize * sizeof(unsigned char));
     if (h_imgOut == nullptr)
     {
-        E_Print(RED "Error: " RESET "Errore nell'allocazione della memoria\n");
-        munlock(imgIn, width * height * 3 * sizeof(unsigned char));
+        E_Print("Errore durante la malloc!\n");
         return nullptr;
     }
+    mlock(h_imgIn, oSize * sizeof(unsigned char));
 
-    cudaMalloc((void **) &d_imgIn, width * height * 3 * sizeof(unsigned char));
-    cudaMemcpy(d_imgIn, imgIn, width * height * 3 * sizeof(unsigned char), cudaMemcpyHostToDevice);
-    cudaMalloc((void **) &d_imgOut, width * height * sizeof(unsigned char));
 
-    dim3 gridSize((width + 7) / 8, (height + 7) / 8);
-    dim3 blockSize(8, 8, 1);
+    unsigned char *d_imgIn;
+    unsigned char *d_imgOut;
+    cudaMalloc(&d_imgIn, iSize * sizeof(unsigned char));
+    cudaMalloc(&d_imgOut, oSize * sizeof(unsigned char));
 
-    grayscaleCUDA<<<gridSize, blockSize>>>(d_imgIn, d_imgOut, width, height);
+    cudaMemcpy(d_imgIn, h_imgIn, iSize * sizeof(unsigned char), cudaMemcpyHostToDevice);
 
-    cudaMemcpy(h_imgOut, d_imgOut, width * height, cudaMemcpyDeviceToHost);
+    dim3 gridSize = {(width + 7) / 8, (height + 7) / 8, 1};
+    dim3 blockSize = {8, 8, 1};
+    grayscale<<<gridSize, blockSize>>>(d_imgIn, d_imgOut, width, height);
 
-    munlock(imgIn, width * height * 3 * sizeof(unsigned char));
+    cudaMemcpy(h_imgOut, d_imgOut, oSize * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+
+    munlock(h_imgIn, oSize * sizeof(unsigned char));
     cudaFree(d_imgIn);
     cudaFree(d_imgOut);
 
-    *oWidth = width;
-    *oHeight = height;
-
     return h_imgOut;
 }
-
-

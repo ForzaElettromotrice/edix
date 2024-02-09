@@ -6,7 +6,6 @@
 #include <sys/mman.h>
 
 
-__global__ void grayscaleCUDA(const unsigned char *ImgIn, unsigned char *ImgOut, uint width, uint height);
-
+__global__ void grayscale(const unsigned char *ImgIn, unsigned char *ImgOut, uint width, uint height);
 
 #endif //EDIX_GRAYSCALE_CUH
