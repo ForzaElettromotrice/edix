@@ -11,6 +11,7 @@
 #include "imgutils.hpp"
 #include "../dbutils/rdutils.hpp"
 
+// Parser
 int parseBlurArgs(char *args);
 int parseGrayscaleArgs(char *args);
 int parseColorFilterArgs(char *args);
@@ -19,6 +20,7 @@ int parseDownscaleArgs(char *args);
 int parseOverlapArgs(char *args);
 int parseCompositionArgs(char *args);
 
+// Funxs
 unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight);
 unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight, int nThreads1, int nThreads2);
 unsigned char *blurCuda(const unsigned char *h_imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight, bool useShared);
@@ -48,5 +50,7 @@ unsigned char *compositionSerial(const unsigned char *img1, const unsigned char 
 unsigned char *compositionOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, int side, uint *oWidth, uint *oHeight, int nThreads);
 unsigned char *compositionCuda(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, int side, uint *oWidth, uint *oHeight);
 
+// Utils
+int isNotNumber(char *str);
 
 #endif //EDIX_PARSER_HPP

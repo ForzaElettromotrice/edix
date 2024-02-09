@@ -9,6 +9,10 @@ int parseBlurArgs(char *args)
 {
    
     char *imgIn = strtok(args, " ");
+    if (imgIn == nullptr) {
+        E_Print("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
+        return 1;
+    }
     char *pathOut = strtok(nullptr, " ");
     if (pathOut == nullptr){
         E_Print("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
@@ -111,17 +115,85 @@ int parseGrayscaleArgs(char *args)
 }
 int parseColorFilterArgs(char *args)
 {
+    
     char *imgIn = strtok(args, " ");
-    char *pathOut = strtok(nullptr, " ");
-    //TODO: controllare che i valori siano compresi tra 0 e 255 e che non siano state inserite stringhe
-    int r = (int) strtol(strtok(nullptr, " "), nullptr, 10);
-    int g = (int) strtol(strtok(nullptr, " "), nullptr, 10);
-    int b = (int) strtol(strtok(nullptr, " "), nullptr, 10);
-    uint tollerance = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
-
-    if (imgIn == nullptr || pathOut == nullptr || r > 255 || g > 255 || b > 255)
+    if (imgIn == nullptr)
     {
         E_Print("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
+        return 1;
+    }
+    char *pathOut = strtok(nullptr, " ");
+    if (pathOut == nullptr)
+    {
+        E_Print("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
+        return 1;
+    }
+    char *arg_r = strtok(nullptr, " ");
+    if (arg_r == nullptr)
+    {
+        E_Print("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
+        return 1;
+    }
+    if (isNotNumber(arg_r)) 
+    {
+        E_Print("usage " BOLD "Il valore di R deve essere numerico\n" RESET);
+        return 1;
+    }
+    int r = (int) strtol(arg_r, nullptr, 10);
+    if (r > 255 || r < 0)
+    {
+        E_Print("usage " BOLD "Il valore di R deve essere compreso tra 0 e 255\n" RESET);
+        return 1;
+    }
+    char *arg_g = strtok(nullptr, " ");
+    if (arg_g == nullptr)
+    {
+        E_Print("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
+        return 1;
+    }
+    if (isNotNumber(arg_g)) 
+    {
+        E_Print("usage " BOLD "Il valore di G deve essere numerico\n" RESET);
+        return 1;
+    }
+    int g = (int) strtol(arg_g, nullptr, 10);
+    if (g > 255 || g < 0)
+    {
+        E_Print("usage " BOLD "Il valore di G deve essere compreso tra 0 e 255\n" RESET);
+        return 1;
+    }
+    char *arg_b = strtok(nullptr, " ");
+    if (arg_b == nullptr)
+    {
+        E_Print("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
+        return 1;
+    }
+    if (isNotNumber(arg_b)) 
+    {
+        E_Print("usage " BOLD "Il valore di B deve essere numerico\n" RESET);
+        return 1;
+    }
+    int b = (int) strtol(arg_b, nullptr, 10);
+    if (b > 255 || b < 0)
+    {
+        E_Print("usage " BOLD "Il valore di B deve essere compreso tra 0 e 255\n" RESET);
+        return 1;
+    }
+    char *arg_tollerance = strtok(nullptr, " ");
+    if (arg_tollerance == nullptr)
+    {
+        E_Print("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
+        return 1;
+    }
+    if (isNotNumber(arg_tollerance)) 
+    {
+        E_Print("usage " BOLD "Il valore di TOLERANCE deve essere numerico\n" RESET);
+        return 1;
+    }
+    uint tollerance = (uint) strtoul(arg_tollerance, nullptr, 10);
+    if (tollerance < 0)
+    {
+        E_Print("usage " BOLD "Il valore di TOLERANCE deve essere maggiore di 0\n" RESET);
         return 1;
     }
 
@@ -165,12 +237,32 @@ int parseColorFilterArgs(char *args)
 int parseUpscaleArgs(char *args)
 {
     char *pathIn = strtok(args, " ");
-    char *pathOut = strtok(nullptr, " ");
-    int factor = (int) strtol(strtok(nullptr, " "), nullptr, 10);
-
-    if (pathIn == nullptr || pathOut == nullptr || factor == 0)
+    if (pathIn == nullptr)
     {
         E_Print("usage " BOLD "funx upscale IN OUT FACTOR\n" RESET);
+        return 1;
+    }
+    char *pathOut = strtok(nullptr, " ");
+    if (pathOut == nullptr)
+    {
+        E_Print("usage " BOLD "funx upscale IN OUT FACTOR\n" RESET);
+        return 1;
+    }
+    char *arg_factor = strtok(nullptr, " ");
+    if (arg_factor == nullptr)
+    {
+        E_Print("usage " BOLD "funx upscale IN OUT FACTOR\n" RESET);
+        return 1;
+    }
+    if (isNotNumber(arg_factor)) 
+    {
+        E_Print("usage " BOLD "Il valore di FACTOR deve essere numerico\n" RESET);
+        return 1;
+    }
+    int factor = (int) strtol(arg_factor, nullptr, 10);
+    if (factor < 1)
+    {
+        E_Print("usage " BOLD "Il fattore di upscaling deve essere maggiore di 0\n" RESET);
         return 1;
     }
 
@@ -223,12 +315,32 @@ int parseUpscaleArgs(char *args)
 int parseDownscaleArgs(char *args)
 {
     char *pathIn = strtok(args, " ");
-    char *pathOut = strtok(nullptr, " ");
-    int factor = (int) strtol(strtok(nullptr, " "), nullptr, 10);
-
-    if (pathIn == nullptr || pathOut == nullptr || factor == 0)
+    if (pathIn == nullptr)
     {
         E_Print("usage " BOLD "funx downscale IN OUT FACTOR\n" RESET);
+        return 1;
+    }
+    char *pathOut = strtok(nullptr, " ");
+    if (pathOut == nullptr)
+    {
+        E_Print("usage " BOLD "funx downscale IN OUT FACTOR\n" RESET);
+        return 1;
+    }
+    char *arg_factor = strtok(nullptr, " ");
+    if (arg_factor == nullptr)
+    {
+        E_Print("usage " BOLD "funx downscale IN OUT FACTOR\n" RESET);
+        return 1;
+    }
+    if (isNotNumber(arg_factor)) 
+    {
+        E_Print("usage " BOLD "Il valore di FACTOR deve essere numerico\n" RESET);
+        return 1;
+    }
+    int factor = (int) strtol(arg_factor, nullptr, 10);
+    if (factor < 1)
+    {
+        E_Print("usage " BOLD "Il fattore di downscaling deve essere maggiore di 0\n" RESET);
         return 1;
     }
 
@@ -281,15 +393,45 @@ int parseDownscaleArgs(char *args)
 int parseOverlapArgs(char *args)
 {
     char *img1 = strtok(args, " ");
-    char *img2 = strtok(nullptr, " ");
-    char *pathOut = strtok(nullptr, " ");
-    //TODO: controllare se x e y sono stringhe o meno
-    uint x = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
-    uint y = (uint) strtoul(strtok(nullptr, " "), nullptr, 10);
-
-    if (img1 == nullptr || img2 == nullptr || pathOut == nullptr)
+    if (img1 == nullptr)
     {
-        E_Print("usage " BOLD "funx overlap IN1 IN2 OUT SIDE\n" RESET);
+        E_Print("usage " BOLD "funx overlap IN1 IN2 OUT X Y\n" RESET);
+        return 1;
+    }
+    char *img2 = strtok(nullptr, " ");
+    if (img2 == nullptr)
+    {
+        E_Print("usage " BOLD "funx overlap IN1 IN2 OUT X Y\n" RESET);
+        return 1;
+    }
+    char *pathOut = strtok(nullptr, " ");
+    if (pathOut == nullptr)
+    {
+        E_Print("usage " BOLD "funx overlap IN1 IN2 OUT X Y\n" RESET);
+        return 1;
+    }
+    char *arg_x = strtok(nullptr, " ");
+    if (isNotNumber(arg_x)) 
+    {
+        E_Print("usage " BOLD "Il valore di X deve essere numerico\n" RESET);
+        return 1;
+    }
+    uint x = (uint) strtoul(arg_x, nullptr, 10);
+    if (x < 0)
+    {
+        E_Print("usage " BOLD "Il valore di X deve essere maggiore di 0\n" RESET);
+        return 1;
+    }
+    char *arg_y = strtok(nullptr, " ");
+    if (isNotNumber(arg_y)) 
+    {
+        E_Print("usage " BOLD "Il valore di Y deve essere numerico\n" RESET);
+        return 1;
+    }
+    uint y = (uint) strtoul(arg_y, nullptr, 10);
+    if (y < 0)
+    {
+        E_Print("usage " BOLD "Il valore di Y deve essere maggiore di 0\n" RESET);
         return 1;
     }
 
@@ -338,14 +480,33 @@ int parseOverlapArgs(char *args)
 int parseCompositionArgs(char *args)
 {
     char *img1 = strtok(args, " ");
-    char *img2 = strtok(nullptr, " ");
-    char *pathOut = strtok(nullptr, " ");
-    //TODO: check meglio (crasha se ci sono troppi pochi valori)
-    int side = (int) strtol(strtok(nullptr, " "), nullptr, 10);
-
-    if (img1 == nullptr || img2 == nullptr || pathOut == nullptr)
+    if (img1 == nullptr)
     {
         E_Print("usage " BOLD "funx composition IN1 IN2 OUT SIDE\n" RESET);
+        return 1;
+    }
+    char *img2 = strtok(nullptr, " ");
+    if (img2 == nullptr)
+    {
+        E_Print("usage " BOLD "funx composition IN1 IN2 OUT SIDE\n" RESET);
+        return 1;
+    }
+    char *pathOut = strtok(nullptr, " ");
+    if (pathOut == nullptr)
+    {
+        E_Print("usage " BOLD "funx composition IN1 IN2 OUT SIDE\n" RESET);
+        return 1;
+    }
+    char *arg_side = strtok(nullptr, " ");
+    if (isNotNumber(arg_side)) 
+    {
+        E_Print("usage " BOLD "Il valore di SIDE deve essere numerico\n" RESET);
+        return 1;
+    }
+    int side = (int) strtol(arg_side, nullptr, 10);
+    if (side < 0 || side > 3)
+    {
+        E_Print("usage " BOLD "Il valore di SIDE deve essere compreso tra 0 e 3\n" RESET);
         return 1;
     }
 
@@ -387,6 +548,14 @@ int parseCompositionArgs(char *args)
     free(img1_1);
     free(img2_1);
     free(tpp);
+    return 0;
+}
+
+int isNotNumber(char *str) 
+{
+    for (int i = 0; i < strlen(str); i++)
+        if (!isdigit(str[i]))
+            return 1;
     return 0;
 }
 

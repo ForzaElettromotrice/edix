@@ -38,6 +38,7 @@ int parseDix();
 int parseForce();
 int parseHelpP();
 int parseExitP(Env *env);
+int parseRistretto();
 
 
 //COMMANDS
@@ -56,6 +57,6 @@ int dixCommit(char *name);
 int dixList();
 int dixReload(char *name);
 int force();
-
+int ristretto(char *path);
 
 #endif //EDIX_PROJECT_CH

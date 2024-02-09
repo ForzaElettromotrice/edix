@@ -173,13 +173,14 @@ int cloneProject(char *projectPath, char *path, char *dixName)
 int parseProj(char *line, Env *env)
 {
     /**
-     *  16 comandi                                          <p>
+     *  17 comandi                                          <p>
      *  - funx          (Esegue frocerie)                   <p>
      *  - ls            (lista dei file)                    <p>
      *  - tree          (albero del progetto)               <p>
      *  - cd            (cambia ambiente di lavoro)         <p>
      *  - load          (carica un immagine)                <p>
      *  - rm            (rimuove un immagine)               <p>
+     *  - ristretto     (apre un immagine)                  <p>
      *  - mkdir         (crea una cartella)                 <p>
      *  - rmdir         (rimuove una cartella)              <p>
      *  - mv            (sposta un immagine o cartella)     <p>
@@ -221,6 +222,8 @@ int parseProj(char *line, Env *env)
         parseDix();
     else if (strcmp(token, "force") == 0)
         parseForce();
+    else if (strcmp(token, "ristretto") == 0)
+        parseRistretto();
     else
         printf(RED "Command not found\n" RESET);
 
@@ -228,19 +231,41 @@ int parseProj(char *line, Env *env)
     free(copy);
     return 0;
 }
+
+int parseRistretto()
+{
+    char *path = strtok(nullptr, " ");
+
+    if (path == nullptr || strtok(nullptr, " ") != nullptr)
+    {
+        E_Print("usage" BOLD ITALIC " ristretto path\n" RESET);
+        return 1;
+    }
+
+    if (!isValidImage(path))
+    {
+        E_Print("I formati ammessi sono png/jpeg/ppm\n");
+        return 1;
+    }
+
+    ristretto(path);
+
+    return 0;
+}
+
 int parseFunx()
 {
     char *name = strtok(nullptr, " ");
     if (name == nullptr)
     {
-        E_Print("usage" BOLD ITALIC " funx nameFunx [args ...]\n" RESET);
+        E_Print("usage" BOLD ITALIC " funx FUNX ARGS ...\n" RESET);
         return 1;
     }
 
     char *args = name + strlen(name) + 1;
     if (args == nullptr)
     {
-        E_Print("usage" BOLD ITALIC " funx nameFunx [args ...]\n" RESET);
+        E_Print("usage" BOLD ITALIC " funx FUNX ARGS ...\n" RESET);
         return 1;
     }
 
@@ -806,6 +831,7 @@ int helpP()
            YELLOW BOLD "  rmdir"        RESET " [" UNDERLINE "OPTION" RESET "] ... [" UNDERLINE "FILE" RESET "] ...\t\t\t\tRimuovi la directory DIRECTORY\n"
            YELLOW BOLD "  mv"           RESET " [" UNDERLINE "OPTION" RESET "] ... " UNDERLINE "SOURCE" RESET " " UNDERLINE "DEST" RESET "\t\t\t\tRinomina SOURCE in DEST \n"
            YELLOW BOLD "  mv"           RESET " [" UNDERLINE "OPTION" RESET "] ... " UNDERLINE "SOURCE" RESET " ... " UNDERLINE "DIRECTORY" RESET "\t\t\tSposta SOURCE in DIRECTORY\n"
+           YELLOW BOLD "  ristretto"    RESET " " UNDERLINE "FILE" RESET "\t\t\t\t\t\tApre l'immagine FILE\n"
            YELLOW BOLD "  force"        RESET "\t\t\t\t\t\t\tForza il caricamento delle modifiche su DB\n"
            YELLOW BOLD "  settings"     RESET "\t\t\t\t\t\tAccedi ai settings\n"
            YELLOW BOLD "  dix commmit"  RESET "\t\t\t\t\t\tEsegue il commit del dix\n"
@@ -832,5 +858,26 @@ int exitP(Env *env)
 
     D_Print("Uscita dal progetto in corso...\n");
     *env = HOMEPAGE;
+    return 0;
+}
+
+int ristretto(char *path)
+{
+    char *comm = (char *) malloc((strlen(path) + 10) * sizeof(char));
+    if (comm == nullptr)
+    {
+        E_Print("Error while malloc!\n");
+        return 1;
+    }
+
+    sprintf(comm, "ristretto %s", path);
+
+    if (system(comm))
+    {
+        free(comm);
+        E_Print("Errore nell'esecuzione del comando ristretto\n");
+        return 1;
+    }
+    free(comm);
     return 0;
 }
