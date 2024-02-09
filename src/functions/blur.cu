@@ -54,8 +54,8 @@ __global__ void blurShared(const unsigned char *imgIn, unsigned char *imgOut, ui
     extern __shared__ unsigned char shared[];
 
 
-    int amount = (int) ((sSide + blockDim.x - 1) / blockDim.x);
-    int jump = (int) (blockDim.x * blockDim.y);
+//    int amount = (int) ((sSide + blockDim.x - 1) / blockDim.x);
+//    int jump = (int) (blockDim.x * blockDim.y);
     int sX = (int) (absX - relX);
     int sY = (int) (absY - relY);
 
@@ -75,26 +75,16 @@ __global__ void blurShared(const unsigned char *imgIn, unsigned char *imgOut, ui
     }
     __syncthreads();
 
-
-    for (int n = 0; n < amount; ++n)
-    {
-        int x = relX;
-        int y = relY + n * jump;
-
-        if (blockIdx.x == 0 && blockIdx.y == 0)
-        {
-            printf("%d %d %d %d\n", x, y, relX, relY);
-        }
-
-        if (sX + x - radius >= width || sY + y - radius >= height || sX + x - radius < 0 || sY + y - radius < 0 || x >= sSide || y >= sSide)
-            continue;
-
-        for (int k = 0; k < channels; ++k)
-        {
-            shared[(x + y * sSide) * channels + k] = imgIn[(sX - radius + x + (sY - radius + y) * width) * channels + k];
-        }
-    }
-    __syncthreads();
+//    for (int n = 0; n < amount; ++n)
+//    {
+//        if (relX + relY * blockDim.x + n * jump >= pow(sSide, 2) || ((relX + n * jump) % sSide) + blockIdx.x * blockDim.x - radius >= width || ((relY + n * jump) / sSide) + blockIdx.y * blockDim.y - radius >= height)
+//            continue;
+//
+//        for (int k = 0; k < channels; ++k)
+//            shared[(relX + relY * blockDim.x + n * jump) * channels + k] = imgIn[(((relX + n * jump) % sSide) + blockIdx.x * blockDim.x - radius + (((relY + n * jump) / sSide) + blockIdx.y * blockDim.y - radius) * width) * channels + k];
+//
+//    }
+//    __syncthreads();
 
     int RGB[3];
     for (int k = 0; k < channels; ++k)
