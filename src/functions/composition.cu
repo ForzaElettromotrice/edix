@@ -150,6 +150,100 @@ unsigned char *compositionOmp(const unsigned char *imgIn1, const unsigned char *
 
     return imgOut;
 }
+unsigned char *compositionOmpAlternative(const unsigned char *imgIn1, const unsigned char *imgIn2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, int side, uint *oWidth, uint *oHeight, int nThreads)
+{
+    *oWidth = width1;
+    *oHeight = height1;
+    switch (side)
+    {
+        case UP:
+        case DOWN:
+            *oHeight += height2;
+            break;
+        case LEFT:
+        case RIGHT:
+            *oWidth += width2;
+            break;
+        default:
+        {
+            E_Print(RED "Error: " RESET "Parametro side non valido!\n");
+            return nullptr;
+        }
+    }
+
+    uint oSize = *oWidth * *oHeight * channels1;
+    auto imgOut = (unsigned char *) calloc(oSize, sizeof(unsigned char));
+    if (imgOut == nullptr)
+    {
+        E_Print("Errore durante la malloc!\n");
+        return nullptr;
+    }
+
+
+    const unsigned char *copyImg1, *copyImg2;
+    uint copyWidth1, copyWidth2;
+    uint copyHeight1, copyHeight2;
+    uint copyX2, copyY2;
+
+    switch (side)
+    {
+        case UP:
+            copyImg1 = imgIn2;
+            copyWidth1 = width2;
+            copyHeight1 = height2;
+
+            copyImg2 = imgIn1;
+            copyWidth2 = width1;
+            copyHeight2 = height1;
+            copyX2 = 0;
+            copyY2 = height2;
+            break;
+        case DOWN:
+            copyImg1 = imgIn1;
+            copyWidth1 = width1;
+            copyHeight1 = height1;
+
+            copyImg2 = imgIn2;
+            copyWidth2 = width2;
+            copyHeight2 = height2;
+            copyX2 = 0;
+            copyY2 = height1;
+            break;
+        case LEFT:
+            copyImg1 = imgIn1;
+            copyWidth1 = width1;
+            copyHeight1 = height1;
+
+            copyImg2 = imgIn2;
+            copyWidth2 = width2;
+            copyHeight2 = height2;
+            copyX2 = width1;
+            copyY2 = 0;
+            break;
+        case RIGHT:
+            copyImg1 = imgIn2;
+            copyWidth1 = width2;
+            copyHeight1 = height2;
+
+            copyImg2 = imgIn1;
+            copyWidth2 = width1;
+            copyHeight2 = height1;
+            copyX2 = width2;
+            copyY2 = 0;
+            break;
+    }
+
+#pragma omp parallel num_threads(2) default(none) shared(copyImg1, copyImg2, imgOut, copyWidth1, copyHeight1, copyWidth2, copyHeight2, oWidth, channels1, channels2, copyX2, copyY2, nThreads)
+    {
+        int id = omp_get_thread_num();
+        if (id == 0)
+            copyMatrixOmp(copyImg1, imgOut, copyWidth1, copyHeight1, *oWidth, channels1, channels2, 0, 0, nThreads / 2 - 1);
+        else
+            copyMatrixOmp(copyImg2, imgOut, copyWidth2, copyHeight2, *oWidth, channels1, channels2, copyX2, copyY2, nThreads / 2 - 1);
+    }
+
+    return imgOut;
+}
 unsigned char *compositionCuda(const unsigned char *h_imgIn1, const unsigned char *h_imgIn2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, int side, uint *oWidth, uint *oHeight)
 {
     *oWidth = width1;
