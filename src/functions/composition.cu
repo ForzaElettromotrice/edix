@@ -6,71 +6,60 @@
 
 int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint channels1, uint channels2, uint x, uint y)
 {
-    //TODO: riparare il segfault
     for (int i = 0; i < widthI; ++i)
         for (int j = 0; j < heightI; ++j)
         {
             uint xO = x + i;
             uint yO = y + j;
-            if (channels2 == 3 || channels1 == channels2)
-            {
-                for (int k = 0; k < channels1; ++k)
-                {
-                    mOut[(xO + yO * widthO) * channels1 + k] = mIn[(i + j * widthI) * channels2 + k];
-                }
-            } else
-            {
-                for (int k = 0; k < channels1; ++k)
-                    mOut[(xO + yO * widthO) * channels1 + k] = mIn[i + j * widthI];
-            }
+            for (int k = 0; k < channels1; ++k)
+                mOut[(xO + yO * widthO) * channels1 + k] = mIn[(i + j * widthI) * channels2 + k];
+
         }
 
     return 0;
 }
-
-int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint x, uint y, int nThread)
+int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint channels1, uint channels2, uint x, uint y, int nThread)
 {
     unsigned char r;
     unsigned char g;
     unsigned char b;
-    uint xO, yO, index;
-#pragma omp parallel for num_threads(nThread) collapse(2) default(none) shared(mIn, mOut, widthI, heightI, widthO, x, y) private(r, g, b, xO, yO, index)
+#pragma omp parallel for num_threads(nThread) collapse(2) default(none) shared(mIn, mOut, widthI, heightI, widthO, x, y, channels1, channels2) private(r, g, b)
     for (int i = 0; i < widthI; ++i)
-    {
         for (int j = 0; j < heightI; ++j)
         {
-            r = mIn[(i + j * widthI) * 3];
-            g = mIn[(i + j * widthI) * 3 + 1];
-            b = mIn[(i + j * widthI) * 3 + 2];
-
-            xO = x + i;
-            yO = y + j;
-
-            index = (xO + yO * widthO) * 3;
-
-            mOut[index] = r;
-            mOut[index + 1] = g;
-            mOut[index + 2] = b;
+            uint xO = x + i;
+            uint yO = y + j;
+            for (int k = 0; k < channels1; ++k)
+                mOut[(xO + yO * widthO) * channels1 + k] = mIn[(i + j * widthI) * channels2 + k];
         }
-    }
 
     return 0;
 }
 
-
-unsigned char *compositionSerial(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, int side, uint *oWidth, uint *oHeight)
+__global__ void copyMatrixCuda(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint channels1, uint channels2, uint x, uint y)
 {
-    uint widthOut = width1;
-    uint heightOut = height1;
+    int relX = (int) (threadIdx.x + blockIdx.x * blockDim.x);
+    int relY = (int) (threadIdx.y + blockIdx.y * blockDim.y);
+
+    if (relX >= widthI || relY >= heightI)
+        return;
+    for (int k = 0; k < channels1; ++k)
+        mOut[(x + relX + (y + relY) * widthO) * channels1 + k] = mIn[(relX + relY * widthI) * channels1 + k];
+}
+
+unsigned char *compositionSerial(const unsigned char *imgIn1, const unsigned char *imgIn2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, int side, uint *oWidth, uint *oHeight)
+{
+    *oWidth = width1;
+    *oHeight = height1;
     switch (side)
     {
         case UP:
         case DOWN:
-            heightOut += height2;
+            *oHeight += height2;
             break;
         case LEFT:
         case RIGHT:
-            widthOut += width2;
+            *oWidth += width2;
             break;
         default:
         {
@@ -79,48 +68,50 @@ unsigned char *compositionSerial(const unsigned char *img1, const unsigned char 
         }
     }
 
+    uint oSize = *oWidth * *oHeight * channels1;
+    auto imgOut = (unsigned char *) calloc(oSize, sizeof(unsigned char));
+    if (imgOut == nullptr)
+    {
+        E_Print("Errore durante la malloc!\n");
+        return nullptr;
+    }
 
-    uint oSize = widthOut * heightOut * (channels1 == 3 ? 3 : channels2);
-    auto *imgOut = (unsigned char *) calloc(sizeof(unsigned char), oSize);
 
     switch (side)
     {
         case UP:
-            copyMatrix(img2, imgOut, width2, height2, widthOut, channels1, channels2, 0, 0);
-            copyMatrix(img1, imgOut, width1, height1, widthOut, channels1, channels2, 0, height2);
+            copyMatrix(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, 0, 0);
+            copyMatrix(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, 0, height2);
             break;
         case DOWN:
-            copyMatrix(img1, imgOut, width1, height1, widthOut, channels1, channels2, 0, 0);
-            copyMatrix(img2, imgOut, width2, height2, widthOut, channels1, channels2, 0, height1);
+            copyMatrix(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, 0, 0);
+            copyMatrix(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, 0, height1);
             break;
         case LEFT:
-            copyMatrix(img1, imgOut, width1, height1, widthOut, channels1, channels2, 0, 0);
-            copyMatrix(img2, imgOut, width2, height2, widthOut, channels1, channels2, width1, 0);
+            copyMatrix(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, 0, 0);
+            copyMatrix(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, width1, 0);
             break;
         case RIGHT:
-            copyMatrix(img2, imgOut, width2, height2, widthOut, channels1, channels2, 0, 0);
-            copyMatrix(img1, imgOut, width1, height1, widthOut, channels1, channels2, width2, 0);
+            copyMatrix(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, 0, 0);
+            copyMatrix(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, width2, 0);
             break;
     }
 
-    *oWidth = widthOut;
-    *oHeight = heightOut;
-
     return imgOut;
 }
-unsigned char *compositionOmp(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, int side, uint *oWidth, uint *oHeight, int nThreads)
+unsigned char *compositionOmp(const unsigned char *imgIn1, const unsigned char *imgIn2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, int side, uint *oWidth, uint *oHeight, int nThreads)
 {
-    uint widthOut = width1;
-    uint heightOut = height1;
+    *oWidth = width1;
+    *oHeight = height1;
     switch (side)
     {
         case UP:
         case DOWN:
-            heightOut += height2;
+            *oHeight += height2;
             break;
         case LEFT:
         case RIGHT:
-            widthOut += width2;
+            *oWidth += width2;
             break;
         default:
         {
@@ -128,34 +119,113 @@ unsigned char *compositionOmp(const unsigned char *img1, const unsigned char *im
             return nullptr;
         }
     }
-    auto *imgOut = (unsigned char *) calloc(sizeof(unsigned char), widthOut * heightOut * 3);
+
+    uint oSize = *oWidth * *oHeight * channels1;
+    auto imgOut = (unsigned char *) calloc(oSize, sizeof(unsigned char));
+    if (imgOut == nullptr)
+    {
+        E_Print("Errore durante la malloc!\n");
+        return nullptr;
+    }
+
+
     switch (side)
     {
-
         case UP:
-            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, 0, 0, nThreads);
-            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, 0, height2, nThreads);
+            copyMatrixOmp(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, 0, 0, nThreads);
+            copyMatrixOmp(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, 0, height2, nThreads);
             break;
         case DOWN:
-            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, 0, 0, nThreads);
-            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, 0, height1, nThreads);
+            copyMatrixOmp(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, 0, 0, nThreads);
+            copyMatrixOmp(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, 0, height1, nThreads);
             break;
         case LEFT:
-            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, 0, 0, nThreads);
-            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, width1, 0, nThreads);
+            copyMatrixOmp(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, 0, 0, nThreads);
+            copyMatrixOmp(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, width1, 0, nThreads);
             break;
         case RIGHT:
-            copyMatrixOmp(img2, imgOut, width2, height2, widthOut, 0, 0, nThreads);
-            copyMatrixOmp(img1, imgOut, width1, height1, widthOut, width2, 0, nThreads);
+            copyMatrixOmp(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, 0, 0, nThreads);
+            copyMatrixOmp(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, width2, 0, nThreads);
             break;
     }
 
-    *oWidth = widthOut;
-    *oHeight = heightOut;
-
     return imgOut;
 }
-unsigned char *compositionCuda(const unsigned char *img1, const unsigned char *img2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, int side, uint *oWidth, uint *oHeight)
+unsigned char *compositionCuda(const unsigned char *h_imgIn1, const unsigned char *h_imgIn2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2, int side, uint *oWidth, uint *oHeight)
 {
-    return nullptr;
+    *oWidth = width1;
+    *oHeight = height1;
+    switch (side)
+    {
+        case UP:
+        case DOWN:
+            *oHeight += height2;
+            break;
+        case LEFT:
+        case RIGHT:
+            *oWidth += width2;
+            break;
+        default:
+        {
+            E_Print(RED "Error: " RESET "Parametro side non valido!\n");
+            return nullptr;
+        }
+    }
+
+    uint oSize = *oWidth * *oHeight * channels1;
+    uint iSize1 = width1 * height1 * channels1;
+    uint iSize2 = width2 * height2 * channels2;
+
+    auto h_imgOut = (unsigned char *) calloc(oSize, sizeof(unsigned char));
+    if (h_imgOut == nullptr)
+    {
+        E_Print("Errore durante la malloc!\n");
+        return nullptr;
+    }
+    mlock(h_imgIn1, iSize1 * sizeof(unsigned char));
+    mlock(h_imgIn2, iSize2 * sizeof(unsigned char));
+
+    unsigned char *d_imgIn1;
+    unsigned char *d_imgIn2;
+    unsigned char *d_imgOut;
+    cudaMalloc(&d_imgIn1, iSize1 * sizeof(unsigned char));
+    cudaMalloc(&d_imgIn2, iSize2 * sizeof(unsigned char));
+    cudaMalloc(&d_imgOut, oSize * sizeof(unsigned char));
+
+    cudaMemcpy(d_imgIn1, h_imgIn1, iSize1 * sizeof(unsigned char), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_imgIn2, h_imgIn2, iSize2 * sizeof(unsigned char), cudaMemcpyHostToDevice);
+
+    dim3 gridSize1 = {(width1 + 7) / 8, (height1 + 7) / 8, 1};
+    dim3 gridSize2 = {(width2 + 7) / 8, (height2 + 7) / 8, 1};
+    dim3 blockSize = {8, 8, 1};
+
+    switch (side)
+    {
+        case UP:
+            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, channels2, 0, 0);
+            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, channels2, 0, height2);
+            break;
+        case DOWN:
+            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, channels2, 0, 0);
+            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, channels2, 0, height1);
+            break;
+        case LEFT:
+            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, channels2, 0, 0);
+            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, channels2, width1, 0);
+            break;
+        case RIGHT:
+            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, channels2, 0, 0);
+            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, channels2, width2, 0);
+            break;
+    }
+
+    cudaMemcpy(h_imgOut, d_imgOut, oSize * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+
+    munlock(h_imgIn1, iSize1 * sizeof(unsigned char));
+    munlock(h_imgIn2, iSize2 * sizeof(unsigned char));
+    cudaFree(d_imgIn1);
+    cudaFree(d_imgIn2);
+    cudaFree(d_imgOut);
+
+    return h_imgOut;
 }

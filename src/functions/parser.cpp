@@ -7,28 +7,31 @@
 
 int parseBlurArgs(char *args)
 {
-   
+
     char *imgIn = strtok(args, " ");
-    if (imgIn == nullptr){
+    if (imgIn == nullptr)
+    {
         E_Print("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
         return 1;
     }
     char *pathOut = strtok(nullptr, " ");
-    if (pathOut == nullptr){
+    if (pathOut == nullptr)
+    {
         E_Print("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
         return 1;
     }
     int radius;
     const char *nptr = strtok(nullptr, " ");
-    if (nptr == nullptr){
+    if (nptr == nullptr)
+    {
         E_Print("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
         return 1;
-    }else{
+    } else
+    {
         radius = (int) strtol(nptr, nullptr, 10);
     }
 
 
-    //TODO: leggere le immagini in base alla loro estensione
     char *tpp = getStrFromKey((char *) "TPP");
     uint width;
     uint height;
@@ -115,7 +118,7 @@ int parseGrayscaleArgs(char *args)
 }
 int parseColorFilterArgs(char *args)
 {
-    
+
     char *imgIn = strtok(args, " ");
     if (imgIn == nullptr)
     {
@@ -134,7 +137,7 @@ int parseColorFilterArgs(char *args)
         E_Print("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
         return 1;
     }
-    if (isNotNumber(arg_r)) 
+    if (isNotNumber(arg_r))
     {
         E_Print("usage " BOLD "Il valore di R deve essere numerico\n" RESET);
         return 1;
@@ -151,7 +154,7 @@ int parseColorFilterArgs(char *args)
         E_Print("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
         return 1;
     }
-    if (isNotNumber(arg_g)) 
+    if (isNotNumber(arg_g))
     {
         E_Print("usage " BOLD "Il valore di G deve essere numerico\n" RESET);
         return 1;
@@ -168,7 +171,7 @@ int parseColorFilterArgs(char *args)
         E_Print("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
         return 1;
     }
-    if (isNotNumber(arg_b)) 
+    if (isNotNumber(arg_b))
     {
         E_Print("usage " BOLD "Il valore di B deve essere numerico\n" RESET);
         return 1;
@@ -185,17 +188,12 @@ int parseColorFilterArgs(char *args)
         E_Print("usage " BOLD "funx colorfilter IN OUT R G B TOLERANCE\n" RESET);
         return 1;
     }
-    if (isNotNumber(arg_tollerance)) 
+    if (isNotNumber(arg_tollerance))
     {
         E_Print("usage " BOLD "Il valore di TOLERANCE deve essere numerico\n" RESET);
         return 1;
     }
     uint tollerance = (uint) strtoul(arg_tollerance, nullptr, 10);
-    if (tollerance < 0)
-    {
-        E_Print("usage " BOLD "Il valore di TOLERANCE deve essere maggiore di 0\n" RESET);
-        return 1;
-    }
 
     char *tpp = getStrFromKey((char *) "TPP");
     uint width;
@@ -254,7 +252,7 @@ int parseUpscaleArgs(char *args)
         E_Print("usage " BOLD "funx upscale IN OUT FACTOR\n" RESET);
         return 1;
     }
-    if (isNotNumber(arg_factor)) 
+    if (isNotNumber(arg_factor))
     {
         E_Print("usage " BOLD "Il valore di FACTOR deve essere numerico\n" RESET);
         return 1;
@@ -332,7 +330,7 @@ int parseDownscaleArgs(char *args)
         E_Print("usage " BOLD "funx downscale IN OUT FACTOR\n" RESET);
         return 1;
     }
-    if (isNotNumber(arg_factor)) 
+    if (isNotNumber(arg_factor))
     {
         E_Print("usage " BOLD "Il valore di FACTOR deve essere numerico\n" RESET);
         return 1;
@@ -411,29 +409,19 @@ int parseOverlapArgs(char *args)
         return 1;
     }
     char *arg_x = strtok(nullptr, " ");
-    if (isNotNumber(arg_x)) 
+    if (isNotNumber(arg_x))
     {
         E_Print("usage " BOLD "Il valore di X deve essere numerico\n" RESET);
         return 1;
     }
     uint x = (uint) strtoul(arg_x, nullptr, 10);
-    if (x < 0)
-    {
-        E_Print("usage " BOLD "Il valore di X deve essere maggiore di 0\n" RESET);
-        return 1;
-    }
     char *arg_y = strtok(nullptr, " ");
-    if (isNotNumber(arg_y)) 
+    if (isNotNumber(arg_y))
     {
         E_Print("usage " BOLD "Il valore di Y deve essere numerico\n" RESET);
         return 1;
     }
     uint y = (uint) strtoul(arg_y, nullptr, 10);
-    if (y < 0)
-    {
-        E_Print("usage " BOLD "Il valore di Y deve essere maggiore di 0\n" RESET);
-        return 1;
-    }
 
     char *tpp = getStrFromKey((char *) "TPP");
     uint width1;
@@ -479,14 +467,14 @@ int parseOverlapArgs(char *args)
 }
 int parseCompositionArgs(char *args)
 {
-    char *img1 = strtok(args, " ");
-    if (img1 == nullptr)
+    char *path1 = strtok(args, " ");
+    if (path1 == nullptr)
     {
         E_Print("usage " BOLD "funx composition IN1 IN2 OUT SIDE\n" RESET);
         return 1;
     }
-    char *img2 = strtok(nullptr, " ");
-    if (img2 == nullptr)
+    char *path2 = strtok(nullptr, " ");
+    if (path2 == nullptr)
     {
         E_Print("usage " BOLD "funx composition IN1 IN2 OUT SIDE\n" RESET);
         return 1;
@@ -498,13 +486,13 @@ int parseCompositionArgs(char *args)
         return 1;
     }
     char *arg_side = strtok(nullptr, " ");
-    if (isNotNumber(arg_side)) 
+    if (isNotNumber(arg_side))
     {
         E_Print("usage " BOLD "Il valore di SIDE deve essere numerico\n" RESET);
         return 1;
     }
     int side = (int) strtol(arg_side, nullptr, 10);
-    if (side < 0 || side > 3)
+    if (side > 3)
     {
         E_Print("usage " BOLD "Il valore di SIDE deve essere compreso tra 0 e 3\n" RESET);
         return 1;
@@ -517,24 +505,35 @@ int parseCompositionArgs(char *args)
     uint width2;
     uint height2;
     uint channels2;
-    unsigned char *img1_1 = loadPPM(img1, &width1, &height1, &channels1);
-    unsigned char *img2_1 = loadPPM(img2, &width2, &height2, &channels2);
+    unsigned char *imgIn1 = loadPPM(path1, &width1, &height1, &channels1);
+    unsigned char *imgIn2 = loadPPM(path2, &width2, &height2, &channels2);
 
     uint oWidth;
     uint oHeight;
     uint oChannels = channels1 == 3 ? 3 : channels2;
     unsigned char *oImg;
+    if (channels1 != 3 && channels2 == 3)
+    {
+        imgIn1 = from1To3Channels(imgIn1, width1, height1);
+        channels1 = 3;
+    }
+    if (channels2 != 3 && channels1 == 3)
+    {
+        imgIn2 = from1To3Channels(imgIn2, width2, height2);
+        channels2 = 3;
+    }
+
 
     if (strcmp(tpp, "Serial") == 0)
-        oImg = compositionSerial(img1_1, img2_1, width1, height1, channels1, width2, height2, channels2, side, &oWidth, &oHeight);
+        oImg = compositionSerial(imgIn1, imgIn2, width1, height1, channels1, width2, height2, channels2, side, &oWidth, &oHeight);
     else if (strcmp(tpp, "OMP") == 0)
-        oImg = compositionOmp(img1_1, img2_1, width1, height1, channels1, width2, height2, channels2, side, &oWidth, &oHeight, 3);
+        oImg = compositionOmp(imgIn1, imgIn2, width1, height1, channels1, width2, height2, channels2, side, &oWidth, &oHeight, 20);
     else if (strcmp(tpp, "CUDA") == 0)
-        oImg = compositionCuda(img1_1, img2_1, width1, height1, channels1, width2, height2, channels2, side, &oWidth, &oHeight);
+        oImg = compositionCuda(imgIn1, imgIn2, width1, height1, channels1, width2, height2, channels2, side, &oWidth, &oHeight);
     else
     {
-        free(img1_1);
-        free(img2_1);
+        free(imgIn1);
+        free(imgIn2);
         free(tpp);
         E_Print("Invalid arguments for composition function.\n");
         return 1;
@@ -545,13 +544,13 @@ int parseCompositionArgs(char *args)
         writeImage(pathOut, oImg, oWidth, oHeight, oChannels);
         free(oImg);
     }
-    free(img1_1);
-    free(img2_1);
+    free(imgIn1);
+    free(imgIn2);
     free(tpp);
     return 0;
 }
 
-int isNotNumber(char *str) 
+int isNotNumber(char *str)
 {
     for (int i = 0; i < strlen(str); i++)
         if (!isdigit(str[i]))

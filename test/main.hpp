@@ -5,4 +5,4 @@
 #include "../src/functions/parser.hpp"
 
 
-#endif // FILENAME_HPP
+#endif // MAIN_TEST_HPP

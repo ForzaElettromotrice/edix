@@ -7,21 +7,17 @@
 
 unsigned char *from1To3Channels(unsigned char *imgIn, uint width, uint height)
 {
-    unsigned char *imgOut =(unsigned char *)malloc(width * height * 3 * sizeof(unsigned char));
-    if(imgOut == nullptr)
+    auto *imgOut = (unsigned char *) malloc(width * height * 3 * sizeof(unsigned char));
+    if (imgOut == nullptr)
     {
-        fprintf(stderr, "Errore nell'allocazione della memoria di ImgOut");
+        E_Print("Errore nell'allocazione della memoria di ImgOut");
         return nullptr;
     }
 
-    for(int y = 0; y < height ; y+=1){
-        for(int x = 0; x < width ; x+=1){
-            
-            imgOut[(x + (y* width))*3] = imgIn[(x + (y* width))];    //R
-            imgOut[(x + (y* width))*3 +1] = imgIn[(x + (y* width))]; //G
-            imgOut[(x + (y* width))*3 +2] = imgIn[(x + (y* width))];//B
-        }
-    }
+    for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+            for (int k = 0; k < 3; ++k)
+                imgOut[(x + y * width) * 3 + k] = imgIn[x + y * width];
 
     free(imgIn);
     return imgOut;
