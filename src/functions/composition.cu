@@ -35,8 +35,7 @@ int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, ui
 
     return 0;
 }
-
-__global__ void copyMatrixCuda(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint channels1, uint channels2, uint x, uint y)
+__global__ void copyMatrixCuda(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint channels1, uint x, uint y)
 {
     int relX = (int) (threadIdx.x + blockIdx.x * blockDim.x);
     int relY = (int) (threadIdx.y + blockIdx.y * blockDim.y);
@@ -202,20 +201,20 @@ unsigned char *compositionCuda(const unsigned char *h_imgIn1, const unsigned cha
     switch (side)
     {
         case UP:
-            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, channels2, 0, 0);
-            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, channels2, 0, height2);
+            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, 0, 0);
+            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, 0, height2);
             break;
         case DOWN:
-            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, channels2, 0, 0);
-            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, channels2, 0, height1);
+            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, 0, 0);
+            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, 0, height1);
             break;
         case LEFT:
-            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, channels2, 0, 0);
-            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, channels2, width1, 0);
+            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, 0, 0);
+            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, width1, 0);
             break;
         case RIGHT:
-            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, channels2, 0, 0);
-            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, channels2, width2, 0);
+            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, 0, 0);
+            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, width2, 0);
             break;
     }
 

@@ -390,14 +390,14 @@ int parseDownscaleArgs(char *args)
 }
 int parseOverlapArgs(char *args)
 {
-    char *img1 = strtok(args, " ");
-    if (img1 == nullptr)
+    char *path1 = strtok(args, " ");
+    if (path1 == nullptr)
     {
         E_Print("usage " BOLD "funx overlap IN1 IN2 OUT X Y\n" RESET);
         return 1;
     }
-    char *img2 = strtok(nullptr, " ");
-    if (img2 == nullptr)
+    char *path2 = strtok(nullptr, " ");
+    if (path2 == nullptr)
     {
         E_Print("usage " BOLD "funx overlap IN1 IN2 OUT X Y\n" RESET);
         return 1;
@@ -430,25 +430,36 @@ int parseOverlapArgs(char *args)
     uint width2;
     uint height2;
     uint channels2;
-    unsigned char *img1_1 = loadImage(img1, &width1, &height1, &channels1);
-    unsigned char *img2_1 = loadImage(img2, &width2, &height2, &channels2);
+    unsigned char *imgIn1 = loadImage(path1, &width1, &height1, &channels1);
+    unsigned char *imgIn2 = loadImage(path2, &width2, &height2, &channels2);
+    if (channels1 != 3 && channels2 == 3)
+    {
+        imgIn1 = from1To3Channels(imgIn1, width1, height1);
+        channels1 = 3;
+    }
+    if (channels2 != 3 && channels1 == 3)
+    {
+        imgIn2 = from1To3Channels(imgIn2, width2, height2);
+        channels2 = 3;
+    }
+
 
     uint oWidth;
     uint oHeight;
-    uint oChannels = channels1 == 3 ? 3 : channels2;
+    uint oChannels = channels1;
     unsigned char *oImg;
 
 
     if (strcmp(tpp, "Serial") == 0)
-        oImg = overlapSerial(img1_1, img2_1, width1, height1, channels1, width2, height2, channels2, x, y, &oWidth, &oHeight);
+        oImg = overlapSerial(imgIn1, imgIn2, width1, height1, channels1, width2, height2, channels2, x, y, &oWidth, &oHeight);
     else if (strcmp(tpp, "OMP") == 0)
-        oImg = overlapOmp(img1_1, img2_1, width1, height1, channels1, width2, height2, channels2, x, y, &oWidth, &oHeight, 4);
+        oImg = overlapOmp(imgIn1, imgIn2, width1, height1, channels1, width2, height2, channels2, x, y, &oWidth, &oHeight, 4);
     else if (strcmp(tpp, "CUDA") == 0)
-        oImg = overlapCuda(img1_1, img2_1, width1, height1, channels1, width2, height2, channels2, x, y, &oWidth, &oHeight);
+        oImg = overlapCuda(imgIn1, imgIn2, width1, height1, channels1, width2, height2, channels2, x, y, &oWidth, &oHeight);
     else
     {
-        free(img1_1);
-        free(img2_1);
+        free(imgIn1);
+        free(imgIn2);
         free(tpp);
         E_Print("Invalid TPP\n");
         return 1;
@@ -460,8 +471,8 @@ int parseOverlapArgs(char *args)
         free(oImg);
     }
 
-    free(img1_1);
-    free(img2_1);
+    free(imgIn1);
+    free(imgIn2);
     free(tpp);
     return 0;
 }
@@ -507,11 +518,6 @@ int parseCompositionArgs(char *args)
     uint channels2;
     unsigned char *imgIn1 = loadPPM(path1, &width1, &height1, &channels1);
     unsigned char *imgIn2 = loadPPM(path2, &width2, &height2, &channels2);
-
-    uint oWidth;
-    uint oHeight;
-    uint oChannels = channels1 == 3 ? 3 : channels2;
-    unsigned char *oImg;
     if (channels1 != 3 && channels2 == 3)
     {
         imgIn1 = from1To3Channels(imgIn1, width1, height1);
@@ -522,6 +528,11 @@ int parseCompositionArgs(char *args)
         imgIn2 = from1To3Channels(imgIn2, width2, height2);
         channels2 = 3;
     }
+
+    uint oWidth;
+    uint oHeight;
+    uint oChannels = channels1;
+    unsigned char *oImg;
 
 
     if (strcmp(tpp, "Serial") == 0)

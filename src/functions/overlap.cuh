@@ -9,7 +9,6 @@
 #include "../utils.hpp"
 #include "sys/mman.h"
 
-__global__ void overlap(unsigned char *img, const unsigned char *img2, uint width, uint width2, uint height2, uint posX, uint posY);
-
+__global__ void overlap(const unsigned char *imgIn, unsigned char *imgOut, uint iWidth, uint iHeight, uint channels1, uint oWidth, uint oHeight, uint x, uint y);
 
 #endif //EDIX_OVERLAP_CUH

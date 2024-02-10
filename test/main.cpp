@@ -18,7 +18,7 @@ int main()
     uint oHeight;
 
     auto start = std::chrono::high_resolution_clock::now();
-    unsigned char *oImg = compositionCuda(img1, img2, width1, height1, channels1, width2, height2, channels2, 3, &oWidth, &oHeight);
+    unsigned char *oImg = overlapCuda(img1, img2, width1, height1, channels1, width2, height2, channels2, 200, 0, &oWidth, &oHeight);
     auto end = std::chrono::high_resolution_clock::now();
     writeImage((char *) "images/out.ppm", oImg, oWidth, oHeight, channels1);
 
