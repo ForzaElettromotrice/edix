@@ -60,7 +60,7 @@ int inputLoop()
     // }
 
     // free(line);
-    while ((line = linenoise("==> ")) != NULL)
+    while ((line = linenoise("==> ")) != nullptr)
     {
         line[bytesRead - 1] = '\0';
         switch (env)

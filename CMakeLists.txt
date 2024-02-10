@@ -28,6 +28,8 @@ set(SOURCE_FILES
         src/env/project.hpp
         src/env/settings.cpp
         src/env/settings.hpp
+        src/env/linenoise.c
+        src/env/linenoise.h
         src/main.cpp
         src/main.hpp
         src/dbutils/rdutils.cpp
