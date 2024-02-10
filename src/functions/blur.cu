@@ -50,41 +50,32 @@ __global__ void blurShared(const unsigned char *imgIn, unsigned char *imgOut, ui
     int relX = (int) threadIdx.x;
     int relY = (int) threadIdx.y;
 
-    uint sSide = blockDim.x + 2 * radius;
+    int sSide = (int) blockDim.x + 2 * radius;
     extern __shared__ unsigned char shared[];
 
 
-//    int amount = (int) ((sSide + blockDim.x - 1) / blockDim.x);
-//    int jump = (int) (blockDim.x * blockDim.y);
-    int sX = (int) (absX - relX);
-    int sY = (int) (absY - relY);
+    int amount = (int) pow(((sSide + blockDim.x - 1) / blockDim.x), 2);
+    int jump = (int) (blockDim.x * blockDim.y);
 
-    if (relX == 0 && relY == 0)
+    for (int n = 0; n < amount; ++n)
     {
-        for (int i = 0; i < sSide; i++)
-        {
-            for (int j = 0; j < sSide; j++)
-            {
-                if (sX + i - radius >= width || sY + j - radius >= height)
-                    continue;
+        int index = relX + relY * (int) blockDim.x + n * jump;
+        int nRelX = index % sSide;
+        int nRelY = index / sSide;
+        int nAbsX = nRelX - radius + (int) (blockIdx.x * blockDim.x);
+        int nAbsY = nRelY - radius + (int) (blockIdx.y * blockDim.y);
 
-                for (int k = 0; k < channels; k++)
-                    shared[(i + j * sSide) * channels + k] = imgIn[(sX - radius + i + (sY - radius + j) * width) * channels + k];
-            }
-        }
+        if (index >= pow(sSide, 2))
+            break;
+
+        if (nAbsX >= width || nAbsY >= height || nAbsX < 0 || nAbsY < 0)
+            continue;
+
+        for (int k = 0; k < channels; ++k)
+            shared[index * channels + k] = imgIn[(nAbsX + nAbsY * width) * channels + k];
+
     }
     __syncthreads();
-
-//    for (int n = 0; n < amount; ++n)
-//    {
-//        if (relX + relY * blockDim.x + n * jump >= pow(sSide, 2) || ((relX + n * jump) % sSide) + blockIdx.x * blockDim.x - radius >= width || ((relY + n * jump) / sSide) + blockIdx.y * blockDim.y - radius >= height)
-//            continue;
-//
-//        for (int k = 0; k < channels; ++k)
-//            shared[(relX + relY * blockDim.x + n * jump) * channels + k] = imgIn[(((relX + n * jump) % sSide) + blockIdx.x * blockDim.x - radius + (((relY + n * jump) / sSide) + blockIdx.y * blockDim.y - radius) * width) * channels + k];
-//
-//    }
-//    __syncthreads();
 
     int RGB[3];
     for (int k = 0; k < channels; ++k)

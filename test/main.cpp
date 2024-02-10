@@ -18,7 +18,7 @@ int main()
     uint oHeight;
 
     auto start = std::chrono::high_resolution_clock::now();
-    unsigned char *oImg = compositionOmp(img1, img2, width1, height1, channels1, width2, height2, channels2, 0, &oWidth, &oHeight, 16);
+    unsigned char *oImg = blurCuda(img1, width1, height1, channels1, 30, &oWidth, &oHeight, true);
     auto end = std::chrono::high_resolution_clock::now();
     writeImage((char *) "images/out.ppm", oImg, oWidth, oHeight, channels1);
 
