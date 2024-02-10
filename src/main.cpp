@@ -35,10 +35,33 @@ int inputLoop()
     size_t bytesRead;
     Env env = HOMEPAGE;
 
-    while (((int) (bytesRead = getline(&line, &lineSize, stdin))) != -1)
-    {
-        if (bytesRead == 1) continue;
+    // while (((int) (bytesRead = getline(&line, &lineSize, stdin))) != -1)
+    // {
+    //     if (bytesRead == 1) continue;
 
+    //     line[bytesRead - 1] = '\0';
+    //     switch (env)
+    //     {
+    //         case HOMEPAGE:
+    //             parseHome(line, &env);
+    //             break;
+    //         case PROJECT:
+    //             parseProj(line, &env);
+    //             break;
+    //         case SETTINGS:
+    //             parseSettings(line, &env);
+    //             break;
+    //         case EXIT:
+    //             //Unreachable
+    //             break;
+    //     }
+    //     if (env == EXIT)
+    //         break;
+    // }
+
+    // free(line);
+    while ((line = linenoise("==> ")) != NULL)
+    {
         line[bytesRead - 1] = '\0';
         switch (env)
         {
@@ -59,7 +82,7 @@ int inputLoop()
             break;
     }
 
-    free(line);
+    linenoiseFree(line);
     D_Print("Uscita in corso...\n");
 
     return 0;

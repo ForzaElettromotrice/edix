@@ -20,10 +20,7 @@ int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint 
 }
 int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint channels1, uint channels2, uint x, uint y, int nThread)
 {
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-#pragma omp parallel for num_threads(nThread) collapse(2) default(none) shared(mIn, mOut, widthI, heightI, widthO, x, y, channels1, channels2) private(r, g, b)
+#pragma omp parallel for num_threads(nThread) collapse(2) default(none) shared(mIn, mOut, widthI, heightI, widthO, x, y, channels1, channels2)
     for (int i = 0; i < widthI; ++i)
         for (int j = 0; j < heightI; ++j)
         {
