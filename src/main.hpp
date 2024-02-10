@@ -14,7 +14,7 @@
 
 
 //MAIN
-int inputLoop();
+int inputLoop(Env env);
 
 
 #endif

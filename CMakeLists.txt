@@ -72,8 +72,6 @@ set(SOURCE_FILES_TEST
         src/functions/parser.cpp
         src/functions/parser.hpp
         src/uitils.cpp
-        src/env/linenoise.h
-        src/env/linenoise.c
 )
 
 # Aggiungi tutte le sorgenti del progetto
@@ -84,7 +82,6 @@ add_executable(testx ${SOURCE_FILES_TEST})
 # Aggiungi le opzioni di compilazione per CUDA
 target_compile_options(edix PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler -fopenmp>)
 target_compile_options(testx PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler -fopenmp>)
-
 
 # Link alle librerie necessarie
 target_link_libraries(edix PRIVATE -lhiredis -lpq -ljpeg -lpng)

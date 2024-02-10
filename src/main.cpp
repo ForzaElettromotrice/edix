@@ -9,12 +9,24 @@ int main(int argc, char *argv[])
     banner();
     // TODO: magari puoi aprire direttamente un progetto passandolo come argomento
     // TODO: ovunque si usi il path, mettere PATH_MAX oppure (meglio) far si che l'allocazione sia dinamica
-    // TODO: stiamo usando ovunque path assoluti, dovremmo usare dei path relativi
+    // TODO: stiamo usando ovunque path assoluti, dovremmo usare dei path relativ
+    Env env;
     switch (argc)
     {
         case 1:
-            inputLoop();
+        {
+            env = HOMEPAGE;
+            inputLoop(env);
             break;
+        }
+        case 2:
+        {
+            env = HOMEPAGE;
+            char tmp[50];
+            sprintf(tmp, "open %s", argv[1]);
+            parseHome(tmp, &env);
+            inputLoop(env);
+        }
         default:
             E_Print(RED
                     "usage:"
@@ -24,44 +36,21 @@ int main(int argc, char *argv[])
     }
 
     //TODO: messaggio di saluto
+    printf(BOLD "%s\n" RESET, "Alla prossima ;)");
 
     return 0;
 }
-int inputLoop()
+int inputLoop(Env env)
 {
     size_t lineSize = 256;
     char *line = (char *) malloc(256 * sizeof(char));
 
-    size_t bytesRead;
-    Env env = HOMEPAGE;
+    size_t bytesRead;  
 
-    // while (((int) (bytesRead = getline(&line, &lineSize, stdin))) != -1)
-    // {
-    //     if (bytesRead == 1) continue;
-
-    //     line[bytesRead - 1] = '\0';
-    //     switch (env)
-    //     {
-    //         case HOMEPAGE:
-    //             parseHome(line, &env);
-    //             break;
-    //         case PROJECT:
-    //             parseProj(line, &env);
-    //             break;
-    //         case SETTINGS:
-    //             parseSettings(line, &env);
-    //             break;
-    //         case EXIT:
-    //             //Unreachable
-    //             break;
-    //     }
-    //     if (env == EXIT)
-    //         break;
-    // }
-
-    // free(line);
-    while ((line = linenoise("==> ")) != nullptr)
+    while (((int) (bytesRead = getline(&line, &lineSize, stdin))) != -1)
     {
+        if (bytesRead == 1) continue;
+
         line[bytesRead - 1] = '\0';
         switch (env)
         {
@@ -82,7 +71,30 @@ int inputLoop()
             break;
     }
 
-    linenoiseFree(line);
+    free(line);
+    // while ((line = linenoise("==> ")) != nullptr)
+    // {
+    //     line[bytesRead - 1] = '\0';
+    //     switch (env)
+    //     {
+    //         case HOMEPAGE:
+    //             parseHome(line, &env);
+    //             break;
+    //         case PROJECT:
+    //             parseProj(line, &env);
+    //             break;
+    //         case SETTINGS:
+    //             parseSettings(line, &env);
+    //             break;
+    //         case EXIT:
+    //             //Unreachable
+    //             break;
+    //     }
+    //     if (env == EXIT)
+    //         break;
+    // }
+
+    // linenoiseFree(line);
     D_Print("Uscita in corso...\n");
 
     return 0;
