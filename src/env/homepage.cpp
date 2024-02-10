@@ -279,8 +279,6 @@ bool isValidBackup(char *backup)
     }
     return true;
 }
-
-
 int parseHome(char *line, Env *env)
 {
     /**
@@ -420,8 +418,6 @@ int parseExitH(Env *env)
     exitH(env);
     return 0;
 }
-
-
 int newP(char *name, bool ask, Env *env)
 {
     checkDefaultFolder();

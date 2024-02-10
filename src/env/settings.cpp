@@ -156,13 +156,6 @@ int set(char *name, char *value)
 }
 int helpS()
 {
-    // printf("Ecco la lista dei settings:\n\n"
-    //        RED BOLD " MODE" RESET  ITALIC"  Modalità di esecuzione\n\t" RESET " * Programmed: Effettua le modifiche apportate a un'immagine dopo un certo periodo di tempo" BOLD "\n\t * Immediate" RESET "(default): Le modifiche vengono effettuate subito\n\n"
-    //        RED BOLD " TTS"  RESET  ITALIC"   Ogni quanti minuti salva su disco\n\t" RESET BOLD " * 5" RESET "(default): Ogni 5m il progetto viene salvato su disco\n\n"
-    //        RED BOLD " Backup"  RESET  ITALIC"   Version Control System\n\t * On: Puoi tenere traccia nel tempo delle modifiche che si effettuano sulle immagini\n\t" RESET BOLD " * Off" RESET "(default): Non viene tenuta traccia delle modifiche\n\n"
-    //        RED BOLD " COMP" RESET  ITALIC"  Formato di compressione dell'immagine\n\t" RESET BOLD " * PPM" RESET "(default)\n\t * JPEG\n\t * PNG\n\n"
-    //        RED BOLD " TPP"  RESET  ITALIC"   Tecnologia di parallelismo\n\t" RESET " * CUDA: Elaborazione parallela su unità di elaborazione grafica (GPU)\n\t * OMP: Elaborazione parallela su sistemi condivisi di memoria\n\t *" BOLD " Serial" RESET "(default): Non viene effettuata alcuna ottimizzazione\n\n"
-    //        RED BOLD " TUP"  RESET  ITALIC"   Tecnologia di upscaling\n\t" RESET BOLD " * Bilinear" RESET "(default)\n\t * Bicubic\n\n");
     printf("Ecco la lista di comandi da poter utilizzare all'interno dei settings:\n\n"
            YELLOW BOLD "  list" RESET "\t\t\tStampa i settings impostati\n"
            YELLOW BOLD "  set "  RESET UNDERLINE "KEY" RESET " " UNDERLINE "VALUE" RESET "\t\tImposta il setting KEY a VALUE\n"
@@ -188,8 +181,7 @@ int listS()
     char *tup;
 
     settingsFromRedis(&id, &tup, &mode, &comp, &tts, &tpp, &backup, &pName);
-
-    //TODO: da farli piu carini
+    
     printf("Ecco una lista dettagliata dei settings:\n\n"
            RED BOLD " MODE "   RESET  ITALIC"   Modalità di esecuzione\n\t" RESET "    * Programmed: Effettua le modifiche apportate a un'immagine dopo un certo periodo di tempo" BOLD "\n\t    * Immediate" RESET "(default): Le modifiche vengono effettuate subito\n\n"
            RED BOLD " TTS  "   RESET  ITALIC"   Ogni quante istruzioni salva su disco\n\t" RESET BOLD "    * 5" RESET "(default): Ogni 5 istruzioni il progetto viene salvato su disco\n\n"
