@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <sys/mman.h>
+#include <omp.h>
 #include "../utils.hpp"
 
 #define UP 0
