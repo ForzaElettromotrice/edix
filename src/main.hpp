@@ -15,6 +15,7 @@
 
 //MAIN
 int inputLoop(Env env);
+int print_prompt(Env env);
 
 
 #endif
