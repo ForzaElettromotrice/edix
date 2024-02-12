@@ -36,7 +36,7 @@ int checkRedisService()
 
 
 int
-settingsFromRedis(int *id, char **tup, char **mode, char **comp, u_int *tts, char **tpp, bool *backup, char **pName)
+settingsFromRedis(int *id, char **tup, char **comp, u_int *tts, char **tpp, bool *backup, char **pName)
 {
     redisContext *context;
     openConnection(&context);
@@ -44,7 +44,6 @@ settingsFromRedis(int *id, char **tup, char **mode, char **comp, u_int *tts, cha
 
     *id = getIntFromKey((char *) "ID");
     *pName = getStrFromKey((char *) "Project");
-    *mode = getStrFromKey((char *) "Mode");
     *tts = getIntFromKey((char *) "TTS");
     char *Backup = getStrFromKey((char *) "Backup");
     *backup = strcmp(Backup, "0");
@@ -58,7 +57,7 @@ settingsFromRedis(int *id, char **tup, char **mode, char **comp, u_int *tts, cha
     return 0;
 
 }
-int settingsToRedis(int id, char *tup, char *mode, char *comp, u_int tts, char *tpp, bool backup, char *pName)
+int settingsToRedis(int id, char *tup, char *comp, u_int tts, char *tpp, bool backup, char *pName)
 {
     redisContext *context;
     openConnection(&context);
@@ -66,7 +65,6 @@ int settingsToRedis(int id, char *tup, char *mode, char *comp, u_int tts, char *
     D_Print("Adding settings on redis...\n");
     setKeyValueInt((char *) "ID", id);
     setKeyValueStr((char *) "Project", pName);
-    setKeyValueStr((char *) "Mode", mode);
     setKeyValueInt((char *) "TTS", (int) tts);
     setKeyValueInt((char *) "Backup", backup);
     setKeyValueStr((char *) "COMP", comp);
@@ -306,7 +304,6 @@ int deallocateFromRedis()
 
     removeKeyFromRedis((char *) "ID");
     removeKeyFromRedis((char *) "Project");
-    removeKeyFromRedis((char *) "Mode");
     removeKeyFromRedis((char *) "TTS");
     removeKeyFromRedis((char *) "Backup");
     removeKeyFromRedis((char *) "COMP");

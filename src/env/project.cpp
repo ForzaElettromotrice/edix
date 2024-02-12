@@ -809,13 +809,12 @@ int force()
 
     int id = getIntFromKey((char *) "ID");
     char *tup = getStrFromKey((char *) "TUP");
-    char *mode = getStrFromKey((char *) "Mode");
     char *comp = getStrFromKey((char *) "COMP");
     uint tts = (uint) getIntFromKey((char *) "TTS");
     char *tpp = getStrFromKey((char *) "TPP");
     bool backup = getIntFromKey((char *) "Backup") == 1;
     char *pName = getStrFromKey((char *) "pName");
-    updateSettings(id, tup, mode, comp, tts, tpp, backup, pName);
+    updateSettings(id, tup, comp, tts, tpp, backup, pName);
 
     return 0;
 }

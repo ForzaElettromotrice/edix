@@ -36,8 +36,6 @@ int initDb()
 
     D_Print("Creating Tupx_t...\n");
     system("psql -d edix -U edix -c \"CREATE TYPE Tupx_t AS ENUM ('Bilinear', 'Bicubic');\" > /dev/null");
-    D_Print("Creating Modex_t...\n");
-    system("psql -d edix -U edix -c \"CREATE TYPE Modex_t AS ENUM('Immediate', 'Programmed');\" > /dev/null");
     D_Print("Creating Compx_t...\n");
     system("psql -d edix -U edix -c \"CREATE TYPE Compx_t AS ENUM('JPEG', 'PNG', 'PPM');\" > /dev/null");
     D_Print("Creating Tppx_t...\n");
@@ -45,8 +43,6 @@ int initDb()
 
     D_Print("Creating Tupx...\n");
     system("psql -d edix -U edix -c \"CREATE DOMAIN Tupx AS Tupx_t;\" > /dev/null");
-    D_Print("Creating Modex...\n");
-    system("psql -d edix -U edix -c \"CREATE DOMAIN Modex AS Modex_t;\" > /dev/null");
     D_Print("Creating Compx...\n");
     system("psql -d edix -U edix -c \"CREATE DOMAIN Compx AS Compx_t;\" > /dev/null");
     D_Print("Creating Tppx...\n");
@@ -57,7 +53,7 @@ int initDb()
     D_Print("Creating table Project...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Project (Name VARCHAR(50) PRIMARY KEY NOT NULL,CDate TIMESTAMP NOT NULL,MDate TIMESTAMP NOT NULL,Path VARCHAR(256) UNIQUE NOT NULL,Settings INT NOT NULL);\" > /dev/null");
     D_Print("Creating table Settings...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Mode Modex NOT NULL,Comp Compx NOT NULL,TTS Uint5 NOT NULL,TPP Tppx NOT NULL,Backup BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
+    system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Comp Compx NOT NULL,TTS Uint5 NOT NULL,TPP Tppx NOT NULL,Backup BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
     D_Print("Creating table Dix...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP PRIMARY KEY NOT NULL,Project VARCHAR(50) NOT NULL, Name VARCHAR(50) NOT NULL, Comment VARCHAR(1024),UNIQUE (Project, Name),CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE);\" > /dev/null");
     D_Print("Creating table Image...\n");
@@ -119,11 +115,10 @@ int loadProjectOnRedis(char *projectName)
     settingsToRedis((int) strtol(settings[0], nullptr, 10),
                     settings[1],
                     settings[2],
-                    settings[3],
-                    strtoul(settings[4], nullptr, 10),
-                    settings[5],
-                    strcmp("t", settings[6]) == 0,
-                    settings[7]);
+                    strtoul(settings[3], nullptr, 10),
+                    settings[4],
+                    strcmp("t", settings[5]) == 0,
+                    settings[6]);
 
 
     for (int i = 0; settings[i] != nullptr; ++i)
@@ -201,7 +196,7 @@ int loadDix(char *name, char *projectName, char *pPath)
 
     return 0;
 }
-int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *modEx, uint TTS, bool Backup)
+int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, uint TTS, bool Backup)
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
     if (PQstatus(conn) != CONNECTION_OK)
@@ -213,9 +208,9 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *m
 
     char query[1024];
     sprintf(query, "BEGIN;\n"
-                   "INSERT INTO Settings (TUP, Mode, Comp, TTS, TPP, Backup, Project) VALUES ('%s', '%s', '%s', '%d', '%s', '%s', '%s') RETURNING Id;\n"
+                   "INSERT INTO Settings (TUP, Comp, TTS, TPP, Backup, Project) VALUES ('%s', '%s', '%d', '%s', '%s', '%s') RETURNING Id;\n"
                    "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), '%s', (SELECT Id FROM Settings ORDER BY Id DESC LIMIT 1));\n"
-                   "COMMIT;\n", TUP, modEx, comp, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name, path);
+                   "COMMIT;\n", TUP, comp, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name, path);
     D_Print("Adding project to Postgres...\n");
     PGresult *res = PQexec(conn, query);
 
@@ -398,7 +393,7 @@ int delProject(char *name)
 
     return 0;
 }
-int updateSettings(int id, char *tup, char *mode, char *comp, u_int tts, char *tpp, bool backup, char *pName)
+int updateSettings(int id, char *tup, char *comp, u_int tts, char *tpp, bool backup, char *pName)
 {
 
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
@@ -422,10 +417,9 @@ int updateSettings(int id, char *tup, char *mode, char *comp, u_int tts, char *t
     char query[256];
 
     sprintf(query,
-            "UPDATE Settings SET id = %d, tup = '%s', mode = '%s', comp = '%s', tts = %u, tpp = '%s' , backup = '%s' , project = '%s' WHERE Id = %d",
+            "UPDATE Settings SET id = %d, tup = '%s', comp = '%s', tts = %u, tpp = '%s' , backup = '%s' , project = '%s' WHERE Id = %d",
             id,
             tup,
-            mode,
             comp,
             tts,
             tpp,

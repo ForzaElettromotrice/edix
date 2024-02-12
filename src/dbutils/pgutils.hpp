@@ -19,10 +19,10 @@ int checkPostgresService();
 
 int loadProjectOnRedis(char *projectName);
 int loadDix(char *name, char *projectName, char *pPath);
-int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, char *modEx, uint TTS, bool Backup);
+int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, uint TTS, bool Backup);
 int addDix(char *projectName, char *dixName, char *comment, char **images, char **paths);
 int delProject(char *name);
-int updateSettings(int id, char *tup, char *mode, char *comp, u_int tts, char *tpp, bool backup, char *pName);
+int updateSettings(int id, char *tup, char *comp, u_int tts, char *tpp, bool backup, char *pName);
 
 //UTILS
 char *getProjects();

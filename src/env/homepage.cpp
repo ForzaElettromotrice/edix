@@ -35,7 +35,7 @@ int checkDefaultFolder()
     closedir(defaultDir);
     return 0;
 }
-int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *backup)
+int askParams(char *name, char *path, char *comp, char *tpp, char *tup, uint *tts, bool *backup)
 {
     size_t aSize = 256;
     char *answer = (char *) malloc(256 * sizeof(char));
@@ -109,24 +109,6 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *mo
 
     } while (!isValidTUP(answer));
     sprintf(tup, "%s", answer);
-
-    do
-    {
-        printf(BOLD YELLOW "Che modalità di esecuzione vuoi usare?\n" RESET "\t- Immediate (Default)\n\t- Programmed\n-> ");
-        if ((bRead = getline(&answer, &aSize, stdin)) == -1)
-        {
-            free(answer);
-            printf("\n");
-            D_Print("Operazione annullata\n");
-            return 1;
-        }
-        if (bRead == 1)
-            sprintf(answer, "Immediate");
-        else
-            answer[bRead - 1] = '\0';
-
-    } while (!isValidMode(answer));
-    sprintf(modEx, "%s", answer);
 
     do
     {
@@ -246,15 +228,6 @@ bool isValidTPP(char *tpp)
 bool isValidTUP(char *tup)
 {
     if (strcmp(tup, "Bilinear") != 0 && strcmp(tup, "Bicubic") != 0)
-    {
-        E_Print(RED "Error: " RESET "Risposta non valida!\n");
-        return false;
-    }
-    return true;
-}
-bool isValidMode(char *mode)
-{
-    if (strcmp(mode, "Immediate") != 0 && strcmp(mode, "Programmed") != 0)
     {
         E_Print(RED "Error: " RESET "Risposta non valida!\n");
         return false;
@@ -426,15 +399,14 @@ int newP(char *name, bool ask, Env *env)
     char comp[5] = "PPM";
     char tpp[16] = "Serial";
     char tup[16] = "Bilinear";
-    char modEx[16] = "Immediate";
     bool backup = false;
     uint tts = 5;
     sprintf(path, "%s/EdixProjects/%s", getenv("HOME"), name);
 
-    if (ask && askParams(name, path, comp, tpp, tup, modEx, &tts, &backup))
+    if (ask && askParams(name, path, comp, tpp, tup, &tts, &backup))
         return 1;
 
-    if (addProject(name, path, comp, tpp, tup, modEx, tts, backup))
+    if (addProject(name, path, comp, tpp, tup, tts, backup))
         return EXIT_FAILURE;
 
     char command[256];

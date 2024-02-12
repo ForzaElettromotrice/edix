@@ -89,16 +89,7 @@ int parseListS()
 
 int set(char *name, char *value)
 {
-    if (strcmp(name, "Mode") == 0)
-    {
-        if (strcmp(value, "Immediate") == 0 or strcmp(value, "Programmed") == 0)
-            setKeyValueStr((char *) "Mode", value);
-        else
-        {
-            E_Print("Valore non valido!\n");
-            return 1;
-        }
-    } else if (strcmp(name, "TTS") == 0)
+    if (strcmp(name, "TTS") == 0)
     {
         uint val = strtol(value, nullptr, 10);
         if (val > 5)
@@ -173,17 +164,15 @@ int listS()
 {
     int id;
     char *pName;
-    char *mode;
     uint tts;
     bool backup;
     char *comp;
     char *tpp;
     char *tup;
 
-    settingsFromRedis(&id, &tup, &mode, &comp, &tts, &tpp, &backup, &pName);
+    settingsFromRedis(&id, &tup, &comp, &tts, &tpp, &backup, &pName);
     
     printf("Ecco una lista dettagliata dei settings:\n\n"
-           RED BOLD " MODE "   RESET  ITALIC"   Modalità di esecuzione\n\t" RESET "    * Programmed: Effettua le modifiche apportate a un'immagine dopo un certo periodo di tempo" BOLD "\n\t    * Immediate" RESET "(default): Le modifiche vengono effettuate subito\n\n"
            RED BOLD " TTS  "   RESET  ITALIC"   Ogni quante istruzioni salva su disco\n\t" RESET BOLD "    * 5" RESET "(default): Ogni 5 istruzioni il progetto viene salvato su disco\n\n"
            RED BOLD " Backup"  RESET  ITALIC"  Version Control System\n\t    * On: Puoi tenere traccia nel tempo delle modifiche che si effettuano sulle immagini\n\t" RESET BOLD "    * Off" RESET "(default): Non viene tenuta traccia delle modifiche\n\n"
            RED BOLD " COMP "   RESET  ITALIC"   Formato di compressione dell'immagine\n\t" RESET BOLD "    * PPM" RESET "(default)\n\t    * JPEG\n\t    * PNG\n\n"
@@ -194,11 +183,10 @@ int listS()
 
     printf(BOLD YELLOW "IMPOSTAZIONI ATTUALI:\n" RESET
            BOLD "\n * " GREEN "TUP    " RESET BOLD "==>" RESET " [%s]"
-           BOLD "\n * " GREEN "MODE   " RESET BOLD "==>" RESET " [%s]"
            BOLD "\n * " GREEN "COMP   " RESET BOLD "==>" RESET " [%s]"
            BOLD "\n * " GREEN "TTS    " RESET BOLD "==>" RESET " [%u]"
            BOLD "\n * " GREEN "TPP    " RESET BOLD "==>" RESET " [%s]"
-           BOLD "\n * " GREEN "Backup " RESET BOLD "==>" RESET " [%s]\n\n", tup, mode, comp, tts, tpp, backup ? "On" : "Off");
+           BOLD "\n * " GREEN "Backup " RESET BOLD "==>" RESET " [%s]\n\n", tup, comp, tts, tpp, backup ? "On" : "Off");
 
 
     return 0;
