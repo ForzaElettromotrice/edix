@@ -82,6 +82,7 @@ add_executable(testx ${SOURCE_FILES_TEST})
 # Aggiungi le opzioni di compilazione per CUDA
 target_compile_options(edix PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler -fopenmp>)
 target_compile_options(testx PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler -fopenmp>)
+#target_compile_options(edix PRIVATE -g)
 
 # Link alle librerie necessarie
 target_link_libraries(edix PRIVATE -lhiredis -lpq -ljpeg -lpng)

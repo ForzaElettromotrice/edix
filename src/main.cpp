@@ -25,13 +25,13 @@ int main(int argc, char *argv[])
             sprintf(tmp, "open %s", argv[1]);
             parseHome(tmp, &env);
             inputLoop(env);
+            break;
         }
         default:
             E_Print(RED "usage:" RESET " ./edix [projectName]\n");
             exit(EXIT_FAILURE);
     }
-
-    printf(BOLD "%s\n" RESET, "Alla prossima ;)");
+    printf(BOLD "Alla prossima %s ;)\n" RESET, getlogin());
 
     return 0;
 }
@@ -42,8 +42,12 @@ int inputLoop(Env env)
 
     size_t bytesRead;
 
-    while (((int) (bytesRead = getline(&line, &lineSize, stdin))) != -1)
+    while (1)
     {
+        print_prompt(env);
+        if (((int) (bytesRead = getline(&line, &lineSize, stdin))) == -1) 
+            break;
+
         if (bytesRead == 1) continue;
 
         line[bytesRead - 1] = '\0';
@@ -67,6 +71,7 @@ int inputLoop(Env env)
     }
 
     free(line);
+    //TODO: vediamo se riusciamo a far funzionare linenoise
     // while ((line = linenoise("==> ")) != nullptr)
     // {
     //     line[bytesRead - 1] = '\0';
@@ -92,6 +97,50 @@ int inputLoop(Env env)
     // linenoiseFree(line);
     D_Print("Uscita in corso...\n");
 
+    return 0;
+}
+
+int print_prompt(Env env) 
+{
+    char *cwd = (char *)malloc(sizeof(char) * 256);
+    char *username = getlogin();
+
+    if(getcwd(cwd, 256) == NULL) 
+    {
+        E_Print("Errore con getcwd()\n");
+        free(cwd);
+        return 1;
+    }
+    char *cpd = strrchr(cwd, '/');
+    if (cpd == NULL) 
+    {
+        E_Print("Errore con strrchr\n");
+        free(cwd);
+        return 1;
+    }
+
+    switch (env)
+    {
+        case PROJECT:
+        {
+            printf(BOLD BLUE "%s" RESET BOLD "@" RESET GREEN BOLD "%s" RESET  BOLD "> " RESET, username, cpd + 1);
+            break;
+        }
+        case HOMEPAGE:
+        {
+            printf(BOLD BLUE "%s" RESET BOLD "@" RESET YELLOW BOLD "%s" RESET BOLD "> " RESET, username, "edix-homepage");
+            break;
+        }
+        case SETTINGS:
+        {
+            printf(BOLD BLUE "%s" RESET BOLD "@" RESET RED BOLD "%s-settings" RESET BOLD "> " RESET, username, cpd +1, "settings");
+            break;
+        }
+        default:
+            break;
+    }
+    
+    free(cwd);
     return 0;
 }
 

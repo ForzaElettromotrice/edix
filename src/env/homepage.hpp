@@ -16,14 +16,13 @@
 //UTILS
 int banner();
 int checkDefaultFolder();
-int askParams(char *name, char *path, char *comp, char *tpp, char *tup, char *modEx, uint *tts, bool *backup);
+int askParams(char *name, char *path, char *comp, char *tpp, char *tup, uint *tts, bool *backup);
 bool isValidName(char *name);
 bool isValidFlag(const char *flag);
 bool isValidPath(char *path);
 bool isValidComp(char *comp);
 bool isValidTPP(char *tpp);
 bool isValidTUP(char *tup);
-bool isValidMode(char *mode);
 bool isValidTTS(char *tts);
 bool isValidBackup(char *backup);
 void periodicSave(int i, short i1, void *pVoid);
