@@ -533,7 +533,7 @@ int parseExitP(Env *env)
 }
 int funx(char *name, char *args)
 {
-    if (strcmp(name, "blur") == 0)
+    if (strcmp(name, "testBlur") == 0)
         parseBlurArgs(args);
     else if (strcmp(name, "grayscale") == 0)
         parseGrayscaleArgs(args);
@@ -842,7 +842,7 @@ int helpP()
            YELLOW BOLD "  exit"         RESET "\t\t\t\t\t\t\tEsci dal progetto\n"
            "----------------------------------------------------------------------------------------------------------------------------------------------------------------\n"
            "Ecco la liste delle funx che puoi utilizzare sulle tue immagini:\n\n"
-           BOLD GREEN "   funx blur " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "RADIUS" RESET ITALIC BOLD "\t\t\t\tEffettua il blur di IN con radius RADIUS e viene salvato in OUT\n\t" RESET "* " BOLD "IN" RESET ": il path dell'immagine di input\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "RADIUS" RESET ": il livello di blur (> 0)\n\n"
+           BOLD GREEN "   funx testBlur " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "RADIUS" RESET ITALIC BOLD "\t\t\t\tEffettua il testBlur di IN con radius RADIUS e viene salvato in OUT\n\t" RESET "* " BOLD "IN" RESET ": il path dell'immagine di input\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "RADIUS" RESET ": il livello di testBlur (> 0)\n\n"
            BOLD GREEN "   funx colorfilter " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "R" RESET " " UNDERLINE "G" RESET " " UNDERLINE "B" RESET " " UNDERLINE "TOLERANCE" RESET ITALIC BOLD"\t\tEffettua il color filter di IN di valore RGB con tolerance TOLERANCE e viene salvato in OUT\n\t" RESET "* " BOLD "IN" RESET ": il path dell'immagine di input\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "R" RESET ": il valore di rosso (0 <= R <= 255)\n\t* " BOLD "G" RESET ": il valore di verde (0 <= G <= 255)\n\t* " BOLD "B" RESET ": il valore di blu (0 <= B <= 255)\n\t* " BOLD "TOLERANCE" RESET ": permette di regolare la sensibilità del filtro rispetto i dettagli del colore nell'immagine(>=0)\n\n"
            BOLD GREEN "   funx grayscale " RESET UNDERLINE "IN" RESET " " UNDERLINE "OUT" RESET ITALIC BOLD"\t\t\t\tEffettua il grayscale di IN e viene salvato in OUT \n\t" RESET "* " BOLD "IN" RESET ": il path dell'immagine di input\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\n"
            BOLD GREEN "   funx composition " RESET UNDERLINE "IN1" RESET " " UNDERLINE "IN2" RESET " " UNDERLINE "OUT" RESET " " UNDERLINE "SIDE" RESET ITALIC BOLD"\t\t\tCompone IN2 sul SIDE di IN1 e il risultato viene salvato in OUT\n\t" RESET "* " BOLD "IN1" RESET ": il path dell'immagine di input\n\t* " BOLD "IN2" RESET ": il path dell'immagine da comporre a IN1\n\t* " BOLD "OUT" RESET ": il path dell'immagine in output\n\t* " BOLD "SIDE" RESET ": indica il lato su cui comporre l'immagine (UP=0, DOWN=1, LEFT=2, RIGTH=3)\n\n"

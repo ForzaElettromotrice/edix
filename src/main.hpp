@@ -10,7 +10,7 @@
 #include "env/linenoise.h"
 #include "dbutils/pgutils.hpp"
 #include "functions/compression.cuh"
-#include "../test/testFunc.hpp"
+#include "../test/testFunc.cuh"
 
 
 //MAIN

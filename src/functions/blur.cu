@@ -154,7 +154,7 @@ unsigned char *blurSerial(const unsigned char *imgIn, uint width, uint height, u
 
     return imgOut;
 }
-unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight, int nThreads1, int nThreads2)
+unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, uint channels, int radius, uint *oWidth, uint *oHeight, int nThreads)
 {
     *oWidth = width;
     *oHeight = height;
@@ -175,12 +175,11 @@ unsigned char *blurOmp(const unsigned char *imgIn, uint width, uint height, uint
     int curr_j;
 
 //TODO: magari cambiare schedule
-#pragma omp parallel for num_threads(nThreads1) collapse(2) schedule(static) default(none) shared(width, height, channels, imgIn, imgOut, radius, nThreads2) private(RGB, num, curr_i, curr_j)
+#pragma omp parallel for num_threads(nThreads) collapse(2) schedule(static) default(none) shared(width, height, channels, imgIn, imgOut, radius) private(RGB, num, curr_i, curr_j)
     for (int x = 0; x < width; x++)
         for (int y = 0; y < height; y++)
         {
             num = 0;
-#pragma omp parallel for num_threads(nThreads2) collapse(2) schedule(static) default(none) shared(radius, width, height, channels, x, y, imgIn) private(curr_i, curr_j) reduction(+:num) reduction(+:RGB[:channels])
             for (int i = -radius; i <= radius; i++)
                 for (int j = -radius; j <= radius; j++)
                 {

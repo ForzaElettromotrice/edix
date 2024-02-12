@@ -55,8 +55,8 @@ set(SOURCE_FILES_TEST
         src/functions/scale.cu
         test/main.hpp
         test/main.cpp
-        test/testFunc.cpp
-        test/testFunc.hpp
+        test/testFunc.cu
+        test/testFunc.cuh
         src/functions/imgutils.cpp
         src/dbutils/pgutils.cpp
         src/dbutils/pgutils.hpp

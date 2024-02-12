@@ -17,8 +17,8 @@ int main()
     unsigned char *img3 = loadImage((char *) "images/gray.ppm", &width3, &height3, &channels3);          // 1337x965
 
 
-    testAccuracy(img1, img2, img3, width1, height1, width2, height2, width3, height3);
-
+//    testAccuracy(img1, img2, img3, width1, height1, width2, height2, width3, height3);
+    testPerformance(img1, img2, width1, height1, channels1, width2, height2, channels2);
 //    uint oWidth;
 //    uint oHeight;
 //
@@ -27,7 +27,7 @@ int main()
 //
 //
 //    auto end = std::chrono::high_resolution_clock::now();
-//    writeImage((char *) "images/out.ppm", oImg, oWidth, oHeight, channels1);
+//    writeImage((char *) "images/accuracy.ppm", oImg, oWidth, oHeight, channels1);
 //
 //    uint delta = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 //    printf("Time: %u\n", delta);

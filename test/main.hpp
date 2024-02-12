@@ -1,7 +1,7 @@
 #ifndef MAIN_TEST_HPP
 #define MAIN_TEST_HPP
 
-#include "testFunc.hpp"
+#include "testFunc.cuh"
 #include "../src/functions/parser.hpp"
 
 

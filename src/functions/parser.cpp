@@ -11,20 +11,20 @@ int parseBlurArgs(char *args)
     char *imgIn = strtok(args, " ");
     if (imgIn == nullptr)
     {
-        E_Print("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
+        E_Print("usage " BOLD "funx testBlur IN OUT RADIUS\n" RESET);
         return 1;
     }
     char *pathOut = strtok(nullptr, " ");
     if (pathOut == nullptr)
     {
-        E_Print("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
+        E_Print("usage " BOLD "funx testBlur IN OUT RADIUS\n" RESET);
         return 1;
     }
     int radius;
     const char *nptr = strtok(nullptr, " ");
     if (nptr == nullptr)
     {
-        E_Print("usage " BOLD "funx blur IN OUT RADIUS\n" RESET);
+        E_Print("usage " BOLD "funx testBlur IN OUT RADIUS\n" RESET);
         return 1;
     } else
     {
@@ -46,14 +46,14 @@ int parseBlurArgs(char *args)
     if (strcmp(tpp, "Serial") == 0)
         oImg = blurSerial(img, width, height, channels, radius, &oWidth, &oHeight);
     else if (strcmp(tpp, "OMP") == 0)
-        oImg = blurOmp(img, width, height, channels, radius, &oWidth, &oHeight, 10, 10);
+        oImg = blurOmp(img, width, height, channels, radius, &oWidth, &oHeight, 20);
     else if (strcmp(tpp, "CUDA") == 0)
         oImg = blurCuda(img, width, height, channels, radius, &oWidth, &oHeight, true);
     else
     {
         free(img);
         free(tpp);
-        E_Print("Invalid arguments for blur function.\n");
+        E_Print("Invalid arguments for testBlur function.\n");
         return 1;
     }
 
