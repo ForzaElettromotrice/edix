@@ -293,14 +293,13 @@ void writePPM(const char *path, unsigned char *img, uint width, uint height, uin
         E_Print(RED "Error: " RESET "Canali non validi!\n");
         return;
     }
-    FILE *file = fopen(path, "wb");
 
+    FILE *file = fopen(path, "w");
     if (!file)
     {
         E_Print("Failed to open file %s\n", path);
         return;
     }
-
 
     fprintf(file, "%s\n%d %d\n255\n", channels == 1 ? "P5" : "P6", width, height);
 

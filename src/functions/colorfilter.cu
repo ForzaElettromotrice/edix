@@ -24,7 +24,16 @@ __global__ void colorFilter(const unsigned char *imgIn, unsigned char *imgOut, u
 
     if (squareDistance > squareTolerance)
         for (int k = 0; k < channels; ++k)
-            imgOut[(x + y * width) * channels + k] = (imgOut[(x + y * width) * channels + k] + diff[k]) / 2;
+        {
+            int val = (imgIn[(x + y * width) * channels + k] + diff[k]) / 2;
+            if (val > 255)
+                val = 255;
+            if (val < 0)
+                val = 0;
+
+            imgOut[(x + y * width) * channels + k] = val;
+        }
+
     else
         for (int k = 0; k < channels; ++k)
             imgOut[(x + y * width) * channels + k] = imgIn[(x + y * width) * channels + k];
@@ -49,6 +58,7 @@ unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint he
     int RGB[] = {r, g, b};
     int squareTolerance = (int) (pow(tolerance, 2));
     uint squareDistance;
+    int test1 = 0, test2 = 0;
 
     for (int i = 0; i < width; ++i)
         for (int j = 0; j < height; ++j)
@@ -61,14 +71,18 @@ unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint he
             if (squareDistance > squareTolerance)
                 for (int k = 0; k < channels; ++k)
                 {
-                    int val = (imgOut[(i + j * width) * channels + k] + diff[k]) / 2;
+                    int val = (imgIn[(i + j * width) * channels + k] + diff[k]) / 2;
+                    if (val > 255)
+                        val = 255;
+                    if (val < 0)
+                        val = 0;
+
                     imgOut[(i + j * width) * channels + k] = val;
                 }
             else
                 for (int k = 0; k < channels; ++k)
                     imgOut[(i + j * width) * channels + k] = imgIn[(i + j * width) * channels + k];
         }
-
     return imgOut;
 }
 unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint channels, int r, int g, int b, uint tolerance, uint *oWidth, uint *oHeight, int nThreads)
@@ -100,12 +114,19 @@ unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint heigh
 
             if (squareDistance > squareTolerance)
                 for (int k = 0; k < channels; ++k)
-                    imgOut[(i + j * width) * channels + k] = (imgOut[(i + j * width) * channels + k] + diff[k]) / 2;
+                {
+                    int val = (imgIn[(i + j * width) * channels + k] + diff[k]) / 2;
+                    if (val > 255)
+                        val = 255;
+                    if (val < 0)
+                        val = 0;
+
+                    imgOut[(i + j * width) * channels + k] = val;
+                }
             else
                 for (int k = 0; k < channels; ++k)
                     imgOut[(i + j * width) * channels + k] = imgIn[(i + j * width) * channels + k];
         }
-
     return imgOut;
 }
 unsigned char *colorFilterCuda(const unsigned char *h_imgIn, uint width, uint height, uint channels, int r, int g, int b, uint tolerance, uint *oWidth, uint *oHeight)

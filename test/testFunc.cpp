@@ -91,6 +91,7 @@ void testAccuracy(const unsigned char *bigImage, const unsigned char *smallImage
     const char *side[] = {"Up", "Down", "Left", "Right"};
     const char *scale[] = {"Downscale", "Upscale"};
 
+    D_Print("Testing blur...\n");
     for (int k = 0; k < 3; ++k)
     {
         imgOut = blurSerial(images[k], imagesW[k], imagesH[k], imagesC[k], 10, &oWidth, &oHeight);
@@ -106,17 +107,19 @@ void testAccuracy(const unsigned char *bigImage, const unsigned char *smallImage
         writeImage(title, imgOut, oWidth, oHeight, imagesC[k]);
         free(imgOut);
     }
+
+    D_Print("Testing colorFilter...\n");
     for (int k = 0; k < 3; ++k)
     {
-        imgOut = colorFilterSerial(images[k], imagesW[k], imagesH[k], imagesC[k], 255, 128, 96, 0, &oWidth, &oHeight);
+        imgOut = colorFilterSerial(images[k], imagesW[k], imagesH[k], imagesC[k], 255, 0, 0, 0, &oWidth, &oHeight);
         sprintf(title, "out/ColorFilterSerial%s.ppm", name[k]);
         writeImage(title, imgOut, oWidth, oHeight, imagesC[k]);
         free(imgOut);
-        imgOut = colorFilterOmp(images[k], imagesW[k], imagesH[k], imagesC[k], 255, 128, 96, 0, &oWidth, &oHeight, 16);
+        imgOut = colorFilterOmp(images[k], imagesW[k], imagesH[k], imagesC[k], 255, 0, 0, 0, &oWidth, &oHeight, 16);
         sprintf(title, "out/ColorFilterOmp%s.ppm", name[k]);
         writeImage(title, imgOut, oWidth, oHeight, imagesC[k]);
         free(imgOut);
-        imgOut = colorFilterCuda(images[k], imagesW[k], imagesH[k], imagesC[k], 255, 128, 96, 0, &oWidth, &oHeight);
+        imgOut = colorFilterCuda(images[k], imagesW[k], imagesH[k], imagesC[k], 255, 0, 0, 0, &oWidth, &oHeight);
         sprintf(title, "out/ColorFilterCuda%s.ppm", name[k]);
         writeImage(title, imgOut, oWidth, oHeight, imagesC[k]);
         free(imgOut);
@@ -126,6 +129,7 @@ void testAccuracy(const unsigned char *bigImage, const unsigned char *smallImage
     images[2] = grayTo3;
     imagesC[2] = 3;
 
+    D_Print("Testing composition...\n");
     for (int k = 0; k < 2; ++k)
     {
         for (int i = 0; i < 4; ++i)
@@ -152,25 +156,27 @@ void testAccuracy(const unsigned char *bigImage, const unsigned char *smallImage
     images[2] = grayImage;
     imagesC[2] = 1;
 
+    D_Print("Testing grayscale...\n");
     for (int k = 0; k < 2; ++k)
     {
         imgOut = grayscaleSerial(images[k], imagesW[k], imagesH[k], &oWidth, &oHeight);
         sprintf(title, "out/GrayScaleSerial%s.ppm", name[k]);
-        writeImage(title, imgOut, oWidth, oHeight, imagesC[k]);
+        writeImage(title, imgOut, oWidth, oHeight, 1);
         free(imgOut);
         imgOut = grayscaleOmp(images[k], imagesW[k], imagesH[k], &oWidth, &oHeight, 16);
         sprintf(title, "out/GrayScaleOmp%s.ppm", name[k]);
-        writeImage(title, imgOut, oWidth, oHeight, imagesC[k]);
+        writeImage(title, imgOut, oWidth, oHeight, 1);
         free(imgOut);
         imgOut = grayscaleCuda(images[k], imagesW[k], imagesH[k], &oWidth, &oHeight);
         sprintf(title, "out/GrayScaleCuda%s.ppm", name[k]);
-        writeImage(title, imgOut, oWidth, oHeight, imagesC[k]);
+        writeImage(title, imgOut, oWidth, oHeight, 1);
         free(imgOut);
     }
 
     images[2] = grayTo3;
     imagesC[2] = 3;
 
+    D_Print("Testing overlap...\n");
     for (int k = 0; k < 2; ++k)
     {
         imgOut = overlapSerial(images[k], images[k + 1], imagesW[k], imagesH[k], imagesC[k], imagesW[k + 1], imagesH[k + 1], imagesC[k + 1], 0, 0, &oWidth, &oHeight);
@@ -190,6 +196,7 @@ void testAccuracy(const unsigned char *bigImage, const unsigned char *smallImage
     images[2] = grayImage;
     imagesC[2] = 1;
 
+    D_Print("Testing upscale and downscale...\n");
     for (int k = 0; k < 3; ++k)
     {
         for (int i = 0; i < 1; ++i)
@@ -224,3 +231,4 @@ void testAccuracy(const unsigned char *bigImage, const unsigned char *smallImage
     free(grayTo3);
     free(title);
 }
+void testPerformance(const unsigned char *imgIn1, const unsigned char *imgIn2, uint width1, uint height1, uint channels1, uint width2, uint height2, uint channels2);

@@ -7,7 +7,6 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     checkDb();
     banner();
-    // TODO: magari puoi aprire direttamente un progetto passandolo come argomento
     // TODO: ovunque si usi il path, mettere PATH_MAX oppure (meglio) far si che l'allocazione sia dinamica
     // TODO: stiamo usando ovunque path assoluti, dovremmo usare dei path relativ
     Env env;
@@ -28,14 +27,10 @@ int main(int argc, char *argv[])
             inputLoop(env);
         }
         default:
-            E_Print(RED
-                    "usage:"
-                    RESET
-                    " ./edix\n");
+            E_Print(RED "usage:" RESET " ./edix [projectName]\n");
             exit(EXIT_FAILURE);
     }
 
-    //TODO: messaggio di saluto
     printf(BOLD "%s\n" RESET, "Alla prossima ;)");
 
     return 0;
@@ -45,7 +40,7 @@ int inputLoop(Env env)
     size_t lineSize = 256;
     char *line = (char *) malloc(256 * sizeof(char));
 
-    size_t bytesRead;  
+    size_t bytesRead;
 
     while (((int) (bytesRead = getline(&line, &lineSize, stdin))) != -1)
     {

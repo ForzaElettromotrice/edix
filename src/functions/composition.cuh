@@ -15,9 +15,9 @@
 #define LEFT 2
 #define RIGHT 3
 
-int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint channels1, uint channels2, uint x, uint y);
-int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint channels1, uint channels2, uint x, uint y, int nThread);
+int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint heightO, uint channels1, uint channels2, uint x, uint y);
+int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint heightO, uint channels1, uint channels2, uint x, uint y, int nThread);
 
-__global__ void copyMatrixCuda(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint channels1, uint x, uint y);
+__global__ void copyMatrixCuda(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint heightO, uint channels1, uint x, uint y);
 
 #endif //EDIX_COMPOSITION_CUH

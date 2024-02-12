@@ -23,9 +23,11 @@ int main()
 //    uint oHeight;
 //
 //    auto start = std::chrono::high_resolution_clock::now();
-//    unsigned char *oImg = grayscaleSerial(img1, width1, height1, &oWidth, &oHeight);
+//    unsigned char *oImg = colorFilterCuda(img2, width2, height2, channels2, 50, 200, 200, 150, &oWidth, &oHeight);
+//
+//
 //    auto end = std::chrono::high_resolution_clock::now();
-//    writeImage((char *) "images/gray.ppm", oImg, oWidth, oHeight, 1);
+//    writeImage((char *) "images/out.ppm", oImg, oWidth, oHeight, channels1);
 //
 //    uint delta = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 //    printf("Time: %u\n", delta);
@@ -33,6 +35,7 @@ int main()
 //    free(oImg);
 //    free(img1);
 //    free(img2);
+//    free(img3);
 
     return 0;
 }

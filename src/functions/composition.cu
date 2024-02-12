@@ -4,13 +4,15 @@
 
 #include "composition.cuh"
 
-int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint channels1, uint channels2, uint x, uint y)
+int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint heightO, uint channels1, uint channels2, uint x, uint y)
 {
     for (int i = 0; i < widthI; ++i)
         for (int j = 0; j < heightI; ++j)
         {
             uint xO = x + i;
             uint yO = y + j;
+            if (xO >= widthO || yO >= heightO)
+                continue;
             for (int k = 0; k < channels1; ++k)
                 mOut[(xO + yO * widthO) * channels1 + k] = mIn[(i + j * widthI) * channels2 + k];
 
@@ -18,26 +20,28 @@ int copyMatrix(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint 
 
     return 0;
 }
-int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint channels1, uint channels2, uint x, uint y, int nThread)
+int copyMatrixOmp(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint heightO, uint channels1, uint channels2, uint x, uint y, int nThread)
 {
-#pragma omp parallel for num_threads(nThread) collapse(2) default(none) shared(mIn, mOut, widthI, heightI, widthO, x, y, channels1, channels2)
+#pragma omp parallel for num_threads(nThread) collapse(2) default(none) shared(mIn, mOut, widthI, heightI, widthO, heightO, x, y, channels1, channels2)
     for (int i = 0; i < widthI; ++i)
         for (int j = 0; j < heightI; ++j)
         {
             uint xO = x + i;
             uint yO = y + j;
+            if (xO >= widthO || yO >= heightO)
+                continue;
             for (int k = 0; k < channels1; ++k)
                 mOut[(xO + yO * widthO) * channels1 + k] = mIn[(i + j * widthI) * channels2 + k];
         }
 
     return 0;
 }
-__global__ void copyMatrixCuda(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint channels1, uint x, uint y)
+__global__ void copyMatrixCuda(const unsigned char *mIn, unsigned char *mOut, uint widthI, uint heightI, uint widthO, uint heightO, uint channels1, uint x, uint y)
 {
     int relX = (int) (threadIdx.x + blockIdx.x * blockDim.x);
     int relY = (int) (threadIdx.y + blockIdx.y * blockDim.y);
 
-    if (relX >= widthI || relY >= heightI)
+    if (relX >= widthI || relY >= heightI || relX + x >= widthO || relY + y >= heightO)
         return;
     for (int k = 0; k < channels1; ++k)
         mOut[(x + relX + (y + relY) * widthO) * channels1 + k] = mIn[(relX + relY * widthI) * channels1 + k];
@@ -76,20 +80,20 @@ unsigned char *compositionSerial(const unsigned char *imgIn1, const unsigned cha
     switch (side)
     {
         case UP:
-            copyMatrix(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, 0, 0);
-            copyMatrix(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, 0, height2);
+            copyMatrix(imgIn2, imgOut, width2, height2, *oWidth, *oHeight, channels1, channels2, 0, 0);
+            copyMatrix(imgIn1, imgOut, width1, height1, *oWidth, *oHeight, channels1, channels2, 0, height2);
             break;
         case DOWN:
-            copyMatrix(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, 0, 0);
-            copyMatrix(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, 0, height1);
+            copyMatrix(imgIn1, imgOut, width1, height1, *oWidth, *oHeight, channels1, channels2, 0, 0);
+            copyMatrix(imgIn2, imgOut, width2, height2, *oWidth, *oHeight, channels1, channels2, 0, height1);
             break;
         case LEFT:
-            copyMatrix(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, 0, 0);
-            copyMatrix(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, width1, 0);
+            copyMatrix(imgIn2, imgOut, width2, height2, *oWidth, *oHeight, channels1, channels2, 0, 0);
+            copyMatrix(imgIn1, imgOut, width1, height1, *oWidth, *oHeight, channels1, channels2, width2, 0);
             break;
         case RIGHT:
-            copyMatrix(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, 0, 0);
-            copyMatrix(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, width2, 0);
+            copyMatrix(imgIn1, imgOut, width1, height1, *oWidth, *oHeight, channels1, channels2, 0, 0);
+            copyMatrix(imgIn2, imgOut, width2, height2, *oWidth, *oHeight, channels1, channels2, width1, 0);
             break;
     }
 
@@ -128,20 +132,20 @@ unsigned char *compositionOmp(const unsigned char *imgIn1, const unsigned char *
     switch (side)
     {
         case UP:
-            copyMatrixOmp(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, 0, 0, nThreads);
-            copyMatrixOmp(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, 0, height2, nThreads);
+            copyMatrixOmp(imgIn2, imgOut, width2, height2, *oWidth, *oHeight, channels1, channels2, 0, 0, nThreads);
+            copyMatrixOmp(imgIn1, imgOut, width1, height1, *oWidth, *oHeight, channels1, channels2, 0, height2, nThreads);
             break;
         case DOWN:
-            copyMatrixOmp(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, 0, 0, nThreads);
-            copyMatrixOmp(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, 0, height1, nThreads);
+            copyMatrixOmp(imgIn1, imgOut, width1, height1, *oWidth, *oHeight, channels1, channels2, 0, 0, nThreads);
+            copyMatrixOmp(imgIn2, imgOut, width2, height2, *oWidth, *oHeight, channels1, channels2, 0, height1, nThreads);
             break;
         case LEFT:
-            copyMatrixOmp(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, 0, 0, nThreads);
-            copyMatrixOmp(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, width1, 0, nThreads);
+            copyMatrixOmp(imgIn1, imgOut, width1, height1, *oWidth, *oHeight, channels1, channels2, 0, 0, nThreads);
+            copyMatrixOmp(imgIn2, imgOut, width2, height2, *oWidth, *oHeight, channels1, channels2, width1, 0, nThreads);
             break;
         case RIGHT:
-            copyMatrixOmp(imgIn2, imgOut, width2, height2, *oWidth, channels1, channels2, 0, 0, nThreads);
-            copyMatrixOmp(imgIn1, imgOut, width1, height1, *oWidth, channels1, channels2, width2, 0, nThreads);
+            copyMatrixOmp(imgIn2, imgOut, width2, height2, *oWidth, *oHeight, channels1, channels2, 0, 0, nThreads);
+            copyMatrixOmp(imgIn1, imgOut, width1, height1, *oWidth, *oHeight, channels1, channels2, width2, 0, nThreads);
             break;
     }
 
@@ -230,13 +234,13 @@ unsigned char *compositionOmpAlternative(const unsigned char *imgIn1, const unsi
             break;
     }
 
-#pragma omp parallel num_threads(2) default(none) shared(copyImg1, copyImg2, imgOut, copyWidth1, copyHeight1, copyWidth2, copyHeight2, oWidth, channels1, channels2, copyX2, copyY2, nThreads)
+#pragma omp parallel num_threads(2) default(none) shared(copyImg1, copyImg2, imgOut, copyWidth1, copyHeight1, copyWidth2, copyHeight2, oWidth, oHeight, channels1, channels2, copyX2, copyY2, nThreads)
     {
         int id = omp_get_thread_num();
         if (id == 0)
-            copyMatrixOmp(copyImg1, imgOut, copyWidth1, copyHeight1, *oWidth, channels1, channels2, 0, 0, nThreads / 2 - 1);
+            copyMatrixOmp(copyImg1, imgOut, copyWidth1, copyHeight1, *oWidth, *oHeight, channels1, channels2, 0, 0, nThreads / 2 - 1);
         else
-            copyMatrixOmp(copyImg2, imgOut, copyWidth2, copyHeight2, *oWidth, channels1, channels2, copyX2, copyY2, nThreads / 2 - 1);
+            copyMatrixOmp(copyImg2, imgOut, copyWidth2, copyHeight2, *oWidth, *oHeight, channels1, channels2, copyX2, copyY2, nThreads / 2 - 1);
     }
 
     return imgOut;
@@ -292,20 +296,20 @@ unsigned char *compositionCuda(const unsigned char *h_imgIn1, const unsigned cha
     switch (side)
     {
         case UP:
-            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, 0, 0);
-            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, 0, height2);
+            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, *oHeight, channels1, 0, 0);
+            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, *oHeight, channels1, 0, height2);
             break;
         case DOWN:
-            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, 0, 0);
-            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, 0, height1);
+            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, *oHeight, channels1, 0, 0);
+            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, *oHeight, channels1, 0, height1);
             break;
         case LEFT:
-            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, 0, 0);
-            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, width1, 0);
+            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, *oHeight, channels1, 0, 0);
+            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, *oHeight, channels1, width2, 0);
             break;
         case RIGHT:
-            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, channels1, 0, 0);
-            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, channels1, width2, 0);
+            copyMatrixCuda<<<gridSize1, blockSize>>>(d_imgIn1, d_imgOut, width1, height1, *oWidth, *oHeight, channels1, 0, 0);
+            copyMatrixCuda<<<gridSize2, blockSize>>>(d_imgIn2, d_imgOut, width2, height2, *oWidth, *oHeight, channels1, width1, 0);
             break;
     }
 
