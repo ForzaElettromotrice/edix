@@ -1,0 +1,17 @@
+Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   87.80%  16.065ms         1  16.065ms  16.065ms  16.065ms  blurShared(unsigned char const *, unsigned char*, unsigned int, unsigned int, unsigned int, int)
+                    6.54%  1.1971ms         1  1.1971ms  1.1971ms  1.1971ms  [CUDA memcpy HtoD]
+                    5.66%  1.0353ms         1  1.0353ms  1.0353ms  1.0353ms  [CUDA memcpy DtoH]
+      API calls:   82.60%  95.372ms         2  47.686ms  58.266us  95.313ms  cudaMalloc
+                   16.74%  19.328ms         2  9.6642ms  1.4822ms  17.846ms  cudaMemcpy
+                    0.31%  356.80us         1  356.80us  356.80us  356.80us  cudaLaunchKernel
+                    0.23%  264.48us         2  132.24us  128.51us  135.98us  cudaFree
+                    0.10%  119.42us       114  1.0470us      88ns  47.719us  cuDeviceGetAttribute
+                    0.02%  17.692us         1  17.692us  17.692us  17.692us  cuDeviceGetName
+                    0.01%  6.8010us         1  6.8010us  6.8010us  6.8010us  cuDeviceGetPCIBusId
+                    0.00%  1.0620us         3     354ns     119ns     724ns  cuDeviceGetCount
+                    0.00%     616ns         2     308ns     119ns     497ns  cuDeviceGet
+                    0.00%     479ns         1     479ns     479ns     479ns  cuModuleGetLoadingMode
+                    0.00%     383ns         1     383ns     383ns     383ns  cuDeviceTotalMem
+                    0.00%     141ns         1     141ns     141ns     141ns  cuDeviceGetUuid

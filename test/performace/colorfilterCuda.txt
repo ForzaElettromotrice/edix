@@ -1,0 +1,17 @@
+Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   73.06%  5.7748ms         1  5.7748ms  5.7748ms  5.7748ms  colorFilter(unsigned char const *, unsigned char*, unsigned int, unsigned int, unsigned int, int, int, int, unsigned int)
+                   14.56%  1.1512ms         1  1.1512ms  1.1512ms  1.1512ms  [CUDA memcpy HtoD]
+                   12.38%  978.61us         1  978.61us  978.61us  978.61us  [CUDA memcpy DtoH]
+      API calls:   90.81%  102.49ms         2  51.243ms  61.393us  102.43ms  cudaMalloc
+                    8.03%  9.0633ms         2  4.5316ms  1.3812ms  7.6821ms  cudaMemcpy
+                    0.79%  895.70us         1  895.70us  895.70us  895.70us  cudaLaunchKernel
+                    0.22%  250.29us         2  125.14us  44.993us  205.29us  cudaFree
+                    0.11%  124.07us       114  1.0880us      98ns  50.716us  cuDeviceGetAttribute
+                    0.01%  15.231us         1  15.231us  15.231us  15.231us  cuDeviceGetName
+                    0.01%  12.929us         3  4.3090us     128ns  12.666us  cuDeviceGetCount
+                    0.01%  7.6630us         1  7.6630us  7.6630us  7.6630us  cuDeviceGetPCIBusId
+                    0.00%  2.6160us         2  1.3080us     112ns  2.5040us  cuDeviceGet
+                    0.00%     354ns         1     354ns     354ns     354ns  cuDeviceTotalMem
+                    0.00%     278ns         1     278ns     278ns     278ns  cuModuleGetLoadingMode
+                    0.00%     172ns         1     172ns     172ns     172ns  cuDeviceGetUuid
