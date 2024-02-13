@@ -4,6 +4,16 @@
 #include "pgutils.hpp"
 
 
+void hexStringToByteArray(const char *hexString, unsigned char **byteArray, size_t *length)
+{
+    size_t strLength = strlen(hexString);
+    *length = strLength / 2; // Ogni coppia di caratteri esadecimali corrisponde a un byte
+    *byteArray = (unsigned char *) malloc(*length);
+#pragma omp parallel for num_threads(omp_get_max_threads()) schedule(static) default(none) shared(length, hexString, byteArray)
+    for (size_t i = 0; i < *length; i++)
+        sscanf(hexString + 2 * i, "%2hhx", &(*byteArray)[i]);
+}
+
 int checkDb()
 {
     PGconn *conn = PQconnectdb("dbname=postgres user=postgres password=");
@@ -36,15 +46,11 @@ int initDb()
 
     D_Print("Creating Tupx_t...\n");
     system("psql -d edix -U edix -c \"CREATE TYPE Tupx_t AS ENUM ('Bilinear', 'Bicubic');\" > /dev/null");
-    D_Print("Creating Compx_t...\n");
-    system("psql -d edix -U edix -c \"CREATE TYPE Compx_t AS ENUM('JPEG', 'PNG', 'PPM');\" > /dev/null");
     D_Print("Creating Tppx_t...\n");
     system("psql -d edix -U edix -c \"CREATE TYPE Tppx_t AS ENUM('Serial', 'OMP', 'CUDA');\" > /dev/null");
 
     D_Print("Creating Tupx...\n");
     system("psql -d edix -U edix -c \"CREATE DOMAIN Tupx AS Tupx_t;\" > /dev/null");
-    D_Print("Creating Compx...\n");
-    system("psql -d edix -U edix -c \"CREATE DOMAIN Compx AS Compx_t;\" > /dev/null");
     D_Print("Creating Tppx...\n");
     system("psql -d edix -U edix -c \"CREATE DOMAIN Tppx AS Tppx_t;\" > /dev/null");
     D_Print("Creating Uint5...\n");
@@ -53,11 +59,11 @@ int initDb()
     D_Print("Creating table Project...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Project (Name VARCHAR(50) PRIMARY KEY NOT NULL,CDate TIMESTAMP NOT NULL,MDate TIMESTAMP NOT NULL,Path VARCHAR(256) UNIQUE NOT NULL,Settings INT NOT NULL);\" > /dev/null");
     D_Print("Creating table Settings...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,Comp Compx NOT NULL,TTS Uint5 NOT NULL,TPP Tppx NOT NULL,Backup BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
+    system("psql -d edix -U edix -c \"CREATE TABLE Settings (Id SERIAL PRIMARY KEY NOT NULL,TUP Tupx NOT NULL,TTS Uint5 NOT NULL,TPP Tppx NOT NULL,Backup BOOLEAN NOT NULL,Project VARCHAR(50) NOT NULL);\" > /dev/null");
     D_Print("Creating table Dix...\n");
     system("psql -d edix -U edix -c \"CREATE TABLE Dix (Instant TIMESTAMP PRIMARY KEY NOT NULL,Project VARCHAR(50) NOT NULL, Name VARCHAR(50) NOT NULL, Comment VARCHAR(1024),UNIQUE (Project, Name),CONSTRAINT V6 FOREIGN KEY (Project) REFERENCES Project(Name) ON DELETE CASCADE);\" > /dev/null");
     D_Print("Creating table Image...\n");
-    system("psql -d edix -U edix -c \"CREATE TABLE Image (Id SERIAL PRIMARY KEY NOT NULL,Name VARCHAR(50) NOT NULL,Data Bytea NOT NULL,Comp Compx NOT NULL,Dix TIMESTAMP NOT NULL,Path VARCHAR(256) NOT NULL,CONSTRAINT V8 FOREIGN KEY (Dix) REFERENCES Dix(Instant) ON DELETE CASCADE);\" > /dev/null");
+    system("psql -d edix -U edix -c \"CREATE TABLE Image (Id SERIAL PRIMARY KEY NOT NULL,Name VARCHAR(50) NOT NULL,Data Bytea NOT NULL,Dix TIMESTAMP NOT NULL,Path VARCHAR(256) NOT NULL,CONSTRAINT V8 FOREIGN KEY (Dix) REFERENCES Dix(Instant) ON DELETE CASCADE);\" > /dev/null");
 
     D_Print("Altering table Project...\n");
     system("psql -d edix -U edix -c \"ALTER TABLE Project ADD CONSTRAINT V1 CHECK (CDate <= MDate),ADD CONSTRAINT V2 UNIQUE (Settings),ADD CONSTRAINT V3 FOREIGN KEY (Settings) REFERENCES Settings(Id) ON DELETE CASCADE INITIALLY DEFERRED;\" > /dev/null");
@@ -112,13 +118,11 @@ int loadProjectOnRedis(char *projectName)
                    project[3],
                    (int) strtol(project[4], nullptr, 10));
 
-    settingsToRedis((int) strtol(settings[0], nullptr, 10),
-                    settings[1],
-                    settings[2],
-                    strtoul(settings[3], nullptr, 10),
-                    settings[4],
-                    strcmp("t", settings[5]) == 0,
-                    settings[6]);
+    settingsToRedis(
+            settings[1],
+            strtoul(settings[2], nullptr, 10),
+            settings[3],
+            strcmp("t", settings[4]) == 0);
 
 
     for (int i = 0; settings[i] != nullptr; ++i)
@@ -156,17 +160,17 @@ int loadDix(char *name, char *projectName, char *pPath)
     }
 
     int numRows = PQntuples(result);
-    PQclear(result);
     if (numRows == 0)
     {
         PQfinish(conn);
         E_Print("Il dix %s non esiste\n", name);
         return 1;
     }
-
     char *instant = PQgetvalue(result, 0, 0);
 
-    sprintf(query, "SELECT Path, Name FROM Image i WHERE i.Dix = '%s' ORDER BY Id", instant);
+    PQclear(result);
+
+    sprintf(query, "SELECT Path, Name, Data FROM Image i WHERE i.Dix = '%s' ORDER BY Id", instant);
 
     result = PQexec(conn, query);
     if (PQresultStatus(result) != PGRES_TUPLES_OK)
@@ -181,14 +185,20 @@ int loadDix(char *name, char *projectName, char *pPath)
 
     char *image;
     char *path;
+    char *iName;
 
     for (int i = 0; i < numRows; ++i)
     {
         path = PQgetvalue(result, i, 0);
-        image = PQgetvalue(result, i, 1);
+        iName = PQgetvalue(result, i, 1);
+        image = PQgetvalue(result, i, 2);
 
+        char *truePath = (char *) malloc((strlen(iName) + strlen(path)) * sizeof(char));
+        sprintf(truePath, "%s/%s", path, iName);
         checkPath(path, pPath);
-        saveImage(path, image);
+        saveImage(truePath, image);
+
+        free(truePath);
     }
 
 
@@ -196,7 +206,7 @@ int loadDix(char *name, char *projectName, char *pPath)
 
     return 0;
 }
-int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, uint TTS, bool Backup)
+int addProject(char *name, char *path, char *TPP, char *TUP, uint TTS, bool Backup)
 {
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
     if (PQstatus(conn) != CONNECTION_OK)
@@ -208,9 +218,9 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, uint TT
 
     char query[1024];
     sprintf(query, "BEGIN;\n"
-                   "INSERT INTO Settings (TUP, Comp, TTS, TPP, Backup, Project) VALUES ('%s', '%s', '%d', '%s', '%s', '%s') RETURNING Id;\n"
+                   "INSERT INTO Settings (TUP, TTS, TPP, Backup, Project) VALUES ('%s', '%d', '%s', '%s', '%s') RETURNING Id;\n"
                    "INSERT INTO Project (Name, CDate, MDate, Path, Settings) VALUES ('%s', NOW(), NOW(), '%s', (SELECT Id FROM Settings ORDER BY Id DESC LIMIT 1));\n"
-                   "COMMIT;\n", TUP, comp, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name, path);
+                   "COMMIT;\n", TUP, TTS, TPP, Backup ? "TRUE" : "FALSE", name, name, path);
     D_Print("Adding project to Postgres...\n");
     PGresult *res = PQexec(conn, query);
 
@@ -236,11 +246,6 @@ int addProject(char *name, char *path, char *comp, char *TPP, char *TUP, uint TT
 }
 int addDix(char *projectName, char *dixName, char *comment, char **images, char **paths)
 {
-    for (int i = 0; paths[i] != nullptr; ++i)
-    {
-        D_Print("%s\n", paths[i]);
-    }
-
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
     if (PQstatus(conn) != CONNECTION_OK)
     {
@@ -249,7 +254,7 @@ int addDix(char *projectName, char *dixName, char *comment, char **images, char 
         return 1;
     }
 
-    char *pPath = getStrFromKey((char *) "pPath");
+    char *pPath = getStrFromKey("pPath");
 
 
     size_t qSize = 1024;
@@ -274,13 +279,19 @@ int addDix(char *projectName, char *dixName, char *comment, char **images, char 
         }
 
         char *line = (char *) malloc((iSize * 2 + 256) * sizeof(char));
-        sprintf(line, "INSERT INTO Image (Name, Comp, Dix, Path, Data) VALUES ('%s', '%s', NOW(), '%s', E'\\\\x",
-                images[i], "PNG", paths[i]);
+        sprintf(line, "INSERT INTO Image (Name, Dix, Path, Data) VALUES ('%s', NOW(), '%s', E'\\\\x",
+                images[i], paths[i]);
 
-
+        uint len = strlen(line);
+        FILE *file = fopen("log.txt", "w");
+        fwrite(imageData, iSize, 1, file);
+        fclose(file);
+#pragma omp parallel for num_threads(omp_get_max_threads()) schedule(static) default(none) shared(iSize, line, imageData, len)
         for (int j = 0; j < iSize; j++)
-            sprintf(line + strlen(line), "%02x", imageData[j]);
-
+            sprintf(line + len + j * 2, "%02x", imageData[j]);
+        file = fopen("log2.txt", "w");
+        fwrite(line, strlen(line), 1, file);
+        fclose(file);
 
         strcat(line, "');");
 
@@ -334,6 +345,9 @@ int addDix(char *projectName, char *dixName, char *comment, char **images, char 
         else
             E_Print("Errore nell'esecuzione della query: %s\n", PQerrorMessage(conn));
 
+        FILE *file = fopen("log.txt", "w");
+        fwrite(query, strlen(query), 1, file);
+        fclose(file);
         free(query);
         PQclear(res);
         PQfinish(conn);
@@ -393,7 +407,7 @@ int delProject(char *name)
 
     return 0;
 }
-int updateSettings(int id, char *tup, char *comp, u_int tts, char *tpp, bool backup, char *pName)
+int updateSettings(int id, char *tup, u_int tts, char *tpp, bool backup, char *pName)
 {
 
     PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
@@ -417,10 +431,9 @@ int updateSettings(int id, char *tup, char *comp, u_int tts, char *tpp, bool bac
     char query[256];
 
     sprintf(query,
-            "UPDATE Settings SET id = %d, tup = '%s', comp = '%s', tts = %u, tpp = '%s' , backup = '%s' , project = '%s' WHERE Id = %d",
+            "UPDATE Settings SET id = %d, tup = '%s', tts = %u, tpp = '%s' , backup = '%s' , project = '%s' WHERE Id = %d",
             id,
             tup,
-            comp,
             tts,
             tpp,
             backupChar,
@@ -650,9 +663,7 @@ unsigned char *getImageData(char *path, size_t *dim)
         return nullptr;
     }
 
-    D_Print("fread\n");
     fread(bytea_data, 1, file_size, file);
-    D_Print("fread done\n");
     fclose(file);
     *dim = file_size;
 
@@ -757,8 +768,15 @@ int saveImage(char *path, char *img)
         return 1;
     }
 
-    fwrite(img, sizeof(char), strlen(img), file);
+    unsigned char *byteArray;
+    size_t len;
+    hexStringToByteArray(img + 2, &byteArray, &len);
+
+
+    fwrite(byteArray, sizeof(unsigned char), len, file);
     fclose(file);
+
+    free(byteArray);
 
     return 0;
 }

@@ -286,7 +286,7 @@ int parseLs()
     if (path == nullptr)
         return ls(nullptr);
 
-    char *path_p = getStrFromKey((char *) "pPath");
+    char *path_p = getStrFromKey("pPath");
     if (path_p == nullptr)
     {
         E_Print("Path del progetto inesistente!\n");
@@ -319,7 +319,7 @@ int parseCd()
     if (path == nullptr)
         return cd(nullptr);
 
-    char *pPath = getStrFromKey((char *) "pPath");
+    char *pPath = getStrFromKey("pPath");
     if (pPath == nullptr)
         return 1;
 
@@ -364,7 +364,7 @@ int parseRm()
     }
 
 
-    char *pPath = getStrFromKey((char *) "pPath");
+    char *pPath = getStrFromKey("pPath");
     if (pPath == nullptr)
         return 1;
     int res = isPathIn(path, pPath);
@@ -389,7 +389,7 @@ int parseMkdir()
         return 1;
     }
 
-    char *pPath = getStrFromKey((char *) "pPath");
+    char *pPath = getStrFromKey("pPath");
     if (pPath == nullptr)
         return 1;
     int res = isPathIn(name, pPath);
@@ -413,7 +413,7 @@ int parseRmdir()
         return 1;
     }
 
-    char *pPath = getStrFromKey((char *) "pPath");
+    char *pPath = getStrFromKey("pPath");
     if (pPath == nullptr)
         return 1;
     int res = isPathIn(name, pPath);
@@ -440,7 +440,7 @@ int parseMv()
     }
 
 
-    char *pPath = getStrFromKey((char *) "pPath");
+    char *pPath = getStrFromKey("pPath");
     int res = isPathIn(pathSrc, pPath);
     if (res != 0)
     {
@@ -581,7 +581,7 @@ int cd(char *path)
     bool toFree = path == nullptr;
     if (toFree)
     {
-        path = getStrFromKey((char *) "pPath");
+        path = getStrFromKey("pPath");
     }
 
 
@@ -599,7 +599,7 @@ int cd(char *path)
 }
 int loadI(char *path)
 {
-    char *pPath = getStrFromKey((char *) "pPath");
+    char *pPath = getStrFromKey("pPath");
     if (pPath == nullptr)
         return 1;
     char *comm = (char *) malloc((strlen(path) + strlen(pPath) + 4));
@@ -611,7 +611,7 @@ int loadI(char *path)
     }
     sprintf(comm, "cp %s %s", path, pPath);
 
-    if (system(comm))
+    if (system(comm) != 0)
     {
         free(comm);
         E_Print("Errore nell'esecuzione del comando load\n");
@@ -705,7 +705,7 @@ int settings(Env *env)
 int dixList()
 {
     force();
-    char *projectName = getStrFromKey((char *) "Project");
+    char *projectName = getStrFromKey("Project");
     if (projectName == nullptr)
         return 1;
     char *dixs = getDixs(projectName);
@@ -722,14 +722,14 @@ int dixList()
 }
 int dixCommit(char *name)
 {
-    char *projectPath = getStrFromKey((char *) "pPath");
+    char *projectPath = getStrFromKey("pPath");
     if (checkDix(projectPath, name))
         return 1;
 
 
     char *comment = askComment();
-    setElementToRedis((char *) "dixNames", name);
-    setElementToRedis((char *) "dixComments", comment);
+    setElementToRedis("dixNames", name);
+    setElementToRedis("dixComments", comment);
 
     cloneProject(projectPath, projectPath, name);
 
@@ -740,7 +740,7 @@ int dixReload(char *name)
 {
     force();
 
-    char *pPath = getStrFromKey((char *) "pPath");
+    char *pPath = getStrFromKey("pPath");
     if (pPath == nullptr)
         return 1;
 
@@ -762,7 +762,7 @@ int dixReload(char *name)
     free(comm);
 
 
-    char *projectName = getStrFromKey((char *) "Project");
+    char *projectName = getStrFromKey("Project");
     if (projectName == nullptr)
     {
         free(pPath);
@@ -776,9 +776,9 @@ int dixReload(char *name)
 int force()
 {
     D_Print("Forcing push...\n");
-    char **names = getCharArrayFromRedis((char *) "dixNames");
-    char **comments = getCharArrayFromRedis((char *) "dixComments");
-    char *projectName = getStrFromKey((char *) "pName");
+    char **names = getCharArrayFromRedis("dixNames");
+    char **comments = getCharArrayFromRedis("dixComments");
+    char *projectName = getStrFromKey("pName");
 
 
     for (int i = 0; names[i] != nullptr; ++i)
@@ -807,14 +807,13 @@ int force()
 
     delDixFromRedis();
 
-    int id = getIntFromKey((char *) "ID");
-    char *tup = getStrFromKey((char *) "TUP");
-    char *comp = getStrFromKey((char *) "COMP");
-    uint tts = (uint) getIntFromKey((char *) "TTS");
-    char *tpp = getStrFromKey((char *) "TPP");
-    bool backup = getIntFromKey((char *) "Backup") == 1;
-    char *pName = getStrFromKey((char *) "pName");
-    updateSettings(id, tup, comp, tts, tpp, backup, pName);
+    int id = getStrFromKey("ID");
+    char *tup = getStrFromKey("TUP");
+    uint tts = (uint) getStrFromKey("TTS");
+    char *tpp = getStrFromKey("TPP");
+    bool backup = getStrFromKey("Backup") == 1;
+    char *pName = getStrFromKey("pName");
+    updateSettings(id, tup, tts, tpp, backup, pName);
 
     return 0;
 }

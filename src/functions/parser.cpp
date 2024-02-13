@@ -32,7 +32,7 @@ int parseBlurArgs(char *args)
     }
 
 
-    char *tpp = getStrFromKey((char *) "TPP");
+    char *tpp = getStrFromKey("TPP");
     uint width;
     uint height;
     uint channels;
@@ -78,7 +78,7 @@ int parseGrayscaleArgs(char *args)
         return 1;
     }
 
-    char *tpp = getStrFromKey((char *) "TPP");
+    char *tpp = getStrFromKey("TPP");
     uint width;
     uint height;
     uint channels;
@@ -195,7 +195,7 @@ int parseColorFilterArgs(char *args)
     }
     uint tollerance = (uint) strtoul(arg_tollerance, nullptr, 10);
 
-    char *tpp = getStrFromKey((char *) "TPP");
+    char *tpp = getStrFromKey("TPP");
     uint width;
     uint height;
     uint channels;
@@ -264,8 +264,8 @@ int parseUpscaleArgs(char *args)
         return 1;
     }
 
-    char *tpp = getStrFromKey((char *) "TPP");
-    char *tup = getStrFromKey((char *) "TUP");
+    char *tpp = getStrFromKey("TPP");
+    char *tup = getStrFromKey("TUP");
     uint width;
     uint height;
     uint channels;
@@ -342,8 +342,8 @@ int parseDownscaleArgs(char *args)
         return 1;
     }
 
-    char *tpp = getStrFromKey((char *) "TPP");
-    char *tup = getStrFromKey((char *) "TUP");
+    char *tpp = getStrFromKey("TPP");
+    char *tup = getStrFromKey("TUP");
     uint width;
     uint height;
     uint channels;
@@ -423,7 +423,7 @@ int parseOverlapArgs(char *args)
     }
     uint y = (uint) strtoul(arg_y, nullptr, 10);
 
-    char *tpp = getStrFromKey((char *) "TPP");
+    char *tpp = getStrFromKey("TPP");
     uint width1;
     uint height1;
     uint channels1;
@@ -509,7 +509,7 @@ int parseCompositionArgs(char *args)
         return 1;
     }
 
-    char *tpp = getStrFromKey((char *) "TPP");
+    char *tpp = getStrFromKey("TPP");
     uint width1;
     uint height1;
     uint channels1;

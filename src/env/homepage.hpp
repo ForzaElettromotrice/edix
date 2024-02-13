@@ -16,16 +16,14 @@
 //UTILS
 int banner();
 int checkDefaultFolder();
-int askParams(char *name, char *path, char *comp, char *tpp, char *tup, uint *tts, bool *backup);
+int askParams(char *name, char *path, char *tpp, char *tup, uint *tts, bool *backup);
 bool isValidName(char *name);
 bool isValidFlag(const char *flag);
 bool isValidPath(char *path);
-bool isValidComp(char *comp);
 bool isValidTPP(char *tpp);
 bool isValidTUP(char *tup);
 bool isValidTTS(char *tts);
 bool isValidBackup(char *backup);
-void periodicSave(int i, short i1, void *pVoid);
 
 //PARSERS
 int parseHome(char *line, Env *env);

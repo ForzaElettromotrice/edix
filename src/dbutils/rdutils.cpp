@@ -36,46 +36,42 @@ int checkRedisService()
 
 
 int
-settingsFromRedis(int *id, char **tup, char **comp, u_int *tts, char **tpp, bool *backup, char **pName)
+settingsFromRedis(int *id, char **tup, int *tts, char **tpp, bool *backup, char **pName)
 {
     redisContext *context;
     openConnection(&context);
 
 
-    *id = getIntFromKey((char *) "ID");
-    *pName = getStrFromKey((char *) "Project");
-    *tts = getIntFromKey((char *) "TTS");
-    char *Backup = getStrFromKey((char *) "Backup");
+    *id = getIntFromKey("ID");
+    *pName = getStrFromKey("Project");
+    *tts = getIntFromKey("TTS");
+    char *Backup = getStrFromKey("Backup");
     *backup = strcmp(Backup, "0");
     free(Backup);
-    *comp = getStrFromKey((char *) "COMP");
-    *tpp = getStrFromKey((char *) "TPP");
-    *tup = getStrFromKey((char *) "TUP");
+    *tpp = getStrFromKey("TPP");
+    *tup = getStrFromKey("TUP");
 
     redisFree(context);
 
     return 0;
 
 }
-int settingsToRedis(int id, char *tup, char *comp, u_int tts, char *tpp, bool backup, char *pName)
+int settingsToRedis(char *tup, int tts, char *tpp, bool backup)
 {
     redisContext *context;
     openConnection(&context);
 
     D_Print("Adding settings on redis...\n");
-    setKeyValueInt((char *) "ID", id);
-    setKeyValueStr((char *) "Project", pName);
-    setKeyValueInt((char *) "TTS", (int) tts);
-    setKeyValueInt((char *) "Backup", backup);
-    setKeyValueStr((char *) "COMP", comp);
-    setKeyValueStr((char *) "TPP", tpp);
-    setKeyValueStr((char *) "TUP", tup);
+    setKeyValueStr("TUP", tup);
+    setKeyValueInt("TTS", tts);
+    setKeyValueStr("TPP", tpp);
+    setKeyValueInt("Backup", backup);
 
     redisFree(context);
 
     return 0;
 }
-int projectToRedis(char *name, char *cDate, char *mDate, char *path, int settings)
+int projectToRedis(char *name, char *cDate, char *mDate, char *path)
 {
 
     redisContext *context;
@@ -83,11 +79,10 @@ int projectToRedis(char *name, char *cDate, char *mDate, char *path, int setting
 
     //TODO: mettere i D_Print
     D_Print("Adding project name on redis...\n");
-    setKeyValueStr((char *) "pName", name);
-    setKeyValueStr((char *) "CDate", cDate);
-    setKeyValueStr((char *) "MDate", mDate);
-    setKeyValueStr((char *) "pPath", path);
-    setKeyValueInt((char *) "Settings", settings);
+    setKeyValueStr("pName", name);
+    setKeyValueStr("CDate", cDate);
+    setKeyValueStr("MDate", mDate);
+    setKeyValueStr("pPath", path);
 
     redisFree(context);
 
@@ -95,7 +90,7 @@ int projectToRedis(char *name, char *cDate, char *mDate, char *path, int setting
 }
 
 
-int checkResponse(char *name, redisReply *reply, redisContext *context)
+int checkResponse(const char *name, redisReply *reply, redisContext *context)
 {
     if (reply == nullptr)
     {
@@ -106,7 +101,7 @@ int checkResponse(char *name, redisReply *reply, redisContext *context)
     }
     return 0;
 }
-int setKeyValueStr(char *key, char *value)
+int setKeyValueStr(const char *key, char *value)
 {
 
     redisContext *context;
@@ -122,7 +117,7 @@ int setKeyValueStr(char *key, char *value)
 
     return 0;
 }
-int setKeyValueInt(char *key, int value)
+int setKeyValueInt(const char *key, int value)
 {
 
     redisContext *context;
@@ -138,7 +133,7 @@ int setKeyValueInt(char *key, int value)
 
     return 0;
 }
-int setElementToRedis(char *key, char *value)
+int setElementToRedis(const char *key, char *value)
 {
     redisContext *context;
     openConnection(&context);
@@ -156,7 +151,7 @@ int setElementToRedis(char *key, char *value)
     redisFree(context);
     return 0;
 }
-char *getStrFromKey(char *key)
+char *getStrFromKey(const char *key)
 {
 
     redisContext *context;
@@ -181,7 +176,7 @@ char *getStrFromKey(char *key)
     redisFree(context);
     return value;
 }
-int getIntFromKey(char *key)
+int getIntFromKey(const char *key)
 {
 
     redisContext *context;
@@ -205,7 +200,7 @@ int getIntFromKey(char *key)
     redisFree(context);
     return value;
 }
-char **getCharArrayFromRedis(char *key)
+char **getCharArrayFromRedis(const char *key)
 {
     redisContext *context;
     openConnection(&context);
@@ -213,7 +208,8 @@ char **getCharArrayFromRedis(char *key)
     auto *reply = (redisReply *) redisCommand(context, "LRANGE %s 0 -1", key);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY)
     {
-        D_Print("reply type : %d\n", reply->type);
+        if (reply != nullptr)
+            D_Print("reply type : %d\n", reply->type);
         E_Print(RED "REDIS Error: " RESET "Error while retrieving set elements\n");
         freeReplyObject(reply);
         redisFree(context);
@@ -250,7 +246,7 @@ char **getCharArrayFromRedis(char *key)
 }
 
 
-int removeKeyFromRedis(char *key)
+int removeKeyFromRedis(const char *key)
 {
     redisContext *context;
     openConnection(&context);
@@ -274,7 +270,7 @@ int delDixFromRedis()
     openConnection(&context);
     char *key = (char *) malloc(256 * sizeof(char));
 
-    char **dixs = getCharArrayFromRedis((char *) "dixNames");
+    char **dixs = getCharArrayFromRedis("dixNames");
     for (int i = 0; dixs[i] != nullptr; ++i)
     {
         sprintf(key, "%sPaths", dixs[i]);
@@ -285,8 +281,8 @@ int delDixFromRedis()
     }
     free(dixs);
 
-    removeKeyFromRedis((char *) "dixNames");
-    removeKeyFromRedis((char *) "dixComments");
+    removeKeyFromRedis("dixNames");
+    removeKeyFromRedis("dixComments");
 
     return 0;
 }
@@ -296,19 +292,17 @@ int deallocateFromRedis()
     openConnection(&context);
 
     delDixFromRedis();
-    removeKeyFromRedis((char *) "pName");
-    removeKeyFromRedis((char *) "CDate");
-    removeKeyFromRedis((char *) "MDate");
-    removeKeyFromRedis((char *) "pPath");
-    removeKeyFromRedis((char *) "Settings");
+    removeKeyFromRedis("pName");
+    removeKeyFromRedis("CDate");
+    removeKeyFromRedis("MDate");
+    removeKeyFromRedis("pPath");
 
-    removeKeyFromRedis((char *) "ID");
-    removeKeyFromRedis((char *) "Project");
-    removeKeyFromRedis((char *) "TTS");
-    removeKeyFromRedis((char *) "Backup");
-    removeKeyFromRedis((char *) "COMP");
-    removeKeyFromRedis((char *) "TPP");
-    removeKeyFromRedis((char *) "TUP");
+    removeKeyFromRedis("ID");
+    removeKeyFromRedis("Project");
+    removeKeyFromRedis("TTS");
+    removeKeyFromRedis("Backup");
+    removeKeyFromRedis("TPP");
+    removeKeyFromRedis("TUP");
 
     redisFree(context);
 

@@ -93,7 +93,7 @@ int set(char *name, char *value)
     {
         uint val = strtol(value, nullptr, 10);
         if (val > 5)
-            setKeyValueInt((char *) "TTS", (int) val);
+            setKeyValueInt("TTS", (int) val);
         else
         {
             E_Print("Valore non valido!\n");
@@ -103,9 +103,9 @@ int set(char *name, char *value)
     {
 
         if (strcmp(value, "On") == 0)
-            setKeyValueStr((char *) "Backup", (char *) "true");
+            setKeyValueStr("Backup", (char *) "true");
         else if (strcmp(value, "Off") == 0)
-            setKeyValueStr((char *) "Backup", (char *) "false");
+            setKeyValueStr("Backup", (char *) "false");
         else
         {
             E_Print("Valore non valido!\n");
@@ -114,7 +114,7 @@ int set(char *name, char *value)
     } else if (strcmp(name, "COMP") == 0)
     {
         if (strcmp(value, "PPM") == 0 or strcmp(value, "JPEG") == 0 or strcmp(value, "PNG") == 0)
-            setKeyValueStr((char *) "COMP", value);
+            setKeyValueStr("COMP", value);
         else
         {
             E_Print("Valore non valido!\n");
@@ -123,7 +123,7 @@ int set(char *name, char *value)
     } else if (strcmp(name, "TPP") == 0)
     {
         if (strcmp(value, "CUDA") == 0 or strcmp(value, "OMP") == 0 or strcmp(value, "Serial") == 0)
-            setKeyValueStr((char *) "TPP", value);
+            setKeyValueStr("TPP", value);
         else
         {
             E_Print("Valore non valido!\n");
@@ -132,7 +132,7 @@ int set(char *name, char *value)
     } else if (strcmp(name, "TUP") == 0)
     {
         if (strcmp(value, "Bilinear") == 0 or strcmp(value, "Bicubic") == 0)
-            setKeyValueStr((char *) "TUP", value);
+            setKeyValueStr("TUP", value);
         else
         {
             E_Print("Valore non valido!\n");
@@ -166,16 +166,14 @@ int listS()
     char *pName;
     uint tts;
     bool backup;
-    char *comp;
     char *tpp;
     char *tup;
 
-    settingsFromRedis(&id, &tup, &comp, &tts, &tpp, &backup, &pName);
-    
+    settingsFromRedis(&id, &tup, &tts, &tpp, &backup, &pName);
+
     printf("Ecco una lista dettagliata dei settings:\n\n"
            RED BOLD " TTS  "   RESET  ITALIC"   Ogni quante istruzioni salva su disco\n\t" RESET BOLD "    * 5" RESET "(default): Ogni 5 istruzioni il progetto viene salvato su disco\n\n"
            RED BOLD " Backup"  RESET  ITALIC"  Version Control System\n\t    * On: Puoi tenere traccia nel tempo delle modifiche che si effettuano sulle immagini\n\t" RESET BOLD "    * Off" RESET "(default): Non viene tenuta traccia delle modifiche\n\n"
-           RED BOLD " COMP "   RESET  ITALIC"   Formato di compressione dell'immagine\n\t" RESET BOLD "    * PPM" RESET "(default)\n\t    * JPEG\n\t    * PNG\n\n"
            RED BOLD " TPP  "   RESET  ITALIC"   Tecnologia di parallelismo\n\t" RESET "    * CUDA: Elaborazione parallela su unità di elaborazione grafica (GPU)\n\t    * OMP: Elaborazione parallela su sistemi condivisi di memoria\n\t    *" BOLD " Serial" RESET "(default): Non viene effettuata alcuna ottimizzazione\n\n"
            RED BOLD " TUP  "   RESET  ITALIC"   Tecnologia di upscaling\n\t" RESET BOLD "    * Bilinear" RESET "(default)\n\t    * Bicubic\n");
 
@@ -183,10 +181,9 @@ int listS()
 
     printf(BOLD YELLOW "IMPOSTAZIONI ATTUALI:\n" RESET
            BOLD "\n * " GREEN "TUP    " RESET BOLD "==>" RESET " [%s]"
-           BOLD "\n * " GREEN "COMP   " RESET BOLD "==>" RESET " [%s]"
            BOLD "\n * " GREEN "TTS    " RESET BOLD "==>" RESET " [%u]"
            BOLD "\n * " GREEN "TPP    " RESET BOLD "==>" RESET " [%s]"
-           BOLD "\n * " GREEN "Backup " RESET BOLD "==>" RESET " [%s]\n\n", tup, comp, tts, tpp, backup ? "On" : "Off");
+           BOLD "\n * " GREEN "Backup " RESET BOLD "==>" RESET " [%s]\n\n", tup, tts, tpp, backup ? "On" : "Off");
 
 
     return 0;

@@ -6,6 +6,7 @@ int main(int argc, char *argv[])
     if (checkPostgresService() || checkRedisService())
         exit(EXIT_FAILURE);
     checkDb();
+    deallocateFromRedis();
     banner();
     // TODO: ovunque si usi il path, mettere PATH_MAX oppure (meglio) far si che l'allocazione sia dinamica
     // TODO: stiamo usando ovunque path assoluti, dovremmo usare dei path relativ
@@ -45,7 +46,7 @@ int inputLoop(Env env)
     while (1)
     {
         print_prompt(env);
-        if (((int) (bytesRead = getline(&line, &lineSize, stdin))) == -1) 
+        if (((int) (bytesRead = getline(&line, &lineSize, stdin))) == -1)
             break;
 
         if (bytesRead == 1) continue;
@@ -100,19 +101,19 @@ int inputLoop(Env env)
     return 0;
 }
 
-int print_prompt(Env env) 
+int print_prompt(Env env)
 {
-    char *cwd = (char *)malloc(sizeof(char) * 256);
+    char *cwd = (char *) malloc(sizeof(char) * 256);
     char *username = getlogin();
 
-    if(getcwd(cwd, 256) == NULL) 
+    if (getcwd(cwd, 256) == NULL)
     {
         E_Print("Errore con getcwd()\n");
         free(cwd);
         return 1;
     }
     char *cpd = strrchr(cwd, '/');
-    if (cpd == NULL) 
+    if (cpd == NULL)
     {
         E_Print("Errore con strrchr\n");
         free(cwd);
@@ -133,13 +134,13 @@ int print_prompt(Env env)
         }
         case SETTINGS:
         {
-            printf(BOLD BLUE "%s" RESET BOLD "@" RESET RED BOLD "%s-settings" RESET BOLD "> " RESET, username, cpd +1, "settings");
+            printf(BOLD BLUE "%s" RESET BOLD "@" RESET RED BOLD "%s-settings" RESET BOLD "> " RESET, username, cpd + 1, "settings");
             break;
         }
         default:
             break;
     }
-    
+
     free(cwd);
     return 0;
 }

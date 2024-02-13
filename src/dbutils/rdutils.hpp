@@ -7,21 +7,21 @@ int openConnection(redisContext **context);
 int checkRedisService();
 
 
-int settingsFromRedis(int *id, char **tup, char **comp, u_int *tts, char **tpp, bool *backup, char **pName);
-int settingsToRedis(int id, char *tup, char *comp, u_int tts, char *tpp, bool backup, char *pName);
-int projectToRedis(char *name, char *cDate, char *mDate, char *path, int settings);
+int settingsFromRedis(int *id, char **tup, int *tts, char **tpp, bool *backup, char **pName);
+int settingsToRedis(char *tup, int tts, char *tpp, bool backup);
+int projectToRedis(char *name, char *cDate, char *mDate, char *path);
 
 
 //utils
-int checkResponse(char *name, redisReply *reply, redisContext *context);
+int checkResponse(const char *name, redisReply *reply, redisContext *context);
 
-int setKeyValueInt(char *key, int value);
-int setKeyValueStr(char *key, char *value);
-int setElementToRedis(char *key, char *value);
-int getIntFromKey(char *key);
-char *getStrFromKey(char *key);
-char **getCharArrayFromRedis(char *key);
+int setKeyValueInt(const char *key, int value);
+int setKeyValueStr(const char *key, char *value);
+int setElementToRedis(const char *key, char *value);
+int getIntFromKey(const char *key);
+char *getStrFromKey(const char *key);
+char **getCharArrayFromRedis(const char *key);
 
 int delDixFromRedis();
-int removeKeyFromRedis(char *key);
+int removeKeyFromRedis(const char *key);
 int deallocateFromRedis();

@@ -35,7 +35,7 @@ int checkDefaultFolder()
     closedir(defaultDir);
     return 0;
 }
-int askParams(char *name, char *path, char *comp, char *tpp, char *tup, uint *tts, bool *backup)
+int askParams(char *name, char *path, char *tpp, char *tup, uint *tts, bool *backup)
 {
     size_t aSize = 256;
     char *answer = (char *) malloc(256 * sizeof(char));
@@ -57,23 +57,6 @@ int askParams(char *name, char *path, char *comp, char *tpp, char *tup, uint *tt
             answer[bRead - 1] = '\0';
     } while (!isValidPath(answer));
     sprintf(path, "%s/%s", answer, name);
-
-    do
-    {
-        printf(BOLD YELLOW "Che estensione vuoi abbiano le immagini che crei?\n" RESET "\t- PPM (Default)\n\t- PNG\n\t- JPEG\n-> ");
-        if ((bRead = getline(&answer, &aSize, stdin)) == -1)
-        {
-            free(answer);
-            printf("\n");
-            D_Print("Operazione annullata\n");
-            return 1;
-        }
-        if (bRead == 1)
-            sprintf(answer, "PPM");
-        else
-            answer[bRead - 1] = '\0';
-    } while (!isValidComp(answer));
-    sprintf(comp, "%s", answer);
 
     do
     {
@@ -205,15 +188,6 @@ bool isValidPath(char *path)
     sprintf(path, "%s", result);
     free(result);
 
-    return true;
-}
-bool isValidComp(char *comp)
-{
-    if (strcmp(comp, "PPM") != 0 && strcmp(comp, "PNG") != 0 && strcmp(comp, "JPEG") != 0)
-    {
-        E_Print(RED "Error: " RESET "Risposta non valida!\n");
-        return false;
-    }
     return true;
 }
 bool isValidTPP(char *tpp)
@@ -396,17 +370,16 @@ int newP(char *name, bool ask, Env *env)
     checkDefaultFolder();
 
     char path[256];
-    char comp[5] = "PPM";
     char tpp[16] = "Serial";
     char tup[16] = "Bilinear";
     bool backup = false;
     uint tts = 5;
     sprintf(path, "%s/EdixProjects/%s", getenv("HOME"), name);
 
-    if (ask && askParams(name, path, comp, tpp, tup, &tts, &backup))
+    if (ask && askParams(name, path, tpp, tup, &tts, &backup))
         return 1;
 
-    if (addProject(name, path, comp, tpp, tup, tts, backup))
+    if (addProject(name, path, tpp, tup, tts, backup))
         return EXIT_FAILURE;
 
     char command[256];
@@ -452,7 +425,7 @@ int openP(char *name, Env *env)
     if (loadProjectOnRedis(name))
         return EXIT_FAILURE;
 
-    char *path = getStrFromKey((char *) "pPath");
+    char *path = getStrFromKey("pPath");
     if (path == nullptr)
         return 1;
 
