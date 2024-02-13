@@ -1,0 +1,79 @@
+Img1 = 1337x965	Channels = 3
+Img2 = 640x360	Channels = 3
+Testing Blur: 30
+Serial time: 48331
+Omp time: 24445	nThread: 2	Speedup: 1.98	Efficiency: 98.86
+Img1 = 1337x965	Channels = 3
+Img2 = 640x360	Channels = 3
+Testing Blur: 30
+Serial time: 48131
+Omp time: 24100	nThread: 2	Speedup: 2.00	Efficiency: 99.86
+Omp time: 16450	nThread: 3	Speedup: 2.93	Efficiency: 97.53
+Omp time: 13002	nThread: 4	Speedup: 3.70	Efficiency: 92.55
+Best omp time: 13002	nThread: 4	Speedup: 3.70	Efficiency: 92.55
+Cuda time: 241	Speedup: 199.71
+Cuda shared time: 180	Speedup: 267.39
+Testing Colorfilter: r = 126	g = 58	b = 69	tollerance = 50
+Serial time: 125
+Omp time: 63	nThread: 2	Speedup: 1.98	Efficiency: 99.21
+Omp time: 43	nThread: 3	Speedup: 2.91	Efficiency: 96.90
+Omp time: 48	nThread: 4	Speedup: 2.60	Efficiency: 65.10
+Best omp time: 43	nThread: 3	Speedup: 2.91	Efficiency: 96.90
+Cuda time: 8	Speedup: 15.62
+Testing Composition: LEFT
+Serial time: 18
+Omp time: 11	nThread: 2	Speedup: 1.64	Efficiency: 81.82
+Omp time: 6	nThread: 3	Speedup: 3.00	Efficiency: 100.00
+Omp time: 11	nThread: 4	Speedup: 1.64	Efficiency: 40.91
+Best omp time: 6	nThread: 3	Speedup: 3.00	Efficiency: 100.00
+Cuda time: 61	Speedup: 0.30
+Testing Grayscale
+Serial time: 14
+Omp time: 7	nThread: 2	Speedup: 2.00	Efficiency: 100.00
+Omp time: 10	nThread: 3	Speedup: 1.40	Efficiency: 46.67
+Omp time: 8	nThread: 4	Speedup: 1.75	Efficiency: 43.75
+Best omp time: 7	nThread: 2	Speedup: 2.00	Efficiency: 100.00
+Cuda time: 59	Speedup: 0.24
+Testing Overlap: x = 100	y = 100
+Serial time: 3
+Omp time: 5	nThread: 2	Speedup: 0.60	Efficiency: 30.00
+Omp time: 3	nThread: 3	Speedup: 1.00	Efficiency: 33.33
+Omp time: 6	nThread: 4	Speedup: 0.50	Efficiency: 12.50
+Best omp time: 3	nThread: 3	Speedup: 1.00	Efficiency: 33.33
+Cuda time: 60	Speedup: 0.05
+Testing Upscale Bilinear: 6
+Serial time: 2424
+Omp time: 1214	nThread: 2	Speedup: 2.00	Efficiency: 99.84
+Omp time: 835	nThread: 3	Speedup: 2.90	Efficiency: 96.77
+Omp time: 680	nThread: 4	Speedup: 3.56	Efficiency: 89.12
+Best omp time: 680	nThread: 4	Speedup: 3.56	Efficiency: 89.12
+Cuda time: 181	Speedup: 13.39
+Cuda shared time: 181	Speedup: 13.39
+Testing Upscale Bicubic: 6
+Serial time: 23026
+Omp time: 11678	nThread: 2	Speedup: 1.97	Efficiency: 98.59
+Omp time: 7959	nThread: 3	Speedup: 2.89	Efficiency: 96.44
+Omp time: 6960	nThread: 4	Speedup: 3.31	Efficiency: 82.71
+Best omp time: 6960	nThread: 4	Speedup: 3.31	Efficiency: 82.71
+Cuda time: 366	Speedup: 62.91
+Cuda shared time: 384	Speedup: 59.96
+Testing Downscale Bilinear: 4
+Serial time: 2
+Omp time: 0	nThread: 2	Speedup: inf	Efficiency: inf
+Omp time: 0	nThread: 3	Speedup: inf	Efficiency: inf
+Omp time: 0	nThread: 4	Speedup: inf	Efficiency: inf
+Best omp time: 0	nThread: 4	Speedup: inf	Efficiency: inf
+Cuda time: 1	Speedup: 2.00
+Cuda shared time: 64	Speedup: 0.03
+Testing Downscale Bicubic: 4
+Serial time: 42
+Omp time: 25	nThread: 2	Speedup: 1.68	Efficiency: 84.00
+Omp time: 17	nThread: 3	Speedup: 2.47	Efficiency: 82.35
+Omp time: 18	nThread: 4	Speedup: 2.33	Efficiency: 58.33
+Best omp time: 17	nThread: 3	Speedup: 2.47	Efficiency: 82.35
+Cuda time: 2	Speedup: 21.00
+Cuda shared time: 62	Speedup: 0.68
+Img1 = 1337x965	Channels = 3
+Img2 = 640x360	Channels = 3
+Testing Blur: 30
+Serial time: 48455
