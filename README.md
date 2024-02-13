@@ -10,7 +10,7 @@ Editor di immagini scritto interamente in C++
 
 Questa repository contiene il codice per un progetto universitario per il corso di [Ingegneria del software](https://corsidilaurea.uniroma1.it/it/view-course-details/2023/29923/20190322090929/1c0d2a0e-d989-463c-a09a-00b823557edd/f5e77c3f-84d5-4123-8b84-8a0a5c597463/15ecc655-f8c0-4c3f-afcf-da46946dcf5f/95212068-f314-40bc-b767-b909de17d286?guid_cv=f5e77c3f-84d5-4123-8b84-8a0a5c597463&current_erogata=1c0d2a0e-d989-463c-a09a-00b823557edd)
 
-EdiX è un editor di immagini dove l'utente può creare progetti, da cui all'interno potrà aggiungere immagini ed effettuare operazioni su di esse. Le operazioni sono le seguenti:
+EdiX è un editor di immagini dove l'utente può creare progetti, da cui all'interno potrà aggiungere immagini ed effettuare operazioni su di esse. Le operazioni sono denominate `funX` e sono le seguenti:
 
 * Blur
 * Scala di grigi
@@ -21,14 +21,12 @@ EdiX è un editor di immagini dove l'utente può creare progetti, da cui all'int
 
 ## Struttura del progetto
 
-* `bin/`
-* `obj/`
-* `src/`
-  * `src/dbutils`
-  * `src/env`
-  * `src/functions`
-* `main.hpp`
-* `main.cpp`
-* `utils.hpp`
+* `bin/` Contiene i file binari
+* `obj/` Contiene i file oggetto
+* `src/` Contiene il codice sorgente
+  * `src/dbutils` Contiene il codice per la creazione e gestione del database PostgreSql e Redis
+  * `src/env` Contiene il codice per la gestione degli ambienti presenti nel progetto, ovvero: HOMEPAGE, PROJECT e SETTINGS
+  * `src/functions` Contiene il codice delle funX
+* `test/`
 
-## Modifiche in corso
+## Modifiche in corso..
