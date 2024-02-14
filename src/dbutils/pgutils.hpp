@@ -37,6 +37,7 @@ char *listProjects();
 int getSettings(char *projectName, char **tup, int *tts, char **tpp, bool *backup);
 int getProject(char *projectName, char **cdate, char **mdate, char **path);
 int getProjectPath(char *projectName, char **path);
+int getAutosaveCounter();
 
 
 bool checkRoleExists(PGconn *conn, const char *roleName);

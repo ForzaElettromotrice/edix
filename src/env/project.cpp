@@ -74,7 +74,7 @@ char *askComment()
     return comment;
 
 }
-int checkDix(char *projectPath, char *dixName)
+int checkDix(char *projectPath, const char *dixName)
 {
     char path[256];
     sprintf(path, "%s/.dix/%s", projectPath, dixName);
@@ -95,7 +95,7 @@ int checkDix(char *projectPath, char *dixName)
 
     return 0;
 }
-int cloneProject(char *projectPath, char *path, char *dixName)
+int cloneProject(char *projectPath, char *path, const char *dixName)
 {
     DIR *dir = opendir(path);
 
@@ -194,6 +194,7 @@ int parseProj(char *line, Env *env)
      */
     char *copy = strdup(line);
     char *token = strtok(copy, " ");
+    static int instructions = 0;
 
 
     if (strcmp(token, "ls") == 0)
@@ -225,8 +226,30 @@ int parseProj(char *line, Env *env)
     else if (strcmp(token, "ristretto") == 0)
         parseRistretto();
     else
+    {
+        instructions--;
         printf(RED "Command not found\n" RESET);
-
+    }
+    instructions++;
+    if (*env != HOMEPAGE)
+    {
+        int tts = getIntFromKey("TTS");
+        if (instructions >= tts)
+        {
+            D_Print("Autosave...\n");
+            char name[15];
+            int counter = getAutosaveCounter();
+            if (counter == -1)
+            {
+                free(copy);
+                return 1;
+            }
+            sprintf(name, "Autosave_%d", counter + 1);
+            dixCommit(name);
+            force();
+            instructions = 0;
+        }
+    }
 
     free(copy);
     return 0;
@@ -720,14 +743,20 @@ int dixList()
     free(dixs);
     return 0;
 }
-int dixCommit(char *name)
+int dixCommit(const char *name)
 {
     char *projectPath = getStrFromKey("pPath");
     if (checkDix(projectPath, name))
         return 1;
 
-
-    char *comment = askComment();
+    char *comment;
+    if (strcmp(name, "Autosave") <= 0)
+        comment = askComment();
+    else
+    {
+        comment = (char *) malloc(1 * sizeof(char));
+        comment[0] = '\0';
+    }
     setElementToRedis("dixNames", name);
     setElementToRedis("dixComments", comment);
 
@@ -805,6 +834,7 @@ int force()
     free(comments);
 
     delDixFromRedis();
+    system("rm -rf .dix");
 
     char *tup = getStrFromKey("TUP");
     int tts = getIntFromKey("TTS");

@@ -16,8 +16,8 @@ int projectToRedis(char *name, char *cDate, char *mDate, char *path);
 int checkResponse(const char *name, redisReply *reply, redisContext *context);
 
 int setKeyValueInt(const char *key, int value);
-int setKeyValueStr(const char *key, char *value);
-int setElementToRedis(const char *key, char *value);
+int setKeyValueStr(const char *key, const char *value);
+int setElementToRedis(const char *key, const char *value);
 int getIntFromKey(const char *key);
 char *getStrFromKey(const char *key);
 char **getCharArrayFromRedis(const char *key);

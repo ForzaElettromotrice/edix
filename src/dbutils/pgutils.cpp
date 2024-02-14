@@ -645,6 +645,39 @@ int getProjectPath(char *projectName, char **path)
 
     return 0;
 }
+int getAutosaveCounter()
+{
+    char *projectName = getStrFromKey("pName");
+    if (projectName == nullptr)
+        return -1;
+
+    PGconn *conn = PQconnectdb("host=localhost dbname=edix user=edix password=");
+    if (PQstatus(conn) != CONNECTION_OK)
+    {
+        free(projectName);
+        PQfinish(conn);
+        E_Print("Errore di connessione: %s\n", PQerrorMessage(conn));
+        return 1;
+    }
+
+    char query[256];
+    sprintf(query, "SELECT Instant FROM Dix d WHERE d.Name LIKE 'Autosave%s' AND d.Project = '%s'", "%", projectName);
+
+    PGresult *result = PQexec(conn, query);
+    if (PQresultStatus(result) != PGRES_TUPLES_OK)
+    {
+        free(projectName);
+        PQclear(result);
+        PQfinish(conn);
+        E_Print("Errore nell'esecuzione della query: %s\n", PQresultErrorMessage(result));
+        return 1;
+    }
+
+    int nRows = PQntuples(result);
+
+    free(projectName);
+    return nRows;
+}
 
 
 bool checkRoleExists(PGconn *conn, const char *roleName)
@@ -754,15 +787,12 @@ char *toExadecimal(unsigned char *imageData, uint width, uint height, uint chann
     for (size_t i = 0; i < oSize / 2; i++)
         sprintf(out + (i * 2), "%02X", imageData[i]);
 
-    D_Print("%d\n", strlen(out));
-
     return out;
 }
 unsigned char *toImg(char *exaData, uint width, uint height, uint channels)
 {
     auto *out = (unsigned char *) malloc(width * height * channels * sizeof(unsigned char));
     size_t eLen = strlen(exaData);
-    D_Print("%d\n", eLen);
 
 #pragma omp parallel for num_threads(omp_get_max_threads()) schedule(static) default(none) shared(eLen, exaData, out)
     for (int i = 0; i < eLen; i += 2)
