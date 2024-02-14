@@ -719,7 +719,7 @@ int createQueryImages(char *projectPath, char *dixName, char **names, char **pat
         unsigned char *image = loadImage(path, &width, &height, &channels);
         char *imageData = toExadecimal(image, width, height, channels);
 
-        size_t lSize = strlen(imageData) + strlen(names[i]) + strlen(paths[i]) + 128;
+        size_t lSize = strlen(imageData) + strlen(names[i]) + strlen(paths[i]) + 113;
         char *line = (char *) malloc(lSize * sizeof(char));
         sprintf(line, "INSERT INTO Image (Name, Dix, Path, Data, Width, Height, Channels) VALUES ('%s', NOW(), '%s', E'\\\\x%s', %d, %d, %d);\n", names[i], paths[i], imageData, width, height, channels);
 
