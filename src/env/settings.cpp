@@ -162,14 +162,12 @@ int exitS(Env *env)
 }
 int listS()
 {
-    int id;
-    char *pName;
-    uint tts;
-    bool backup;
-    char *tpp;
     char *tup;
+    int tts;
+    char *tpp;
+    bool backup;
 
-    settingsFromRedis(&id, &tup, &tts, &tpp, &backup, &pName);
+    settingsFromRedis(&tup, &tts, &tpp, &backup);
 
     printf("Ecco una lista dettagliata dei settings:\n\n"
            RED BOLD " TTS  "   RESET  ITALIC"   Ogni quante istruzioni salva su disco\n\t" RESET BOLD "    * 5" RESET "(default): Ogni 5 istruzioni il progetto viene salvato su disco\n\n"

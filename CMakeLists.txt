@@ -20,8 +20,14 @@ set(SOURCE_FILES
         src/functions/composition.cu
         src/functions/compression.cu
         src/functions/scale.cu
+        src/functions/imgutils.cpp
+        src/functions/imgutils.hpp
+        src/functions/parser.cpp
+        src/functions/parser.hpp
         src/dbutils/pgutils.cpp
         src/dbutils/pgutils.hpp
+        src/dbutils/rdutils.cpp
+        src/dbutils/rdutils.hpp
         src/env/homepage.cpp
         src/env/homepage.hpp
         src/env/project.cpp
@@ -30,15 +36,10 @@ set(SOURCE_FILES
         src/env/settings.hpp
         src/env/linenoise.c
         src/env/linenoise.h
+        src/utils.cpp
+        src/utils.hpp
         src/main.cpp
         src/main.hpp
-        src/dbutils/rdutils.cpp
-        src/dbutils/rdutils.hpp
-        src/functions/imgutils.cpp
-        src/functions/imgutils.hpp
-        src/functions/parser.cpp
-        src/functions/parser.hpp
-        src/uitils.cpp
 )
 
 set(SOURCE_FILES_TEST
@@ -58,8 +59,6 @@ set(SOURCE_FILES_TEST
         test/testFunc.cu
         test/testFunc.cuh
         src/functions/imgutils.cpp
-        src/dbutils/pgutils.cpp
-        src/dbutils/pgutils.hpp
         src/env/homepage.cpp
         src/env/homepage.hpp
         src/env/project.cpp
@@ -71,7 +70,7 @@ set(SOURCE_FILES_TEST
         src/functions/imgutils.hpp
         src/functions/parser.cpp
         src/functions/parser.hpp
-        src/uitils.cpp
+        src/utils.cpp
 )
 
 # Aggiungi tutte le sorgenti del progetto

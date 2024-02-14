@@ -106,14 +106,14 @@ int print_prompt(Env env)
     char *cwd = (char *) malloc(sizeof(char) * 256);
     char *username = getlogin();
 
-    if (getcwd(cwd, 256) == NULL)
+    if (getcwd(cwd, 256) == nullptr)
     {
-        E_Print("Errore con getcwd()\n");
+        E_Print("Errore con getcwd() -> %s\n", strerror(errno));
         free(cwd);
         return 1;
     }
     char *cpd = strrchr(cwd, '/');
-    if (cpd == NULL)
+    if (cpd == nullptr)
     {
         E_Print("Errore con strrchr\n");
         free(cwd);
@@ -134,7 +134,7 @@ int print_prompt(Env env)
         }
         case SETTINGS:
         {
-            printf(BOLD BLUE "%s" RESET BOLD "@" RESET RED BOLD "%s-settings" RESET BOLD "> " RESET, username, cpd + 1, "settings");
+            printf(BOLD BLUE "%s" RESET BOLD "@" RESET RED BOLD "%s-settings" RESET BOLD "> " RESET, username, cpd + 1);
             break;
         }
         default:

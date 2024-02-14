@@ -16,7 +16,7 @@
 //UTILS
 int banner();
 int checkDefaultFolder();
-int askParams(char *name, char *path, char *tpp, char *tup, uint *tts, bool *backup);
+int askParams(char *name, char *path, char *tpp, char *tup, int *tts, bool *backup);
 bool isValidName(char *name);
 bool isValidFlag(const char *flag);
 bool isValidPath(char *path);

@@ -63,7 +63,7 @@ unsigned char *compositionSerial(const unsigned char *imgIn1, const unsigned cha
             break;
         default:
         {
-            E_Print(RED "Error: " RESET "Parametro side non valido!\n");
+            E_Print("Parametro side non valido!\n");
             return nullptr;
         }
     }
@@ -115,7 +115,7 @@ unsigned char *compositionOmp(const unsigned char *imgIn1, const unsigned char *
             break;
         default:
         {
-            E_Print(RED "Error: " RESET "Parametro side non valido!\n");
+            E_Print("Parametro side non valido!\n");
             return nullptr;
         }
     }
@@ -167,7 +167,7 @@ unsigned char *compositionOmpAlternative(const unsigned char *imgIn1, const unsi
             break;
         default:
         {
-            E_Print(RED "Error: " RESET "Parametro side non valido!\n");
+            E_Print("Parametro side non valido!\n");
             return nullptr;
         }
     }
@@ -261,7 +261,7 @@ unsigned char *compositionCuda(const unsigned char *h_imgIn1, const unsigned cha
             break;
         default:
         {
-            E_Print(RED "Error: " RESET "Parametro side non valido!\n");
+            E_Print("Parametro side non valido!\n");
             return nullptr;
         }
     }

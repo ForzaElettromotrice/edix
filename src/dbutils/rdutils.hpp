@@ -7,7 +7,7 @@ int openConnection(redisContext **context);
 int checkRedisService();
 
 
-int settingsFromRedis(int *id, char **tup, int *tts, char **tpp, bool *backup, char **pName);
+int settingsFromRedis(char **tup, int *tts, char **tpp, bool *backup);
 int settingsToRedis(char *tup, int tts, char *tpp, bool backup);
 int projectToRedis(char *name, char *cDate, char *mDate, char *path);
 

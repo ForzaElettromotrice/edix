@@ -11,7 +11,7 @@ int openConnection(redisContext **context)
     {
         if (*context)
         {
-            E_Print(RED "Error" RESET "while connecting to redis: %s\n", (*context)->errstr);
+            E_Print("while connecting to redis: %s\n", (*context)->errstr);
             redisFree(*context);
         } else
             E_Print(RED"Error: " RESET "Unable to initialize connection to redis\n");
@@ -36,14 +36,12 @@ int checkRedisService()
 
 
 int
-settingsFromRedis(int *id, char **tup, int *tts, char **tpp, bool *backup, char **pName)
+settingsFromRedis(char **tup, int *tts, char **tpp, bool *backup)
 {
     redisContext *context;
     openConnection(&context);
 
 
-    *id = getIntFromKey("ID");
-    *pName = getStrFromKey("Project");
     *tts = getIntFromKey("TTS");
     char *Backup = getStrFromKey("Backup");
     *backup = strcmp(Backup, "0");
@@ -297,12 +295,10 @@ int deallocateFromRedis()
     removeKeyFromRedis("MDate");
     removeKeyFromRedis("pPath");
 
-    removeKeyFromRedis("ID");
-    removeKeyFromRedis("Project");
-    removeKeyFromRedis("TTS");
-    removeKeyFromRedis("Backup");
-    removeKeyFromRedis("TPP");
     removeKeyFromRedis("TUP");
+    removeKeyFromRedis("TTS");
+    removeKeyFromRedis("TPP");
+    removeKeyFromRedis("Backup");
 
     redisFree(context);
 

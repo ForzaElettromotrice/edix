@@ -35,7 +35,7 @@ int checkDefaultFolder()
     closedir(defaultDir);
     return 0;
 }
-int askParams(char *name, char *path, char *tpp, char *tup, uint *tts, bool *backup)
+int askParams(char *name, char *path, char *tpp, char *tup, int *tts, bool *backup)
 {
     size_t aSize = 256;
     char *answer = (char *) malloc(256 * sizeof(char));
@@ -128,7 +128,7 @@ int askParams(char *name, char *path, char *tpp, char *tup, uint *tts, bool *bac
             else
                 answer[bRead - 1] = '\0';
         } while (!isValidTTS(answer));
-        *tts = strtoul(answer, nullptr, 10);
+        *tts = (int) strtol(answer, nullptr, 10);
     } else
         *tts = 5UL;
 
@@ -142,7 +142,7 @@ bool isValidName(char *word)
     for (size_t i = 0; i < strlen(word) - 1; ++i)
         if (!isalnum(word[i]) && word[i] != '_')
         {
-            E_Print(RED "Error: " RESET "Invalid character " BOLD ITALIC "%c\n" RESET, word[i]);
+            E_Print("Invalid character " BOLD ITALIC "%c\n" RESET, word[i]);
             return false;
         }
 
@@ -162,7 +162,7 @@ bool isValidPath(char *path)
         char *tmp = (char *) malloc((strlen(path) + strlen(home) + 1) * sizeof(char));
         if (tmp == nullptr)
         {
-            E_Print(RED "Error: " RESET "Error while malloc!\n");
+            E_Print("Error while malloc!\n");
             return false;
         }
         sprintf(tmp, "%s%s", home, path + 1);
@@ -173,7 +173,7 @@ bool isValidPath(char *path)
 
     if (result == nullptr)
     {
-        E_Print(RED "Error: " RESET "Path non valido!\n");
+        E_Print("Path non valido!\n");
         return false;
     }
 
@@ -181,7 +181,7 @@ bool isValidPath(char *path)
     if (tmp == nullptr)
     {
         free(result);
-        E_Print(RED "Error: " RESET "Error while realloc!\n");
+        E_Print("Error while realloc!\n");
         return false;
     }
     path = tmp;
@@ -194,7 +194,7 @@ bool isValidTPP(char *tpp)
 {
     if (strcmp(tpp, "Serial") != 0 && strcmp(tpp, "OMP") != 0 && strcmp(tpp, "CUDA") != 0)
     {
-        E_Print(RED "Error: " RESET "Risposta non valida!\n");
+        E_Print("Risposta non valida!\n");
         return false;
     }
     return true;
@@ -203,7 +203,7 @@ bool isValidTUP(char *tup)
 {
     if (strcmp(tup, "Bilinear") != 0 && strcmp(tup, "Bicubic") != 0)
     {
-        E_Print(RED "Error: " RESET "Risposta non valida!\n");
+        E_Print("Risposta non valida!\n");
         return false;
     }
     return true;
@@ -212,7 +212,7 @@ bool isValidTTS(char *tts)
 {
     if (strtoul(tts, nullptr, 10) < 5)
     {
-        E_Print(RED "Error: " RESET "Risposta non valida!\n");
+        E_Print("Risposta non valida!\n");
         return false;
     }
     return true;
@@ -221,7 +221,7 @@ bool isValidBackup(char *backup)
 {
     if (strcmp(backup, "y") != 0 && strcmp(backup, "n") != 0 && strcmp(backup, "Y") != 0 && strcmp(backup, "N") != 0)
     {
-        E_Print(RED "Error: " RESET "Risposta non valida!\n");
+        E_Print("Risposta non valida!\n");
         return false;
     }
     return true;
@@ -255,7 +255,7 @@ int parseHome(char *line, Env *env)
     else if (strcmp(token, "exit") == 0)
         parseExitH(env);
     else
-        E_Print(RED "Error: " RESET "Command not found\n");
+        E_Print("Command not found\n");
 
 
     free(copy);
@@ -373,13 +373,13 @@ int newP(char *name, bool ask, Env *env)
     char tpp[16] = "Serial";
     char tup[16] = "Bilinear";
     bool backup = false;
-    uint tts = 5;
+    int tts = 5;
     sprintf(path, "%s/EdixProjects/%s", getenv("HOME"), name);
 
     if (ask && askParams(name, path, tpp, tup, &tts, &backup))
         return 1;
 
-    if (addProject(name, path, tpp, tup, tts, backup))
+    if (addProject(name, path, tup, tts, tpp, backup))
         return EXIT_FAILURE;
 
     char command[256];
@@ -456,7 +456,7 @@ int delP(char *name)
 }
 int listH()
 {
-    char *names = getProjects();
+    char *names = listProjects();
     printf("%s\n", names);
 
     free(names);

@@ -120,7 +120,7 @@ int cloneProject(char *projectPath, char *path, char *dixName)
 
         if (stat(newPath, &file_stat) == -1)
         {
-            E_Print(RED "Error:" RESET "Errore nell'ottenere le informazioni sul file\n");
+            E_Print("Errore nell'ottenere le informazioni sul file\n");
             continue;
         }
         if (S_ISDIR(file_stat.st_mode))
@@ -705,10 +705,10 @@ int settings(Env *env)
 int dixList()
 {
     force();
-    char *projectName = getStrFromKey("Project");
+    char *projectName = getStrFromKey("pName");
     if (projectName == nullptr)
         return 1;
-    char *dixs = getDixs(projectName);
+    char *dixs = listDixs(projectName);
     if (dixs == nullptr)
     {
         free(projectName);
@@ -762,14 +762,14 @@ int dixReload(char *name)
     free(comm);
 
 
-    char *projectName = getStrFromKey("Project");
+    char *projectName = getStrFromKey("pName");
     if (projectName == nullptr)
     {
         free(pPath);
         return 1;
     }
 
-    loadDix(name, projectName, pPath);
+    loadDix(name, projectName);
 
     return 0;
 }
@@ -789,7 +789,7 @@ int force()
         sprintf(key, "%sImages", names[i]);
         char **images = getCharArrayFromRedis(key);
 
-        addDix(projectName, names[i], comments[i], images, paths);
+        addDix(names[i], comments[i], images, paths);
 
         for (int j = 0; paths[j] != nullptr; ++j)
         {
@@ -803,17 +803,19 @@ int force()
     }
     free(names);
     free(comments);
-    free(projectName);
 
     delDixFromRedis();
 
-    int id = getStrFromKey("ID");
     char *tup = getStrFromKey("TUP");
-    uint tts = (uint) getStrFromKey("TTS");
+    int tts = getIntFromKey("TTS");
     char *tpp = getStrFromKey("TPP");
-    bool backup = getStrFromKey("Backup") == 1;
-    char *pName = getStrFromKey("pName");
-    updateSettings(id, tup, tts, tpp, backup, pName);
+    char *backup = getStrFromKey("Backup");
+    updateSettings(projectName, tup, tts, tpp, strcmp(backup, "t") == 0);
+
+    free(tup);
+    free(tpp);
+    free(backup);
+    free(projectName);
 
     return 0;
 }
@@ -855,6 +857,7 @@ int exitP(Env *env)
 
     D_Print("Uscita dal progetto in corso...\n");
     *env = HOMEPAGE;
+    chdir(getenv("HOME"));
     return 0;
 }
 
