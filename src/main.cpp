@@ -43,7 +43,7 @@ int inputLoop(Env env)
 
     size_t bytesRead;
 
-    while (1)
+    while (true)
     {
         print_prompt(env);
         if (((int) (bytesRead = getline(&line, &lineSize, stdin))) == -1)
