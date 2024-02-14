@@ -751,9 +751,10 @@ char *toExadecimal(unsigned char *imageData, uint width, uint height, uint chann
     uint oSize = width * height * channels * 2;
     char *out = (char *) malloc(oSize * sizeof(char));
 
-#pragma omp parallel for num_threads(omp_get_max_threads()) schedule(static) default(none) shared(imageData, oSize, out)
     for (size_t i = 0; i < oSize / 2; i++)
         sprintf(out + (i * 2), "%02X", imageData[i]);
+
+    D_Print("%d\n", strlen(out));
 
     return out;
 }
@@ -761,6 +762,7 @@ unsigned char *toImg(char *exaData, uint width, uint height, uint channels)
 {
     auto *out = (unsigned char *) malloc(width * height * channels * sizeof(unsigned char));
     size_t eLen = strlen(exaData);
+    D_Print("%d\n", eLen);
 
 #pragma omp parallel for num_threads(omp_get_max_threads()) schedule(static) default(none) shared(eLen, exaData, out)
     for (int i = 0; i < eLen; i += 2)
