@@ -35,8 +35,7 @@ int checkRedisService()
 }
 
 
-int
-settingsFromRedis(char **tup, int *tts, char **tpp, bool *backup)
+int settingsFromRedis(char **tup, int *tts, char **tpp, bool *backup)
 {
     redisContext *context;
     openConnection(&context);

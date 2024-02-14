@@ -4,6 +4,7 @@
 
 #include "pgutils.hpp"
 
+
 int checkDb()
 {
     PGconn *conn = PQconnectdb("dbname=postgres user=postgres password=");
@@ -502,7 +503,7 @@ char *listProjects()
     size_t oSize = 256;
     size_t oLen = 10;
     char *out = (char *) malloc(oSize * sizeof(char));
-    sprintf(out, "PROGETTI:\n");
+    sprintf(out, "Ecco la lista dei progetti:\n" BOLD YELLOW "%-30s" BLUE "%-30s" GREEN "%-30s" RESET "\n", "Name", "CDate", "MDate");
 
     char *name;
     char *cdate;
@@ -511,16 +512,15 @@ char *listProjects()
     size_t lSize;
     char *line;
 
-
     for (int i = 0; i < numRows; ++i)
     {
         name = strdup(PQgetvalue(result, i, 0));
         cdate = strdup(PQgetvalue(result, i, 1));
         mdate = strdup(PQgetvalue(result, i, 2));
 
-        lSize = strlen(name) + strlen(cdate) + strlen(mdate) + 3;
+        lSize = strlen(name) + strlen(cdate) + strlen(mdate) + 2 * 2 + 2 * 30 + 3;
         line = (char *) malloc(lSize * sizeof(char));
-        sprintf(line, "%s\t%s\t%s", name, cdate, mdate);
+        sprintf(line, "" BOLD "%-30s" RESET "%-30s%-30s", name, cdate, mdate);
 
         if (oLen + lSize >= oSize)
         {
@@ -540,7 +540,7 @@ char *listProjects()
             }
             out = tmp;
         }
-        sprintf(out + oLen, "%s\n", line);
+        sprintf(out, "%s%s\n",out ,line);
         oLen += lSize;
 
         free(line);

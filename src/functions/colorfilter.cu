@@ -58,7 +58,6 @@ unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint he
     int RGB[] = {r, g, b};
     int squareTolerance = (int) (pow(tolerance, 2));
     uint squareDistance;
-    int test1 = 0, test2 = 0;
 
     for (int i = 0; i < width; ++i)
         for (int j = 0; j < height; ++j)
