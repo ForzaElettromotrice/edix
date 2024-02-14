@@ -42,14 +42,14 @@ int inputLoop(Env env)
     char *line = (char *) malloc(256 * sizeof(char));
 
     size_t bytesRead;
-
-    while (true)
+    print_prompt(env);
+    while (((int) (bytesRead = getline(&line, &lineSize, stdin))) != -1)
     {
-        print_prompt(env);
-        if (((int) (bytesRead = getline(&line, &lineSize, stdin))) == -1)
-            break;
-
-        if (bytesRead == 1) continue;
+        if (bytesRead == 1)
+        {
+            print_prompt(env);
+            continue;
+        }
 
         line[bytesRead - 1] = '\0';
         switch (env)
@@ -69,6 +69,7 @@ int inputLoop(Env env)
         }
         if (env == EXIT)
             break;
+        print_prompt(env);
     }
 
     free(line);
