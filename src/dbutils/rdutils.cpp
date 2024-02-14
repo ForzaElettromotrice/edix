@@ -99,7 +99,7 @@ int checkResponse(const char *name, redisReply *reply, redisContext *context)
     }
     return 0;
 }
-int setKeyValueStr(const char *key, char *value)
+int setKeyValueStr(const char *key, const char *value)
 {
 
     redisContext *context;
@@ -131,7 +131,7 @@ int setKeyValueInt(const char *key, int value)
 
     return 0;
 }
-int setElementToRedis(const char *key, char *value)
+int setElementToRedis(const char *key, const char *value)
 {
     redisContext *context;
     openConnection(&context);

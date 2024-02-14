@@ -53,7 +53,7 @@ int mv(char *fromPath, char *toPath);
 int settings(Env *env);
 int helpP();
 int exitP(Env *env);
-int dixCommit(char *name);
+int dixCommit(const char *name);
 int dixList();
 int dixReload(char *name);
 int force();
