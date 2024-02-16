@@ -12,7 +12,7 @@ int main()
     uint width3;
     uint height3;
     uint channels3;
-    unsigned char *img1 = loadImage((char *) "images/4emp.ppm", &width1, &height1, &channels1);          // 1337x965
+    unsigned char *img1 = loadImage((char *) "images/sfondo.ppm", &width1, &height1, &channels1);          // 1920x1080
     unsigned char *img2 = loadImage((char *) "images/immagine.ppm", &width2, &height2, &channels2);    // 640x360
     unsigned char *img3 = loadImage((char *) "images/gray.ppm", &width3, &height3, &channels3);          // 1337x965
 
@@ -33,9 +33,9 @@ int main()
 //    printf("Time: %u\n", delta);
 //
 //    free(oImg);
-//    free(img1);
-//    free(img2);
-//    free(img3);
+    free(img1);
+    free(img2);
+    free(img3);
 
     return 0;
 }

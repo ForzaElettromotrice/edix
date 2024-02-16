@@ -339,7 +339,7 @@ void testDownscaleBilinear(char *message, const unsigned char *img, uint width, 
 
     //testBlur
     auto start = std::chrono::high_resolution_clock::now();
-    unsigned char *imgOut = scaleSerialBilinear(img, width, height, channels, 6, false, &oWidth, &oHeight);
+    unsigned char *imgOut = scaleSerialBilinear(img, width, height, channels, 2, false, &oWidth, &oHeight);
     auto end = std::chrono::high_resolution_clock::now();
     long timeSer = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     sprintf(message, "Serial time: %ld\n", timeSer);
@@ -348,7 +348,7 @@ void testDownscaleBilinear(char *message, const unsigned char *img, uint width, 
     for (int i = 2; i < omp_get_max_threads() + 1; ++i)
     {
         start = std::chrono::high_resolution_clock::now();
-        imgOut = scaleOmpBilinear(img, width, height, channels, 6, false, &oWidth, &oHeight, i);
+        imgOut = scaleOmpBilinear(img, width, height, channels, 2, false, &oWidth, &oHeight, i);
         end = std::chrono::high_resolution_clock::now();
         long timePar = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
         double s = speedup(timeSer, timePar);
@@ -367,7 +367,7 @@ void testDownscaleBilinear(char *message, const unsigned char *img, uint width, 
     sprintf(message, "Best omp time: %ld\tnThread: %ld\tSpeedup: %.2f\tEfficiency: %.2f\n", bestOmp->time, bestOmp->threads, bestOmp->speedup, bestOmp->efficiency);
     saveResult(message);
     start = std::chrono::high_resolution_clock::now();
-    imgOut = scaleCudaBilinear(img, width, height, channels, 6, false, &oWidth, &oHeight, false);
+    imgOut = scaleCudaBilinear(img, width, height, channels, 2, false, &oWidth, &oHeight, false);
     end = std::chrono::high_resolution_clock::now();
     long timePar = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     double s = speedup(timeSer, timePar);
@@ -376,7 +376,7 @@ void testDownscaleBilinear(char *message, const unsigned char *img, uint width, 
     free(imgOut);
     cudaDeviceReset();
     start = std::chrono::high_resolution_clock::now();
-    imgOut = scaleCudaBilinear(img, width, height, channels, 6, false, &oWidth, &oHeight, true);
+    imgOut = scaleCudaBilinear(img, width, height, channels, 2, false, &oWidth, &oHeight, true);
     end = std::chrono::high_resolution_clock::now();
     timePar = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     s = speedup(timeSer, timePar);
@@ -666,7 +666,7 @@ void testPerformance(const unsigned char *imgIn1, const unsigned char *imgIn2, u
     testUpscaleBicubic(message, imgIn1, width1, height1, channels1, bestOmp);
     memset(bestOmp, 0, sizeof(performance_t));
 
-    sprintf(message, "Testing Downscale Bilinear: 6\n");
+    sprintf(message, "Testing Downscale Bilinear: 2\n");
     saveResult(message);
     testDownscaleBilinear(message, imgIn1, width1, height1, channels1, bestOmp);
     memset(bestOmp, 0, sizeof(performance_t));
