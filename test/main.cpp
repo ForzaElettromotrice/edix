@@ -16,6 +16,10 @@ int main()
     unsigned char *img2 = loadImage((char *) "images/immagine.ppm", &width2, &height2, &channels2);    // 640x360
     unsigned char *img3 = loadImage((char *) "images/gray.ppm", &width3, &height3, &channels3);          // 1337x965
 
+    uint oWidth;
+    uint oHeight;
+    unsigned char *oImg = colorFilterSerial(img1, width1, height1, channels1, 255, 0 ,0, 0, &oWidth, &oHeight);
+    writeImage("images/out.ppm", oImg,oWidth, oHeight, channels1);
 
 //    testAccuracy(img1, img2, img3, width1, height1, width2, height2, width3, height3);
 //    testPerformance(img1, img2, width1, height1, channels1, width2, height2, channels2);
@@ -34,9 +38,6 @@ int main()
 //
 //    free(oImg);
 
-    uint oWidth;
-    uint oHeight;
-    free(blurCuda(img1, width1, height1, channels1, 30, &oWidth, &oHeight, false));
 
 
 

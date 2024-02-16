@@ -54,7 +54,7 @@ unsigned char *loadImage(char *path, uint *width, uint *height, uint *channels)
     free(copy);
     return img;
 }
-int writeImage(char *path, unsigned char *img, uint width, uint height, uint channels)
+int writeImage(const char *path, unsigned char *img, uint width, uint height, uint channels)
 {
     char *copy = strdup(path);
     char *extension = strtok(copy, ".");

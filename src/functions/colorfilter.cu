@@ -43,6 +43,10 @@ __global__ void colorFilter(const unsigned char *imgIn, unsigned char *imgOut, u
 
 unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint height, uint channels, int r, int g, int b, uint tolerance, uint *oWidth, uint *oHeight)
 {
+    r = 255-r;
+    g = 255-g;
+    b = 255-b;
+
     uint oSize = width * height * channels;
     *oWidth = width;
     *oHeight = height;
@@ -86,6 +90,10 @@ unsigned char *colorFilterSerial(const unsigned char *imgIn, uint width, uint he
 }
 unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint height, uint channels, int r, int g, int b, uint tolerance, uint *oWidth, uint *oHeight, int nThreads)
 {
+    r = 255-r;
+    g = 255-g;
+    b = 255-b;
+
     uint oSize = width * height * channels;
     *oWidth = width;
     *oHeight = height;
@@ -130,6 +138,10 @@ unsigned char *colorFilterOmp(const unsigned char *imgIn, uint width, uint heigh
 }
 unsigned char *colorFilterCuda(const unsigned char *h_imgIn, uint width, uint height, uint channels, int r, int g, int b, uint tolerance, uint *oWidth, uint *oHeight)
 {
+    r = 255-r;
+    g = 255-g;
+    b = 255-b;
+
     uint oSize = width * height * channels;
     *oWidth = width;
     *oHeight = height;
