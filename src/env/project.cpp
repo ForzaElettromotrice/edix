@@ -234,18 +234,22 @@ int parseProj(char *line, Env *env)
     if (*env != HOMEPAGE)
     {
         int tts = getIntFromKey("TTS");
+        bool backup = getIntFromKey("Backup");
         if (instructions >= tts)
         {
-            D_Print("Autosave...\n");
-            char name[15];
-            int counter = getAutosaveCounter();
-            if (counter == -1)
+            if(backup)
             {
-                free(copy);
-                return 1;
+                D_Print("Autosave...\n");
+                char name[15];
+                int counter = getAutosaveCounter();
+                if (counter == -1)
+                {
+                    free(copy);
+                    return 1;
+                }
+                sprintf(name, "Autosave_%d", counter + 1);
+                dixCommit(name);
             }
-            sprintf(name, "Autosave_%d", counter + 1);
-            dixCommit(name);
             force();
             instructions = 0;
         }

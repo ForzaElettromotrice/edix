@@ -18,7 +18,7 @@ int main()
 
 
 //    testAccuracy(img1, img2, img3, width1, height1, width2, height2, width3, height3);
-    testPerformance(img1, img2, width1, height1, channels1, width2, height2, channels2);
+//    testPerformance(img1, img2, width1, height1, channels1, width2, height2, channels2);
 //    uint oWidth;
 //    uint oHeight;
 //
@@ -33,6 +33,13 @@ int main()
 //    printf("Time: %u\n", delta);
 //
 //    free(oImg);
+
+    uint oWidth;
+    uint oHeight;
+    free(blurCuda(img1, width1, height1, channels1, 30, &oWidth, &oHeight, false));
+
+
+
     free(img1);
     free(img2);
     free(img3);
