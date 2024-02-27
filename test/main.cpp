@@ -18,27 +18,11 @@ int main()
 
     uint oWidth;
     uint oHeight;
-    unsigned char *oImg = colorFilterSerial(img1, width1, height1, channels1, 255, 0 ,0, 0, &oWidth, &oHeight);
-    writeImage("images/out.ppm", oImg,oWidth, oHeight, channels1);
+    unsigned char *oImg = colorFilterSerial(img1, width1, height1, channels1, 255, 0, 0, 0, &oWidth, &oHeight);
+    writeImage("images/out.ppm", oImg, oWidth, oHeight, channels1);
 
-//    testAccuracy(img1, img2, img3, width1, height1, width2, height2, width3, height3);
-//    testPerformance(img1, img2, width1, height1, channels1, width2, height2, channels2);
-//    uint oWidth;
-//    uint oHeight;
-//
-//    auto start = std::chrono::high_resolution_clock::now();
-//    unsigned char *oImg = colorFilterCuda(img2, width2, height2, channels2, 50, 200, 200, 150, &oWidth, &oHeight);
-//
-//
-//    auto end = std::chrono::high_resolution_clock::now();
-//    writeImage((char *) "images/accuracy.ppm", oImg, oWidth, oHeight, channels1);
-//
-//    uint delta = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-//    printf("Time: %u\n", delta);
-//
-//    free(oImg);
-
-
+    testAccuracy(img1, img2, img3, width1, height1, width2, height2, width3, height3);
+    testPerformance(img1, img2, width1, height1, channels1, width2, height2, channels2);
 
 
     free(img1);
